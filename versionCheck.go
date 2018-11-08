@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"sort"
+	"time"
 )
 
 type commit struct {
@@ -25,6 +26,7 @@ type tagResults struct {
 }
 
 func MaybeCheckVersion() {
+	rand.Seed(time.Now().UnixNano())
 	randInt := rand.Intn(25)
 
 	if randInt != 24 {
