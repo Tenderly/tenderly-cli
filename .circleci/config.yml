@@ -3,6 +3,7 @@ jobs:
   release:
     docker:
     - image: circleci/golang:1.11.2
+    working_directory: /go/src/github.com/tenderly/tenderly-cli
     steps:
     - checkout
     - run: go get ./...
