@@ -14,13 +14,13 @@ var path string
 var network string
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&targetSchema, "target-schema", "", "Blockchain rpc schema.")
-	rootCmd.PersistentFlags().StringVar(&targetHost, "target-host", "", "Blockchain rpc host.")
-	rootCmd.PersistentFlags().StringVar(&targetPort, "target-port", "", "Blockchain rpc port.")
-	rootCmd.PersistentFlags().StringVar(&proxyHost, "proxy-host", "", "Proxy host.")
-	rootCmd.PersistentFlags().StringVar(&proxyPort, "proxy-port", "", "Proxy port.")
-	rootCmd.PersistentFlags().StringVar(&path, "path", "", "Path to the project build folder.")
-	rootCmd.PersistentFlags().StringVar(&network, "network", "", "Network id.")
+	proxyCmd.PersistentFlags().StringVar(&targetSchema, "target-schema", "http", "Blockchain rpc schema.")
+	proxyCmd.PersistentFlags().StringVar(&targetHost, "target-host", "127.0.0.1", "Blockchain rpc host.")
+	proxyCmd.PersistentFlags().StringVar(&targetPort, "target-port", "8545", "Blockchain rpc port.")
+	proxyCmd.PersistentFlags().StringVar(&proxyHost, "proxy-host", "127.0.0.1", "Proxy host.")
+	proxyCmd.PersistentFlags().StringVar(&proxyPort, "proxy-port", "9545", "Proxy port.")
+	proxyCmd.PersistentFlags().StringVar(&path, "path", "", "Path to the project build folder.")
+	proxyCmd.PersistentFlags().StringVar(&network, "network", "", "Network id.")
 
 	rootCmd.AddCommand(proxyCmd)
 }
