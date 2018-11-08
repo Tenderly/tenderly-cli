@@ -49,11 +49,7 @@ func MaybeCheckVersion() {
 	var result []tagResults
 	err = json.Unmarshal(contents, &result)
 
-	if err != nil {
-		return
-	}
-
-	if len(result) == 0 {
+	if err != nil || len(result) == 0 {
 		return
 	}
 
