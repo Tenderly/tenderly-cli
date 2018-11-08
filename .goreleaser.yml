@@ -11,6 +11,7 @@ checksum:
 snapshot:
   name_template: "{{ .Tag }}-next"
 brew:
+  name: tenderly
   github:
     owner: Tenderly
     name: homebrew-tenderly
