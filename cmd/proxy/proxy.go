@@ -1,8 +1,12 @@
 package proxy
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/tenderly/tenderly-cli/jsonrpc2"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -21,11 +25,42 @@ func NewProxy(target string) *Prox {
 }
 
 func (p *Prox) handle(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("X-GoProxy", "GoProxy")
-	p.proxy.Transport = &myTransport{}
+	buf, _ := ioutil.ReadAll(r.Body)
+	var message jsonrpc2.Message
+	err := json.Unmarshal(buf, &message)
+	if err != nil {
+		print("\n\nerror in unmarshaling response")
+		// unmarshaling the response body did not work
+		return
+	}
 
-	p.proxy.ServeHTTP(w, r)
+	rdr1 := ioutil.NopCloser(bytes.NewBuffer(buf))
+	rdr2 := ioutil.NopCloser(bytes.NewBuffer(buf))
 
+	fmt.Println("Request body : ", rdr1)
+	r.Body = rdr2 // OK since rdr2 implements the
+
+	response, err := http.DefaultTransport.RoundTrip(r)
+	if err != nil {
+		print("\n\ncame in error resp here", err)
+		return //Server is not reachable. Server not working
+	}
+
+	body, err := httputil.DumpResponse(response, true)
+	if err != nil {
+		print("\n\nerror in dumb response")
+		// copying the response body did not work
+		return
+	}
+
+	err = json.Unmarshal(body, &message)
+	if err != nil {
+		print("\n\nerror in unmarshaling response")
+		// unmarshaling the response body did not work
+		return
+	}
+
+	//message
 }
 
 func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, network string) {
