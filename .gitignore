@@ -1,3 +1,7 @@
 .idea
+
+# Compiled binary
+/tenderly-cli
+
 dist/*
 build/*
