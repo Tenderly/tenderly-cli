@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/tenderly/tenderly-cli/proxy"
+	"github.com/tenderly/tenderly-cli/cmd/proxy"
 )
 
 var targetHost string
