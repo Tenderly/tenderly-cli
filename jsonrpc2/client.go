@@ -10,6 +10,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/nebojsa94/smart-alert/backend/jsonrpc2"
 )
 
 var id int64
@@ -77,21 +79,13 @@ type Client struct {
 	subscribers sync.Map
 }
 
-func DiscoverAndDial(host string) (client *Client, err error) {
-	protocols := []string{"ws", "wss", "http", "https"}
-
-	for _, protocol := range protocols {
-		addr := fmt.Sprintf("%s://%s", protocol, host)
-
-		client, err = Dial(addr)
-		if err != nil {
-			continue
-		}
-
-		return client, nil
+func DiscoverAndDial(target string) (client *Client, err error) {
+	client, err = Dial(target)
+	if err != nil {
+		return nil, fmt.Errorf("could not determine protocol")
 	}
 
-	return nil, fmt.Errorf("could not determine protocol")
+	return client, nil
 }
 
 func Dial(addr string) (*Client, error) {
@@ -146,6 +140,11 @@ func (c *Client) CallRequest(res interface{}, req *Request) error {
 	case r := <-resCh:
 		if r.Error != nil {
 			return fmt.Errorf("request failed: [ %d ] %s", r.Error.Code, r.Error.Message)
+		}
+
+		if _, ok := res.(*jsonrpc2.Message); ok {
+			res.(*jsonrpc2.Message).Result = r.Result
+			return nil
 		}
 
 		err = json.Unmarshal(r.Result, res)

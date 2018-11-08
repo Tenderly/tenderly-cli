@@ -22,8 +22,8 @@ type Client struct {
 	openChannels []chan int64
 }
 
-func Dial(host string) (*Client, error) {
-	rpcClient, err := jsonrpc2.DiscoverAndDial(host)
+func Dial(target string) (*Client, error) {
+	rpcClient, err := jsonrpc2.DiscoverAndDial(target)
 	if err != nil {
 		return nil, fmt.Errorf("dial ethereum rpc: %s", err)
 	}
@@ -49,6 +49,27 @@ func Dial(host string) (*Client, error) {
 		rpc:    rpcClient,
 		schema: schema,
 	}, nil
+}
+
+func (c *Client) Proxy(message *jsonrpc2.Message) error {
+	var params []interface{}
+	err := json.Unmarshal(message.Params, &params)
+	if err != nil {
+		return err
+	}
+
+	req := jsonrpc2.NewRequest(message.Method, params...)
+
+	var resp json.RawMessage
+	if err := c.rpc.CallRequest(&resp, req); err != nil {
+		return fmt.Errorf("proxy calling failed method: [%s], parameters [%s], error: %s",
+			req.Method,
+			req.Params,
+			err)
+	}
+
+	message.Result = resp
+	return nil
 }
 
 func (c *Client) CurrentBlockNumber() (int64, error) {

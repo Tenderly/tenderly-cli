@@ -11,25 +11,31 @@ import (
 	"net/http/httputil"
 	"net/url"
 
+	"github.com/tenderly/tenderly-cli/ethereum/client"
 	"github.com/tenderly/tenderly-cli/jsonrpc2"
 )
 
 type Proxy struct {
-	client *http.Client
+	client *client.Client
 
 	target *url.URL
 	proxy  *httputil.ReverseProxy
 }
 
-func NewProxy(target string) *Proxy {
+func NewProxy(target string) (*Proxy, error) {
 	targetUrl, _ := url.Parse(target)
 
+	client, err := client.Dial(target)
+	if err != nil {
+		return nil, fmt.Errorf("Failed calling target ethereum blockchain on %s", target)
+	}
+
 	return &Proxy{
-		client: &http.Client{},
+		client: client,
 
 		target: targetUrl,
 		proxy:  httputil.NewSingleHostReverseProxy(targetUrl),
-	}
+	}, nil
 }
 
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -46,10 +52,9 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, message := range messages {
-		err = p.processMessage(r, message)
+		err := p.client.Proxy(message)
 		if err != nil {
-			fmt.Printf("Failed processing proxy response: %s\n", err)
-			return
+			fmt.Printf("Failed processing proxy request: %s\n", err)
 		}
 	}
 
@@ -72,40 +77,6 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("%s\n", respData)
-}
-
-func (p *Proxy) processMessage(r *http.Request, message *jsonrpc2.Message) error {
-	// Process JSONRPC request before sending it to the target server.
-
-	// Send JSONRPC request to target server
-	proxyReqData, err := json.Marshal(message)
-	if err != nil {
-		fmt.Errorf("failed formatting proxy request: %s", err)
-	}
-
-	proxyReq, err := http.NewRequest(r.Method, p.target.String(), ioutil.NopCloser(bytes.NewBuffer(proxyReqData)))
-	if err != nil {
-		return fmt.Errorf("failed creating proxy request: %s", err)
-	}
-
-	proxyResp, err := p.client.Do(proxyReq)
-	if err != nil {
-		return fmt.Errorf("failed sending proxy request: %s", err)
-	}
-
-	proxyRespData, err := ioutil.ReadAll(proxyResp.Body)
-	if err != nil {
-		return fmt.Errorf("failed reading proxy response: %s", err)
-	}
-
-	err = json.Unmarshal(proxyRespData, &message)
-	if err != nil {
-		return fmt.Errorf("failed parsing proxy response: %s", err)
-	}
-
-	// Process JSONRPC response after receiving it from the target server.
-
-	return nil
 }
 
 func unmarshalMessages(data []byte) ([]*jsonrpc2.Message, error) {
@@ -143,7 +114,10 @@ func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, net
 	fmt.Println(fmt.Sprintf("server will run on %s:%s", proxyHost, proxyPort))
 	fmt.Println(fmt.Sprintf("redirecting to %s:%s", targetHost, targetPort))
 
-	proxy := NewProxy(targetSchema + "://" + targetHost + ":" + targetPort)
+	proxy, err := NewProxy(targetSchema + "://" + targetHost + ":" + targetPort)
+	if err != nil {
+		fmt.Printf("Failed initiating target proxy %s\n", err)
+	}
 
 	return http.ListenAndServe(proxyHost+":"+proxyPort, proxy)
 }
