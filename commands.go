@@ -37,7 +37,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Shows the version of the cli",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Current CLI version: %s", CurrentCLIVersion)
+		fmt.Printf("Current CLI version: %s\n", CurrentCLIVersion)
 	},
 }
 var proxyCmd = &cobra.Command{
