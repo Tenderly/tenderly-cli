@@ -12,17 +12,9 @@ import (
 	"time"
 )
 
-type commit struct {
-	Sha string `json:"sha"`
-	Url string `json:"url"`
-}
-
-type tagResults struct {
-	Name       string `json:"name"`
-	ZipballUrl string `json:"zipball_url"`
-	TarballUrl string `json:"tarball_url"`
-	Commit     commit `json:"commit"`
-	NodeId     string `json:"node_id"`
+type releaseResult struct {
+	Name   string `json:"name"`
+	NodeId string `json:"node_id"`
 }
 
 func MaybeCheckVersion() {
@@ -33,7 +25,7 @@ func MaybeCheckVersion() {
 		return
 	}
 
-	response, err := http.Get("https://api.github.com/repos/tenderly/tenderly-cli/tags")
+	response, err := http.Get("https://api.github.com/repos/tenderly/tenderly-cli/releases")
 
 	if err != nil {
 		return
@@ -46,7 +38,7 @@ func MaybeCheckVersion() {
 		return
 	}
 
-	var result []tagResults
+	var result []releaseResult
 	err = json.Unmarshal(contents, &result)
 
 	if err != nil || len(result) == 0 {
