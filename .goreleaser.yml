@@ -1,3 +1,4 @@
+project_name: tenderly
 builds:
 - env:
   - CGO_ENABLED=0
@@ -10,6 +11,16 @@ checksum:
   name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ .Tag }}-next"
+brew:
+  name: tenderly
+  github:
+    owner: Tenderly
+    name: homebrew-tenderly
+  commit_author:
+    name: Tenderly bot
+    email: hi@tenderly.app
+  homepage: "https://github.com/Tenderly/tenderly-cli"
+  description: "Tenderly helps you observe your contracts in any environment."
 changelog:
   sort: asc
   filters:
