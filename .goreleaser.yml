@@ -1,3 +1,4 @@
+project_name: tenderly
 builds:
 - env:
   - CGO_ENABLED=0
