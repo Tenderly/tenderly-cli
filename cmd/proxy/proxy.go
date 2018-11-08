@@ -3,7 +3,6 @@ package proxy
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -15,9 +14,9 @@ type Prox struct {
 }
 
 func NewProxy(target string) *Prox {
-	url, _ := url.Parse(target)
+	targetUrl, _ := url.Parse(target)
 
-	return &Prox{target: url, proxy: httputil.NewSingleHostReverseProxy(url)}
+	return &Prox{target: targetUrl, proxy: httputil.NewSingleHostReverseProxy(targetUrl)}
 }
 
 func (p *Prox) handle(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +27,7 @@ func (p *Prox) handle(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, network string) {
+func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, network string) error {
 	flag.Parse()
 
 	fmt.Println(fmt.Sprintf("server will run on %s:%s", proxyHost, proxyPort))
@@ -41,7 +40,7 @@ func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, net
 
 	// server redirection
 	http.HandleFunc("/", proxy.handle)
-	log.Fatal(http.ListenAndServe(proxyHost+":"+proxyPort, nil))
+	return http.ListenAndServe(proxyHost+":"+proxyPort, nil)
 }
 
 func Server(w http.ResponseWriter, r *http.Request) {

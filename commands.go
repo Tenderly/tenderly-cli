@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/cmd/proxy"
+	"log"
 )
 
 var targetHost string
@@ -20,8 +21,7 @@ func init() {
 	proxyCmd.PersistentFlags().StringVar(&targetPort, "target-port", "8545", "Blockchain rpc port.")
 	proxyCmd.PersistentFlags().StringVar(&proxyHost, "proxy-host", "127.0.0.1", "Proxy host.")
 	proxyCmd.PersistentFlags().StringVar(&proxyPort, "proxy-port", "9545", "Proxy port.")
-	proxyCmd.PersistentFlags().StringVar(&path, "path", "", "Path to the project build folder.")
-	proxyCmd.PersistentFlags().StringVar(&network, "network", "", "Network id.")
+	proxyCmd.PersistentFlags().StringVar(&path, "path", ".", "Path to the project build folder.")
 
 	rootCmd.AddCommand(proxyCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -44,6 +44,8 @@ var proxyCmd = &cobra.Command{
 	Use:   "proxy",
 	Short: "Proxy",
 	Run: func(cmd *cobra.Command, args []string) {
-		proxy.Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, network)
+		if err := proxy.Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, network); err != nil {
+			log.Fatal(err)
+		}
 	},
 }
