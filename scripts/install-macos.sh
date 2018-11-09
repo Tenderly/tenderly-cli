@@ -1,0 +1,43 @@
+#!/bin/bash
+
+CUR_VERSION=""
+NEW_VERSION="$(curl -s https://api.github.com/repos/Tenderly/tenderly-cli/releases/latest | grep tag_name | cut -d'v' -f2 | cut -d'"' -f1)"
+EXISTS="$(command -v tenderly)"
+
+if [ "$EXISTS" != "" ]; then
+  CUR_VERSION="$(tenderly version | cut -d'v' -f3)"
+  echo "\nCurrent Version: $CUR_VERSION => New Version: $NEW_VERSION\n"
+fi
+
+if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
+
+  echo "Installing version $NEW_VERSION\n"
+
+  pushd /tmp/ > /dev/null
+
+  curl -s https://api.github.com/repos/Tenderly/tenderly-cli/releases/latest \
+  | grep "browser_download_url.*Darwin_amd64\.tar\.gz" \
+  | cut -d ":" -f 2,3 \
+  | tr -d \" \
+  | wget -qi -
+
+  tarball="$(find . -name "*Darwin_amd64.tar.gz" 2>/dev/null)"
+  tar -xzf $tarball
+
+  chmod +x tenderly
+
+  echo "Moving CLI to /usr/local/bin/\n"
+
+  mv tenderly /usr/local/bin/
+
+  popd > /dev/null
+
+  location="$(which tenderly)"
+  echo "Tenderly CLI installed to: $location\n"
+
+  version="$(tenderly version | cut -d'v' -f3)"
+  echo "New Tenderly version installed: $version\n"
+
+else
+  echo "Latest version already installed\n"
+fi
