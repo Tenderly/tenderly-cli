@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 var (
@@ -13,6 +14,10 @@ var CurrentCLIVersion string
 
 func Execute() {
 	CurrentCLIVersion = version
+
+	if !strings.HasPrefix(CurrentCLIVersion, "v") {
+		CurrentCLIVersion = fmt.Sprintf("v%s", CurrentCLIVersion)
+	}
 
 	MaybeCheckVersion()
 
