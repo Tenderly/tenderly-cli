@@ -37,6 +37,10 @@ func (n *Number) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+func (n *Number) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%s\"", n.Hex())), nil
+}
+
 type Header interface {
 	Number() *Number
 }
@@ -65,12 +69,14 @@ type Log interface {
 type TransactionReceipt interface {
 	From() string
 	To() string
+	Hash() string
 
 	GasUsed() *hexutil.Big
 	CumulativeGasUsed() *hexutil.Big
 	ContractAddress() *common.Address
 
-	Status() *Number
+	Status() string
+	SetStatus(trace string)
 	Logs() []Log
 }
 

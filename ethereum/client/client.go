@@ -51,7 +51,7 @@ func Dial(target string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Proxy(message *jsonrpc2.Message) error {
+func (c *Client) Call(message *jsonrpc2.Message) error {
 	var params []interface{}
 	err := json.Unmarshal(message.Params, &params)
 	if err != nil {

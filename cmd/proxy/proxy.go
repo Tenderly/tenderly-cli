@@ -22,12 +22,14 @@ type Proxy struct {
 	proxy  *httputil.ReverseProxy
 }
 
+var projectPath string
+
 func NewProxy(target string) (*Proxy, error) {
 	targetUrl, _ := url.Parse(target)
 
 	client, err := client.Dial(target)
 	if err != nil {
-		return nil, fmt.Errorf("Failed calling target ethereum blockchain on %s", target)
+		return nil, fmt.Errorf("failed calling target ethereum blockchain on %s", target)
 	}
 
 	return &Proxy{
@@ -52,9 +54,24 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, message := range messages {
-		err := p.client.Proxy(message)
+		err := p.client.Call(message)
 		if err != nil {
 			fmt.Printf("Failed processing proxy request: %s\n", err)
+		}
+
+		if message.Method == "eth_getTransactionReceipt" {
+			receipt, err := p.client.GetTransactionReceipt(string(message.Params[2:68]))
+			if err != nil {
+				continue
+			}
+			if receipt.Hash() != "" {
+				p.Trace(receipt, projectPath)
+				message.Result, err = json.Marshal(receipt)
+				if err != nil {
+					fmt.Printf("Failed encoding transaction receipt: %s\n", err)
+					return
+				}
+			}
 		}
 	}
 
@@ -114,6 +131,7 @@ func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, net
 	fmt.Println(fmt.Sprintf("server will run on %s:%s", proxyHost, proxyPort))
 	fmt.Println(fmt.Sprintf("redirecting to %s:%s", targetHost, targetPort))
 
+	projectPath = path
 	proxy, err := NewProxy(targetSchema + "://" + targetHost + ":" + targetPort)
 	if err != nil {
 		fmt.Printf("Failed initiating target proxy %s\n", err)

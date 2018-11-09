@@ -93,15 +93,25 @@ func (l *Log) Topics() []string {
 }
 
 type TransactionReceipt struct {
-	TFrom string `json:"from"`
-	TTo   string `json:"to"`
+	TFrom             string `json:"from"`
+	TTo               string `json:"to"`
+	TTransactionHash  string `json:"transactionHash"`
+	TTransactionIndex string `json:"transactionIndex"`
+	TBlockHash        string `json:"blockHash"`
+	TBlockNumber      string `json:"blockNumber"`
 
 	TGasUsed           *hexutil.Big    `json:"gasUsed"`
 	TCumulativeGasUsed *hexutil.Big    `json:"cumulativeGasUsed"`
 	TContractAddress   *common.Address `json:"contractAddress"`
 
-	TStatus *ethereum.Number `json:"status"` // Can be null, if null do a check anyways. 0x0 fail, 0x1 success
-	TLogs   []*Log           `json:"logs"`
+	TStatus    string  `json:"status"` // Can be null, if null do a check anyways. 0x0 fail, 0x1 success
+	TLogs      []*Log  `json:"logs"`
+	TLogsBloom []*Log  `json:"logsBloom"`
+	TRoot      *string `json:"root"`
+}
+
+func (t *TransactionReceipt) SetStatus(trace string) {
+	t.TStatus = trace
 }
 
 func (t *TransactionReceipt) From() string {
@@ -110,6 +120,10 @@ func (t *TransactionReceipt) From() string {
 
 func (t *TransactionReceipt) To() string {
 	return t.TTo
+}
+
+func (t *TransactionReceipt) Hash() string {
+	return t.TTransactionHash
 }
 
 func (t *TransactionReceipt) GasUsed() *hexutil.Big {
@@ -124,7 +138,7 @@ func (t *TransactionReceipt) ContractAddress() *common.Address {
 	return t.TContractAddress
 }
 
-func (t *TransactionReceipt) Status() *ethereum.Number {
+func (t *TransactionReceipt) Status() string {
 	return t.TStatus
 }
 
