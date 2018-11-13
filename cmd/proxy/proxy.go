@@ -10,7 +10,10 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"time"
 
+	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/ethereum"
 	"github.com/tenderly/tenderly-cli/ethereum/client"
 	"github.com/tenderly/tenderly-cli/jsonrpc2"
 )
@@ -61,18 +64,48 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		// @TODO: Extract into a more managable format.
 		if message.Method == "eth_getTransactionReceipt" {
-			receipt, err := p.client.GetTransactionReceipt(string(message.Params[2:68]))
+			receipt, err := p.GetTraceReceipt(string(message.Params[2:68]), false)
 			if err != nil {
+				fmt.Printf("could not extract trace from: %s\n", err)
 				continue
 			}
-			if receipt.Hash() != "" && receipt.Status() == "0x0" {
-				p.Trace(receipt, projectPath)
-				message.Result, err = json.Marshal(receipt)
-				if err != nil {
-					fmt.Printf("Failed encoding transaction receipt: %s\n", err)
-					return
-				}
+
+			message.Result, err = json.Marshal(receipt)
+			if err != nil {
+				fmt.Printf("failed encoding transaction receipt: %s\n", err)
+				continue
+			}
+		}
+
+		if (message.Method == "eth_sendRawTransaction" || message.Method == "eth_sendTransaction") && message.Error != nil {
+			var failedTx string
+			err = json.Unmarshal(message.Result, &failedTx)
+			if err != nil {
+				fmt.Printf("could not extract transaction hash: %s\n", err)
+				continue
+			}
+			receipt, err := p.GetTraceReceipt(failedTx, true)
+			if err != nil {
+				fmt.Printf("could not extract trace: %s\n", err)
+				continue
+			}
+
+			errorData := make(map[string]interface{})
+			err = json.Unmarshal(message.Error.Data, &errorData)
+			if err != nil {
+				fmt.Printf("could not parse error data: %s\n", err)
+				continue
+			}
+
+			errorData["stack"] = receipt.Status()
+
+			message.Error.Message = receipt.Status()
+			message.Error.Data, err = json.Marshal(errorData)
+			if err != nil {
+				fmt.Printf("failed encoding transaction trace: %s\n", err)
+				continue
 			}
 		}
 	}
@@ -96,6 +129,58 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("%s\n", respData)
+}
+
+func (p *Proxy) GetTraceReceipt(tx string, wait bool) (ethereum.TransactionReceipt, error) {
+	receipt, err := p.waitForReceipt(tx, wait)
+	if err != nil {
+		return nil, err
+	}
+
+	err = p.Trace(receipt, projectPath)
+	if err != nil {
+		return nil, fmt.Errorf("get transaction trace: %s", err)
+	}
+
+	return receipt, nil
+}
+
+func (p *Proxy) waitForReceipt(tx string, wait bool) (ethereum.TransactionReceipt, error) {
+	attempts := 200
+	waitFor := 500 * time.Millisecond
+
+	var receipt ethereum.TransactionReceipt
+	var err error
+
+	for {
+		receipt, err = p.getReceipt(tx)
+		if !wait || err == nil {
+			return receipt, err
+		}
+
+		attempts--
+		if attempts == 0 {
+			return nil, err
+		}
+
+		fmt.Println("waiting for transaction receipt...")
+		time.Sleep(waitFor)
+	}
+
+	return receipt, err
+}
+
+func (p *Proxy) getReceipt(tx string) (ethereum.TransactionReceipt, error) {
+	receipt, err := p.client.GetTransactionReceipt(tx)
+	if err != nil {
+		return nil, fmt.Errorf("get transaction receipt: %s", err)
+	}
+
+	if receipt.Hash() == "" || receipt.Status() != "0x0" {
+		return nil, errors.New("transaction status is successful or missing hash")
+	}
+
+	return receipt, nil
 }
 
 func unmarshalMessages(data []byte) ([]*jsonrpc2.Message, error) {

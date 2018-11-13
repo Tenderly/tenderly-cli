@@ -119,7 +119,7 @@ func getTruffleConfig(projectDir string) (*truffle.Config, error) {
 		var config = require('%s');
 
 		console.log(JSON.stringify(config));
-	`, trufflePath)).CombinedOutput()
+	`, "./"+trufflePath)).CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("cannot find truffle.js, tried path: %s", trufflePath)
 	}

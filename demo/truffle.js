@@ -10,9 +10,6 @@ module.exports = {
             gasPrice: 2000000000 // 2 GWei
         },
         local: {
-            provider: function() {
-                return new HDWalletProvider(["24c6587bde13b53654e689d9918d3391b832d5f88741b59166dc978b73557a85"], `http://localhost:9545`);
-            },
             network_id: '5777',
             host: 'localhost',
             port: 9545,
