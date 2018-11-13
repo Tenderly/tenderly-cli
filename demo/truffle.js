@@ -4,21 +4,10 @@ module.exports = {
     networks: {
         kovan: {
             provider: function() {
-                return new HDWalletProvider(["470cb723777b71d9afca2f4148d60ae6e5744abcc324fd48991c7fa691e7f7db"], `https://kovan.decenter.com/`);
+                return new HDWalletProvider(["470cb723777b71d9afca2f4148d60ae6e5744abcc324fd48991c7fa691e7f7db"], `https://kovan.tenderly.app/`);
             },
             network_id: '42',
-            host: 'kovan.decenter.com',
-            port: 4443,
             gasPrice: 2000000000 // 2 GWei
-        },
-        rinkeby: {
-            provider: function() {
-                return new HDWalletProvider(["fd5f9928f7efc0bb2a2534b9bebdd5d94ad261a920bf1161242b899fce42f8ea"], `https://rinkeby.decenter.com/`);
-            },
-            network_id: '4',
-            host: 'rinkeby.decenter.com',
-            port: 4443,
-            gasPrice: 10000000000 // 10 GWei
         },
         local: {
             provider: function() {
