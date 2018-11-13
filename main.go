@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 var (
@@ -14,7 +15,11 @@ var CurrentCLIVersion string
 func Execute() {
 	CurrentCLIVersion = version
 
-	MaybeCheckVersion()
+	if !strings.HasPrefix(CurrentCLIVersion, "v") {
+		CurrentCLIVersion = fmt.Sprintf("v%s", CurrentCLIVersion)
+	}
+
+	CheckVersion(false)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

@@ -14,6 +14,7 @@ var proxyHost string
 var proxyPort string
 var path string
 var network string
+var checkVersion bool
 
 func init() {
 	proxyCmd.PersistentFlags().StringVar(&targetSchema, "target-schema", "http", "Blockchain rpc schema.")
@@ -22,6 +23,8 @@ func init() {
 	proxyCmd.PersistentFlags().StringVar(&proxyHost, "proxy-host", "127.0.0.1", "Call host.")
 	proxyCmd.PersistentFlags().StringVar(&proxyPort, "proxy-port", "9545", "Call port.")
 	proxyCmd.PersistentFlags().StringVar(&path, "path", ".", "Path to the project build folder.")
+
+	versionCmd.PersistentFlags().BoolVar(&checkVersion, "check", false, "Check if there is a new version of the CLI")
 
 	rootCmd.AddCommand(proxyCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -37,6 +40,10 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Shows the version of the cli",
 	Run: func(cmd *cobra.Command, args []string) {
+		if checkVersion {
+			CheckVersion(true)
+		}
+
 		fmt.Printf("Current CLI version: %s\n", CurrentCLIVersion)
 	},
 }
