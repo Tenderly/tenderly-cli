@@ -19,7 +19,7 @@ func Execute() {
 		CurrentCLIVersion = fmt.Sprintf("v%s", CurrentCLIVersion)
 	}
 
-	MaybeCheckVersion()
+	CheckVersion(false)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
