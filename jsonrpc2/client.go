@@ -122,6 +122,29 @@ func (c *Client) Call(res interface{}, method string, params ...interface{}) err
 }
 
 func (c *Client) CallRequest(res interface{}, req *Request) error {
+	resMsg, err := c.SendRawRequest(req)
+	if err != nil {
+		return err
+	}
+
+	if resMsg.Error != nil {
+		return fmt.Errorf("request failed: [ %d ] %s", resMsg.Error.Code, resMsg.Error.Message)
+	}
+
+	if _, ok := res.(*jsonrpc2.Message); ok {
+		res.(*jsonrpc2.Message).Result = resMsg.Result
+		return nil
+	}
+
+	err = json.Unmarshal(resMsg.Result, res)
+	if err != nil {
+		return fmt.Errorf("read result: %s", err)
+	}
+
+	return nil
+}
+
+func (c *Client) SendRawRequest(req *Request) (*Message, error) {
 	resCh := make(chan *Message, 1)
 	c.setFlying(req.ID, resCh)
 	defer func() {
@@ -130,30 +153,16 @@ func (c *Client) CallRequest(res interface{}, req *Request) error {
 
 	err := c.conn.Write(req)
 	if err != nil {
-		return fmt.Errorf("write message to socket: %s", err)
+		return nil, fmt.Errorf("write message to socket: %s", err)
 	}
 
-	ctx, _ := context.WithTimeout(context.TODO(), 5*time.Second)
+	ctx, _ := context.WithTimeout(context.TODO(), 30*time.Second)
 	select {
 	case <-ctx.Done():
-		return fmt.Errorf("request timed out")
+		return nil, fmt.Errorf("request timed out")
 	case r := <-resCh:
-		if r.Error != nil {
-			return fmt.Errorf("request failed: [ %d ] %s", r.Error.Code, r.Error.Message)
-		}
-
-		if _, ok := res.(*jsonrpc2.Message); ok {
-			res.(*jsonrpc2.Message).Result = r.Result
-			return nil
-		}
-
-		err = json.Unmarshal(r.Result, res)
-		if err != nil {
-			return fmt.Errorf("read result: %s", err)
-		}
+		return r, nil
 	}
-
-	return nil
 }
 
 func (c *Client) Subscribe(id string) (chan *Message, error) {

@@ -27,13 +27,13 @@ var projectPath string
 func NewProxy(target string) (*Proxy, error) {
 	targetUrl, _ := url.Parse(target)
 
-	client, err := client.Dial(target)
+	c, err := client.Dial(target)
 	if err != nil {
 		return nil, fmt.Errorf("failed calling target ethereum blockchain on %s", target)
 	}
 
 	return &Proxy{
-		client: client,
+		client: c,
 
 		target: targetUrl,
 		proxy:  httputil.NewSingleHostReverseProxy(targetUrl),
@@ -57,6 +57,8 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		err := p.client.Call(message)
 		if err != nil {
 			fmt.Printf("Failed processing proxy request: %s\n", err)
+
+			continue
 		}
 
 		if message.Method == "eth_getTransactionReceipt" {

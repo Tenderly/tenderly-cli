@@ -62,15 +62,16 @@ func (c *Client) Call(message *jsonrpc2.Message) error {
 
 	req := jsonrpc2.NewRequest(message.Method, params...)
 
-	var resp json.RawMessage
-	if err := c.rpc.CallRequest(&resp, req); err != nil && message.Method != "eth_sendRawTransaction" {
+	resMsg, err := c.rpc.SendRawRequest(req)
+	if err != nil {
 		return fmt.Errorf("proxy calling failed method: [%s], parameters [%s], error: %s",
 			req.Method,
 			req.Params,
 			err)
 	}
 
-	message.Result = resp
+	message.Result = resMsg.Result
+	message.Error = resMsg.Error
 	return nil
 }
 
