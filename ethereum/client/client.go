@@ -53,15 +53,17 @@ func Dial(target string) (*Client, error) {
 
 func (c *Client) Call(message *jsonrpc2.Message) error {
 	var params []interface{}
-	err := json.Unmarshal(message.Params, &params)
-	if err != nil {
-		return err
+	if message.Params != nil {
+		err := json.Unmarshal(message.Params, &params)
+		if err != nil {
+			return err
+		}
 	}
 
 	req := jsonrpc2.NewRequest(message.Method, params...)
 
 	var resp json.RawMessage
-	if err := c.rpc.CallRequest(&resp, req); err != nil {
+	if err := c.rpc.CallRequest(&resp, req); err != nil && message.Method != "eth_sendRawTransaction" {
 		return fmt.Errorf("proxy calling failed method: [%s], parameters [%s], error: %s",
 			req.Method,
 			req.Params,
@@ -140,6 +142,16 @@ func (c *Client) GetTransactionCallTrace(hash string) (ethereum.CallTraces, erro
 
 	if err := c.rpc.CallRequest(resp, req); err != nil {
 		return nil, fmt.Errorf("get transaction pretty trace [%s]: %s", hash, err)
+	}
+
+	return resp, nil
+}
+
+func (c *Client) GetCode(address string) (*string, error) {
+	req, resp := c.schema.Code().GetCode(address)
+
+	if err := c.rpc.CallRequest(resp, req); err != nil {
+		return nil, fmt.Errorf("get code [%s]: %s", address, err)
 	}
 
 	return resp, nil

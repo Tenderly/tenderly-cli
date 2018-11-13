@@ -67,8 +67,6 @@ type Log interface {
 }
 
 type TransactionReceipt interface {
-	From() string
-	To() string
 	Hash() string
 
 	GasUsed() *hexutil.Big

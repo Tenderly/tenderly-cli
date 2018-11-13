@@ -48,7 +48,20 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 
 		contract, ok := contracts[strings.ToLower(t.To().String())]
 		if !ok {
-			return fmt.Errorf("no source found for contract with address %s on network %s\n", networkId, t.To().String())
+			code, err := p.client.GetCode(t.To().String())
+			if err != nil {
+				return fmt.Errorf("failed fetching code on address %s\n", t.To().String())
+			}
+
+			for _, c := range contracts {
+				if c.DeployedBytecode == *code {
+					contract = c
+				}
+			}
+
+			if contract == nil {
+				return fmt.Errorf("no source found for contract with address %s on network %s\n", networkId, t.To().String())
+			}
 		}
 
 		nameToAddress := make(map[string]string)
@@ -74,7 +87,7 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 
 		core := stacktrace.NewCore(source)
 
-		stackFrames, err := core.GenerateStackTrace(strings.ToLower(t.To().String()), trace)
+		stackFrames, err := core.GenerateStackTrace(strings.ToLower(contract.Networks[networkId].Address), trace)
 		if err != nil {
 			return fmt.Errorf("failed generating transaction trace for transaction with hash %s on network %s err: %s\n",
 				t.Hash().String(), networkId, err)
@@ -85,6 +98,7 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 			for _, f := range stackFrames {
 				trace = trace + f.String()
 			}
+			fmt.Printf("Transaction %s failed\n at %s", t.Hash().String(), trace)
 			receipt.SetStatus(trace)
 		} else {
 			log.Printf("Could not find trace for %s", t.To().String())

@@ -32,14 +32,14 @@ func (b Block) Transactions() []ethereum.Transaction {
 }
 
 type Transaction struct {
-	ValueHash        *common.Hash    `json:"hash"`
-	ValueFrom        *common.Address `json:"from"`
-	ValueTo          *common.Address `json:"to"`
-	ValueInput       hexutil.Bytes   `json:"input"`
-	ValueValue       *hexutil.Big    `json:"value"`
-	ValueGas         *hexutil.Big    `json:"gas"`
-	ValueGasPrice    *hexutil.Big    `json:"gasPrice"`
-	ValueBlockNumber string          `json:"blockNumber"`
+	ValueHash *common.Hash    `json:"hash"`
+	ValueFrom *common.Address `json:"from"`
+	ValueTo   *common.Address `json:"to"`
+	//ValueInput       hexutil.Bytes   `json:"input"`
+	//ValueValue       *hexutil.Big    `json:"value"`
+	//ValueGas         *hexutil.Big    `json:"gas"`
+	//ValueGasPrice    *hexutil.Big    `json:"gasPrice"`
+	ValueBlockNumber string `json:"blockNumber"`
 }
 
 func (t *Transaction) Hash() *common.Hash {
@@ -55,19 +55,19 @@ func (t *Transaction) To() *common.Address {
 }
 
 func (t *Transaction) Input() hexutil.Bytes {
-	return t.ValueInput
+	return nil
 }
 
 func (t *Transaction) Value() *hexutil.Big {
-	return t.ValueValue
+	return nil
 }
 
 func (t *Transaction) Gas() *hexutil.Big {
-	return t.ValueGas
+	return nil
 }
 
 func (t *Transaction) GasPrice() *hexutil.Big {
-	return t.ValueGasPrice
+	return nil
 }
 
 type Log struct {
@@ -93,8 +93,6 @@ func (l *Log) Topics() []string {
 }
 
 type TransactionReceipt struct {
-	TFrom             string `json:"from"`
-	TTo               string `json:"to"`
 	TTransactionHash  string `json:"transactionHash"`
 	TTransactionIndex string `json:"transactionIndex"`
 	TBlockHash        string `json:"blockHash"`
@@ -106,20 +104,12 @@ type TransactionReceipt struct {
 
 	TStatus    string  `json:"status"` // Can be null, if null do a check anyways. 0x0 fail, 0x1 success
 	TLogs      []*Log  `json:"logs"`
-	TLogsBloom []*Log  `json:"logsBloom"`
+	TLogsBloom string  `json:"logsBloom"`
 	TRoot      *string `json:"root"`
 }
 
 func (t *TransactionReceipt) SetStatus(trace string) {
-	t.TStatus = trace
-}
-
-func (t *TransactionReceipt) From() string {
-	return t.TFrom
-}
-
-func (t *TransactionReceipt) To() string {
-	return t.TTo
+	t.TStatus = "0x0 " + trace
 }
 
 func (t *TransactionReceipt) Hash() string {

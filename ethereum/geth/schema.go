@@ -8,7 +8,8 @@ import (
 var DefaultSchema = Schema{
 	ValueEth:    ethSchema{},
 	ValueNet:    netSchema{},
-	ValueTrace:  trace{},
+	ValueTrace:  traceSchema{},
+	ValueCode:   codeSchema{},
 	ValuePubSub: pubSubSchema{},
 }
 
@@ -16,6 +17,7 @@ type Schema struct {
 	ValueEth    ethereum.EthSchema
 	ValueNet    ethereum.NetSchema
 	ValueTrace  ethereum.TraceSchema
+	ValueCode   ethereum.CodeSchema
 	ValuePubSub ethereum.PubSubSchema
 }
 
@@ -29,6 +31,10 @@ func (s *Schema) Net() ethereum.NetSchema {
 
 func (s *Schema) Trace() ethereum.TraceSchema {
 	return s.ValueTrace
+}
+
+func (s *Schema) Code() ethereum.CodeSchema {
+	return s.ValueCode
 }
 
 func (s *Schema) PubSub() ethereum.PubSubSchema {
@@ -77,18 +83,29 @@ func (netSchema) Version() (*jsonrpc2.Request, *string) {
 
 // States
 
-type trace struct {
+type traceSchema struct {
 }
 
-func (trace) VMTrace(hash string) (*jsonrpc2.Request, ethereum.TransactionStates) {
+func (traceSchema) VMTrace(hash string) (*jsonrpc2.Request, ethereum.TransactionStates) {
 	var trace TraceResult
 
 	return jsonrpc2.NewRequest("debug_traceTransaction", hash, struct{}{}), &trace
 }
-func (trace) CallTrace(hash string) (*jsonrpc2.Request, ethereum.CallTraces) {
+func (traceSchema) CallTrace(hash string) (*jsonrpc2.Request, ethereum.CallTraces) {
 	var trace CallTrace
 
 	return jsonrpc2.NewRequest("debug_traceTransaction", hash, map[string]string{"tracer": "callTracer"}), &trace
+}
+
+// Code
+
+type codeSchema struct {
+}
+
+func (codeSchema) GetCode(address string) (*jsonrpc2.Request, *string) {
+	var code string
+
+	return jsonrpc2.NewRequest("eth_getCode", address, "latest"), &code
 }
 
 // PubSub

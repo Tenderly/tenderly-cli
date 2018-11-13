@@ -40,7 +40,6 @@ type Transaction struct {
 	ValueFrom        *common.Address `json:"from"`
 	ValueTo          *common.Address `json:"to"`
 	ValueInput       hexutil.Bytes   `json:"input"`
-	ValueOutput      hexutil.Bytes   `json:"output"`
 	ValueValue       *hexutil.Big    `json:"value"`
 	ValueGas         *hexutil.Big    `json:"gas"`
 	ValueGasPrice    *hexutil.Big    `json:"gasPrice"`
@@ -98,8 +97,6 @@ func (l *Log) Topics() []string {
 }
 
 type TransactionReceipt struct {
-	TFrom             string `json:"from"`
-	TTo               string `json:"to"`
 	TTransactionHash  string `json:"transactionHash"`
 	TTransactionIndex string `json:"transactionIndex"`
 	TBlockHash        string `json:"blockHash"`
@@ -116,15 +113,7 @@ type TransactionReceipt struct {
 }
 
 func (t *TransactionReceipt) SetStatus(trace string) {
-	t.TStatus = trace
-}
-
-func (t *TransactionReceipt) From() string {
-	return t.TFrom
-}
-
-func (t *TransactionReceipt) To() string {
-	return t.TTo
+	t.TStatus = "0x0 " + trace
 }
 
 func (t *TransactionReceipt) Hash() string {
@@ -215,7 +204,7 @@ func (pvs *VmState) Stack() []string {
 
 type TraceResult struct {
 	VmTrace   *VmTrace `json:"vmTrace"`
-	CallTrace []*Trace `json:"trace"`
+	CallTrace []*Trace `json:"traceSchema"`
 }
 
 type VmTrace struct {

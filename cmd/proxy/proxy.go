@@ -64,7 +64,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				continue
 			}
-			if receipt.Hash() != "" {
+			if receipt.Hash() != "" && receipt.Status() == "0x0" {
 				p.Trace(receipt, projectPath)
 				message.Result, err = json.Marshal(receipt)
 				if err != nil {

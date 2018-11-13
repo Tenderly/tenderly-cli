@@ -8,6 +8,7 @@ type Schema interface {
 	Eth() EthSchema
 	Net() NetSchema
 	Trace() TraceSchema
+	Code() CodeSchema
 	PubSub() PubSubSchema
 }
 
@@ -31,6 +32,12 @@ type NetSchema interface {
 type TraceSchema interface {
 	VMTrace(hash string) (*jsonrpc2.Request, TransactionStates)
 	CallTrace(hash string) (*jsonrpc2.Request, CallTraces)
+}
+
+// Code
+
+type CodeSchema interface {
+	GetCode(address string) (*jsonrpc2.Request, *string)
 }
 
 // PubSub
