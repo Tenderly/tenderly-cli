@@ -114,14 +114,17 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 }
 
 func getTruffleConfig(projectDir string) (*truffle.Config, error) {
-	trufflePath := filepath.Join(projectDir, "truffle.js")
+	trufflePath := strings.Replace(filepath.Join(projectDir, "truffle.js"), "\\", "/", -1)
+	if trufflePath[0] != '/' {
+		trufflePath = "./" + trufflePath
+	}
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
 		var config = require('%s');
 
 		console.log(JSON.stringify(config));
-	`, "./"+trufflePath)).CombinedOutput()
+	`, trufflePath)).CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("cannot find truffle.js, tried path: %s", trufflePath)
+		return nil, fmt.Errorf("cannot find truffle.js, tried path: %s. Output: %s", trufflePath, data)
 	}
 
 	var truffleConfig truffle.Config
