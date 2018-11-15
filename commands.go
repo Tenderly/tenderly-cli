@@ -32,8 +32,8 @@ func init() {
 
 var rootCmd = &cobra.Command{
 	Use:   "tenderly",
-	Short: "Tenderly helps you observe your contracts in any environment.",
-	Long:  "Tenderly is a development tool for smart contract.",
+	Short: "Tenderly CLI is a suite of development tools for smart contracts.",
+	Long:  "Tenderly CLI is a suite of development tools for smart contracts which allows your to monitor and debug them on any network.",
 }
 
 var versionCmd = &cobra.Command{
