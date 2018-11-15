@@ -16,6 +16,7 @@ jobs:
     - checkout
     - run: 'sed -i -e "s/\"version\": \".*\"/\"version\": \"$(echo $CIRCLE_TAG | cut -c 2-)\"/g" .npm/package.json'
     - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+    - run: cp README.md .npm/README.md
     - run: cd .npm && npm publish
 workflows:
   version: 2
