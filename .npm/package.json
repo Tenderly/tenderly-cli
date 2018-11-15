@@ -14,6 +14,9 @@
   "keywords": [
     "tenderly",
     "ethereum",
+    "dev-tools",
+    "error-tracking",
+    "solidity",
     "stacktrace"
   ],
   "author": "Tenderly",
