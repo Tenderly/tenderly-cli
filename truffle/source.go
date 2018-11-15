@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/tenderly/tenderly-cli/ethereum/client"
 	"github.com/tenderly/tenderly-cli/stacktrace"
 )
 
@@ -86,9 +87,10 @@ func mapTruffleContracts(truffleContracts []*Contract, networkId string) map[str
 			Name: truffleContract.Name,
 			Hash: network.Address,
 
-			Bytecode: bytecode,
+			Bytecode:         bytecode,
+			DeployedByteCode: truffleContract.DeployedBytecode,
 
-			Abi: truffleContract.Bytecode,
+			Abi: truffleContract.Abi,
 
 			Source:    truffleContract.Source,
 			SourceMap: sourceMap,
@@ -107,10 +109,24 @@ func parseBytecode(raw string) ([]byte, error) {
 	return bin, nil
 }
 
-func (cs *ContractSource) Get(id string) (*stacktrace.ContractDetails, error) {
+func (cs *ContractSource) Get(id string, client client.Client) (*stacktrace.ContractDetails, error) {
 	contract, ok := cs.contracts[id]
 	if !ok {
-		return nil, stacktrace.ErrNotExist
+		//@TODO find better place
+		code, err := client.GetCode(id)
+		if err != nil {
+			return nil, fmt.Errorf("failed fetching code on address %s\n", id)
+		}
+
+		for _, c := range cs.contracts {
+			if c.DeployedByteCode == *code {
+				contract = c
+			}
+		}
+
+		if contract == nil {
+			return nil, stacktrace.ErrNotExist
+		}
 	}
 
 	return contract, nil

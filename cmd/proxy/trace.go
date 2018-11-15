@@ -87,7 +87,7 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 
 		core := stacktrace.NewCore(source)
 
-		stackFrames, err := core.GenerateStackTrace(strings.ToLower(contract.Networks[networkId].Address), trace)
+		stackFrames, err := core.GenerateStackTrace(strings.ToLower(contract.Networks[networkId].Address), trace, *p.client)
 		if err != nil {
 			return fmt.Errorf("failed generating transaction trace for transaction with hash %s on network %s err: %s\n",
 				t.Hash().String(), networkId, err)
