@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -77,6 +78,12 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				fmt.Printf("failed encoding transaction receipt: %s\n", err)
 				continue
 			}
+
+			if strings.HasPrefix(receipt.Status(), "0x0") {
+				message.Error = &jsonrpc2.Error{
+					Message: receipt.Status(),
+				}
+			}
 		}
 
 		if (message.Method == "eth_sendRawTransaction" || message.Method == "eth_sendTransaction") && message.Error != nil {
@@ -92,20 +99,8 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			errorData := make(map[string]interface{})
-			err = json.Unmarshal(message.Error.Data, &errorData)
-			if err != nil {
-				fmt.Printf("could not parse error data: %s\n", err)
-				continue
-			}
-
-			errorData["stack"] = receipt.Status()
-
-			message.Error.Message = receipt.Status()
-			message.Error.Data, err = json.Marshal(errorData)
-			if err != nil {
-				fmt.Printf("failed encoding transaction trace: %s\n", err)
-				continue
+			if message.Error != nil {
+				message.Error.Message = receipt.Status()
 			}
 		}
 	}
@@ -135,6 +130,10 @@ func (p *Proxy) GetTraceReceipt(tx string, wait bool) (ethereum.TransactionRecei
 	receipt, err := p.waitForReceipt(tx, wait)
 	if err != nil {
 		return nil, err
+	}
+
+	if receipt.Status() != "0x0" {
+		return receipt, nil
 	}
 
 	err = p.Trace(receipt, projectPath)
@@ -176,8 +175,8 @@ func (p *Proxy) getReceipt(tx string) (ethereum.TransactionReceipt, error) {
 		return nil, fmt.Errorf("get transaction receipt: %s", err)
 	}
 
-	if receipt.Hash() == "" || receipt.Status() != "0x0" {
-		return nil, errors.New("transaction status is successful or missing hash")
+	if receipt.Hash() == "" {
+		return nil, errors.New("transaction status is missing hash")
 	}
 
 	return receipt, nil
