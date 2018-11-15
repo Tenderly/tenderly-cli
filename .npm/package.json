@@ -1,6 +1,6 @@
 {
   "name": "tenderly",
-  "version": "$VERSION",
+  "version": "0.0.12",
   "description": "Tenderly helps you observe your contracts in any environment.",
   "main": "index.js",
   "scripts": {
