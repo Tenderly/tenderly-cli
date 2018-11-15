@@ -111,7 +111,7 @@ Now when your transactions fail you can see the exact line of code in which the 
 
 ## Report Bugs / Feedback
 
-We look forward to any feedback you want to share with us or if you're stuck with a problem you can contact us at [support@tenderly.app](support@tenderly.app).
+We look forward to any feedback you want to share with us or if you're stuck with a problem you can contact us at [support@tenderly.app](mailto:support@tenderly.app).
 
 You can also join our [Discord server](https://discord.gg/fBvDJYR) or create an Issue in the Github repository.
 
