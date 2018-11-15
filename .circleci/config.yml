@@ -10,7 +10,7 @@ jobs:
     - run: GOOS=windows go get -u github.com/spf13/cobra
     - run: curl -sL https://git.io/goreleaser | bash
     - run: 'sed -i -e "s/\"version\": \".*\"/\"version\": \"$(echo $CIRCLE_TAG | cut -c 2-)\"/g" .npm/package.json'
-    - run: mkdir -p ~/repo/.npmrc && echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+    - run: mkdir -p ~/repo && echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
     - run: cd .npm && npm publish
 workflows:
   version: 2
