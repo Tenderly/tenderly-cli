@@ -1,0 +1,33 @@
+{
+  "name": "tenderly",
+  "version": "$VERSION",
+  "description": "Tenderly helps you observe your contracts in any environment.",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "go-npm install",
+    "preuninstall": "go-npm uninstall"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tenderly/tenderly-cli.git"
+  },
+  "keywords": [
+    "tenderly",
+    "ethereum",
+    "stacktrace"
+  ],
+  "author": "Tenderly",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Tenderly/tenderly-cli/issues"
+  },
+  "homepage": "https://github.com/Tenderly/tenderly-cli#readme",
+  "dependencies": {
+    "go-npm": "^0.1.9"
+  },
+  "goBinary": {
+    "name": "tenderly",
+    "path": "./bin",
+  "url": "https://github.com/tenderly/tenderly-cli/releases/download/v{{version}}/tenderly_{{version}}_{{platform}}_{{arch}}.tar.gz"
+  }
+}
