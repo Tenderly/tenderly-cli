@@ -12,7 +12,6 @@ jobs:
   publish_npm:
     docker:
     - image: circleci/node:8.9.1
-    working_directory: /src/tenderly-cli
     steps:
     - checkout
     - run: 'sed -i -e "s/\"version\": \".*\"/\"version\": \"$(echo $CIRCLE_TAG | cut -c 2-)\"/g" .npm/package.json'
