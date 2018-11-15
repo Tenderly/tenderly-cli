@@ -31,14 +31,18 @@ func init() {
 var rootCmd = &cobra.Command{
 	Use:   "tenderly",
 	Short: "Tenderly CLI is a suite of development tools for smart contracts.",
-	Long:  "Tenderly CLI is a suite of development tools for smart contracts which allows your to monitor and debug them on any network.",
+	Long: "Tenderly CLI is a suite of development tools for smart contracts which allows your to monitor and debug them on any network.\n\n" +
+		"To report a bug or give feedback send us an email at support@tenderly.app or join our Discord channel at https://discord.gg/eCWjuvt",
 }
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Shows the version of the CLI",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Current CLI version: %s\n", CurrentCLIVersion)
+		fmt.Printf("Current CLI version: %s\n\n"+
+			"To report a bug or give feedback send us an email at support@tenderly.app or join our Discord channel at https://discord.gg/eCWjuvt",
+			CurrentCLIVersion,
+		)
 	},
 }
 var checkUpdatesCmd = &cobra.Command{
