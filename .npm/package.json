@@ -1,6 +1,6 @@
 {
   "name": "tenderly",
-  "version": "0.0.12",
+  "version": "$VERSION",
   "description": "Tenderly helps you observe your contracts in any environment.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
   "bugs": {
     "url": "https://github.com/Tenderly/tenderly-cli/issues"
   },
-  "homepage": "https://github.com/Tenderly/tenderly-cli#readme",
+  "homepage": "https://tenderly.app/",
   "dependencies": {
     "go-npm": "^0.1.9"
   },
