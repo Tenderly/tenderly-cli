@@ -54,7 +54,7 @@ var checkUpdatesCmd = &cobra.Command{
 }
 var proxyCmd = &cobra.Command{
 	Use:   "proxy",
-	Short: "Call",
+	Short: "Creates a server that proxies rpc requests to Ethereum node and builds a stacktrace in case error occurs during the execution time",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := proxy.Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, network); err != nil {
 			log.Fatal(err)
