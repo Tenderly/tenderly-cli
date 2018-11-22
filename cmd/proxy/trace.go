@@ -80,14 +80,14 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 				networkId, t.Hash().String(), err)
 		}
 
-		source, err := truffle.NewContractSource(config, networkId)
+		source, err := truffle.NewContractSource(config, networkId, *p.client)
 		if err != nil {
 			return fmt.Errorf("cannot load truffle contracts err: %s\n", err)
 		}
 
 		core := stacktrace.NewCore(source)
 
-		stackFrames, err := core.GenerateStackTrace(strings.ToLower(contract.Networks[networkId].Address), trace, *p.client)
+		stackFrames, err := core.GenerateStackTrace(strings.ToLower(contract.Networks[networkId].Address), trace)
 		if err != nil {
 			return fmt.Errorf("failed generating transaction trace for transaction with hash %s on network %s err: %s\n",
 				t.Hash().String(), networkId, err)

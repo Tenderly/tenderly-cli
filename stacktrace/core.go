@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/tenderly/tenderly-cli/ethereum"
-	"github.com/tenderly/tenderly-cli/ethereum/client"
 	"github.com/tenderly/tenderly-cli/ethereum/parity"
 )
 
@@ -35,7 +34,7 @@ type ContractDetails struct {
 }
 
 type ContractSource interface {
-	Get(id string, client client.Client) (*ContractDetails, error)
+	Get(id string) (*ContractDetails, error)
 }
 
 type ContractStack struct {
@@ -90,8 +89,8 @@ func (c *Core) Listen() {
 
 // Process a single transaction
 // @TODO: remove client!
-func (c *Core) GenerateStackTrace(contractHash string, txTrace ethereum.TransactionStates, client client.Client) ([]*StackFrame, error) {
-	if err := c.initStack(contractHash, client); err != nil {
+func (c *Core) GenerateStackTrace(contractHash string, txTrace ethereum.TransactionStates) ([]*StackFrame, error) {
+	if err := c.initStack(contractHash); err != nil {
 		return nil, fmt.Errorf("process trace: %s", err)
 	}
 
@@ -115,7 +114,7 @@ func (c *Core) GenerateStackTrace(contractHash string, txTrace ethereum.Transact
 
 			newAddress := "0x" + stack[len(stack)-2][24:]
 
-			newContract, err := c.Contracts.Get(newAddress, client)
+			newContract, err := c.Contracts.Get(newAddress)
 			if err != nil {
 				return nil, fmt.Errorf("cannot call contract [%s]: %s", newAddress, err)
 			}
@@ -181,7 +180,7 @@ func (c *Core) GenerateStackTrace(contractHash string, txTrace ethereum.Transact
 				ContractName:    contract.Name,
 				Line:            frame.Line,
 
-				Code:   strings.Split(string(contract.Source[im.Start:im.Start+im.Length]), "\n")[0],
+				Code:   string(contract.Source[im.Start : im.Start+im.Length]),
 				Op:     op.String(),
 				Start:  frame.Start,
 				Length: frame.Length,
@@ -194,8 +193,8 @@ func (c *Core) GenerateStackTrace(contractHash string, txTrace ethereum.Transact
 	return stackFrames, nil
 }
 
-func (c *Core) initStack(contractHash string, client client.Client) error {
-	contract, err := c.Contracts.Get(contractHash, client)
+func (c *Core) initStack(contractHash string) error {
+	contract, err := c.Contracts.Get(contractHash)
 	if err != nil {
 		return err
 	}

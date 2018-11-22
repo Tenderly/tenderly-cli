@@ -3,9 +3,9 @@ package truffle
 import "path/filepath"
 
 type NetworkConfig struct {
-	Host      string `json:"host"`
-	Port      int    `json:"port"`
-	NetworkID string `json:"network_id"`
+	Host      string      `json:"host"`
+	Port      int         `json:"port"`
+	NetworkID interface{} `json:"network_id"`
 }
 
 type Config struct {

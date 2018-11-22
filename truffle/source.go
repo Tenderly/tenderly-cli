@@ -14,10 +14,11 @@ import (
 
 type ContractSource struct {
 	contracts map[string]*stacktrace.ContractDetails
+	client    client.Client
 }
 
 // NewContractSource builds the Contract Source from the provided config, and scoped to the provided network.
-func NewContractSource(config *Config, networkId string) (stacktrace.ContractSource, error) {
+func NewContractSource(config *Config, networkId string, client client.Client) (stacktrace.ContractSource, error) {
 	truffleContracts, err := loadTruffleContracts(config)
 	if err != nil {
 		return nil, err
@@ -25,6 +26,7 @@ func NewContractSource(config *Config, networkId string) (stacktrace.ContractSou
 
 	cs := &ContractSource{
 		contracts: mapTruffleContracts(truffleContracts, networkId),
+		client:    client,
 	}
 
 	return cs, nil
@@ -109,25 +111,30 @@ func parseBytecode(raw string) ([]byte, error) {
 	return bin, nil
 }
 
-func (cs *ContractSource) Get(id string, client client.Client) (*stacktrace.ContractDetails, error) {
+func (cs *ContractSource) Get(id string) (*stacktrace.ContractDetails, error) {
 	contract, ok := cs.contracts[id]
-	if !ok {
-		//@TODO find better place
-		code, err := client.GetCode(id)
-		if err != nil {
-			return nil, fmt.Errorf("failed fetching code on address %s\n", id)
-		}
+	if ok {
+		return contract, nil
+	}
 
-		for _, c := range cs.contracts {
-			if c.DeployedByteCode == *code {
-				contract = c
-			}
-		}
+	code, err := cs.client.GetCode(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed fetching code on address %s\n", id)
+	}
 
-		if contract == nil {
-			return nil, stacktrace.ErrNotExist
+	for _, c := range cs.contracts {
+		if c.DeployedByteCode == *code {
+			return c, nil
 		}
 	}
 
-	return contract, nil
+	bytecode, err := parseBytecode(*code)
+	if err != nil {
+		return nil, fmt.Errorf("failed parsing bytecode %s", err)
+	}
+
+	return &stacktrace.ContractDetails{
+		Bytecode:         bytecode,
+		DeployedByteCode: *code,
+	}, nil
 }
