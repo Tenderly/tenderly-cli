@@ -14,7 +14,7 @@ checksum:
 snapshot:
   name_template: "{{ .Tag }}-next"
 brew:
-  name: tenderly
+  name: tenderly-next
   github:
     owner: Tenderly
     name: homebrew-tenderly
@@ -23,6 +23,8 @@ brew:
     email: hi@tenderly.app
   homepage: "https://github.com/Tenderly/tenderly-cli"
   description: "Tenderly helps you observe your contracts in any environment."
+  install: |
+    bin.install "tenderly"
 changelog:
   sort: asc
   filters:
