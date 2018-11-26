@@ -1,10 +1,13 @@
 package config
 
+//@TODO: Remove duplicate rc methods.
+
 import (
 	"flag"
 	"fmt"
 	"os"
 	"os/user"
+	"path/filepath"
 
 	"github.com/spf13/viper"
 )
@@ -45,7 +48,7 @@ var rc *viper.Viper
 
 func init() {
 	flag.StringVar(&globalConfigName, "global-config", "config", "Global configuration file name (without the extension)")
-	flag.StringVar(&projectConfigName, "project-config", "tenderlyrc", "Project configuration file name (without the extension)")
+	flag.StringVar(&projectConfigName, "project-config", "tenderly", "Project configuration file name (without the extension)")
 }
 
 func Init() {
@@ -55,25 +58,16 @@ func Init() {
 		viper.SetDefault(k, v)
 	}
 
-	usr, err := user.Current()
-	if err != nil {
-		fmt.Println(fmt.Sprintf("unable to fetch home directory err: %s", err))
-	}
-
 	viper.SetConfigName(globalConfigName)
-	viper.AddConfigPath(usr.HomeDir + "/.tenderly")
-	err = viper.ReadInConfig()
-	if err != nil {
-		os.Mkdir(usr.HomeDir+"/.tenderly/", 0755)
-		err = viper.WriteConfigAs(usr.HomeDir + "/.tenderly/" + globalConfigName + ".json")
-		if err != nil {
-			fmt.Print("unable to write config file")
-			os.Exit(0)
-		}
+	viper.AddConfigPath(filepath.Join(getHomeDir(), ".tenderly"))
+	err := viper.ReadInConfig()
+	if _, ok := err.(viper.ConfigFileNotFoundError); err != nil && !ok {
+		fmt.Printf("unable to read global settings: %s\n", err)
+		os.Exit(0)
 	}
 
 	rc = viper.New()
-	rc.SetConfigFile(projectConfigName + ".json")
+	rc.SetConfigName(projectConfigName)
 	rc.AddConfigPath(".")
 
 	for k, v := range defaultsRC {
@@ -81,12 +75,9 @@ func Init() {
 	}
 
 	err = rc.MergeInConfig()
-	if err != nil {
-		err = rc.WriteConfigAs(projectConfigName + ".json")
-		if err != nil {
-			fmt.Print("unable to write rc file")
-			os.Exit(0)
-		}
+	if _, ok := err.(viper.ConfigFileNotFoundError); err != nil && !ok {
+		fmt.Printf("unable to read project settings: %s\n", err)
+		os.Exit(0)
 	}
 }
 
@@ -97,7 +88,6 @@ func GetBool(key string) bool {
 
 func GetString(key string) string {
 	check(key)
-
 	return viper.GetString(key)
 }
 
@@ -124,7 +114,6 @@ func SetRC(key string, value interface{}) {
 
 func GetRCString(key string) string {
 	checkrc(key)
-
 	return rc.GetString(key)
 }
 
@@ -142,4 +131,13 @@ func checkrc(key string) {
 	if !rc.IsSet(key) {
 		panic(fmt.Errorf("missing config for key %s", key))
 	}
+}
+
+func getHomeDir() string {
+	usr, err := user.Current()
+	if err != nil {
+		return "~"
+	}
+
+	return usr.HomeDir
 }
