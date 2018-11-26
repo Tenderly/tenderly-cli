@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CUR_VERSION=""
-NEW_VERSION="$(curl -s https://api.github.com/repos/Tenderly/tenderly-cli/releases/latest | grep tag_name | cut -d'v' -f2 | cut -d'"' -f1)"
+NEW_VERSION="$(curl -s https://api.github.com/repos/BencicAndrej/tenderly-cli/releases/latest | grep tag_name | cut -d'v' -f2 | cut -d'"' -f1)"
 EXISTS="$(command -v tenderly)"
 
 if [ "$EXISTS" != "" ]; then
@@ -15,7 +15,7 @@ if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
 
   pushd /tmp/ > /dev/null
 
-  curl -s https://api.github.com/repos/Tenderly/tenderly-cli/releases/latest \
+  curl -s https://api.github.com/repos/BencicAndrej/tenderly-cli/releases/latest \
   | grep "browser_download_url.*Linux_amd64\.tar\.gz" \
   | cut -d ":" -f 2,3 \
   | tr -d \" \
