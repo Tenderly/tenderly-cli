@@ -1,8 +1,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/cmd/auth"
@@ -44,8 +46,6 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&forcePoll, "force-poll", false, "Force polling (don't try to run subscriptions)")
 	rootCmd.PersistentFlags().StringVar(&forceDial, "force-dial", "", "Force connection to specific host:port")
 
-	config.Init()
-
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(authCmd)
 	rootCmd.AddCommand(whoamiCmd)
@@ -54,6 +54,13 @@ func init() {
 	rootCmd.AddCommand(proxyCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(checkUpdatesCmd)
+
+	flag.Usage = func() {
+		rootCmd.Execute()
+		os.Exit(0)
+	}
+
+	config.Init()
 }
 
 var rootCmd = &cobra.Command{
@@ -100,7 +107,7 @@ var authCmd = &cobra.Command{
 
 var whoamiCmd = &cobra.Command{
 	Use:   "whoami",
-	Short: "Who am i.",
+	Short: "Who am I.",
 	Run: func(cmd *cobra.Command, args []string) {
 		whoami.Start(*newRest())
 	},
