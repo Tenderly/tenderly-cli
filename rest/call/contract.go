@@ -32,7 +32,7 @@ func (rest *ContractCalls) UploadContracts(request UploadContractsRequest) ([]*m
 
 	response := client.Request(
 		"POST",
-		"api/v1/account/"+config.GetRCString("organisation")+"/project/"+config.GetRCString(config.ProjectSlug)+"/contracts",
+		"api/v1/account/"+config.GetString("organisation")+"/project/"+config.GetString(config.ProjectSlug)+"/contracts",
 		viper.GetString("token"),
 		bytes.NewBuffer(contractsJson))
 

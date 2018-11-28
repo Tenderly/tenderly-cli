@@ -37,7 +37,7 @@ func (rest *ProjectCalls) CreateProject(request ProjectRequest) (*model.Project,
 
 	response := client.Request(
 		"POST",
-		"api/v1/account/"+config.GetRCString("organisation")+"/project",
+		"api/v1/account/"+config.GetString("organisation")+"/project",
 		config.GetString("token"),
 		bytes.NewBuffer(projectJson))
 	err = json.NewDecoder(response).Decode(&project)

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/logrusorgru/aurora"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/call"
@@ -18,7 +19,9 @@ import (
 
 func Start(rest rest.Rest) {
 	if !config.IsLoggedIn() {
-		fmt.Println("you need to login first")
+		fmt.Println("In order to use the tenderly CLI, you need to login first.")
+		fmt.Println("")
+		fmt.Println("Please use the", aurora.Cyan("tenderly login"), "command to get started.")
 		os.Exit(0)
 	}
 

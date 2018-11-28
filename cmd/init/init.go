@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/logrusorgru/aurora"
 	"github.com/manifoldco/promptui"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
@@ -14,7 +15,9 @@ import (
 
 func Start(rest rest.Rest) {
 	if !config.IsLoggedIn() {
-		fmt.Println("you need to login first")
+		fmt.Println("In order to use the tenderly CLI, you need to login first.")
+		fmt.Println("")
+		fmt.Println("Please use the", aurora.Bold(aurora.Cyan("tenderly login")), "command to get started.")
 		os.Exit(0)
 	}
 
@@ -30,10 +33,10 @@ func Start(rest rest.Rest) {
 		os.Exit(0)
 	}
 
-	config.SetRC(config.ProjectName, project.Name)
-	config.SetRC(config.ProjectSlug, project.Slug)
-	config.SetRC(config.Organisation, config.GetOrganisation())
-	config.WriteRC()
+	config.SetProjectConfig(config.ProjectName, project.Name)
+	config.SetProjectConfig(config.ProjectSlug, project.Slug)
+	config.SetProjectConfig(config.Organisation, config.GetOrganisation())
+	config.WriteProjectConfig()
 }
 
 func promptDefault(attribute string) (string, error) {

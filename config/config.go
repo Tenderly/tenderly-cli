@@ -25,7 +25,7 @@ const (
 	ProjectSlug  = "projectSlug"
 )
 
-var defaultsConfig = map[string]interface{}{
+var defaultsGlobal = map[string]interface{}{
 	Token: "",
 
 	TargetHost: "8525",
@@ -35,7 +35,7 @@ var defaultsConfig = map[string]interface{}{
 	Network:    "mainnet",
 }
 
-var defaultsRC = map[string]interface{}{
+var defaultsProject = map[string]interface{}{
 	Organisation: "",
 	ProjectName:  "",
 	ProjectSlug:  "",
@@ -46,6 +46,9 @@ var projectConfigName string
 
 var rc *viper.Viper
 
+var globalConfig *viper.Viper
+var projectConfig *viper.Viper
+
 func init() {
 	flag.StringVar(&globalConfigName, "global-config", "config", "Global configuration file name (without the extension)")
 	flag.StringVar(&projectConfigName, "project-config", "tenderly", "Project configuration file name (without the extension)")
@@ -54,82 +57,83 @@ func init() {
 func Init() {
 	flag.Parse()
 
-	for k, v := range defaultsConfig {
-		viper.SetDefault(k, v)
+	globalConfig = viper.New()
+	for k, v := range defaultsGlobal {
+		globalConfig.SetDefault(k, v)
 	}
 
-	viper.SetConfigName(globalConfigName)
-	viper.AddConfigPath(filepath.Join(getHomeDir(), ".tenderly"))
-	err := viper.ReadInConfig()
+	globalConfig.SetConfigName(globalConfigName)
+	globalConfig.AddConfigPath(filepath.Join(getHomeDir(), ".tenderly"))
+	err := globalConfig.ReadInConfig()
 	if _, ok := err.(viper.ConfigFileNotFoundError); err != nil && !ok {
-		fmt.Printf("unable to read global settings: %s\n", err)
-		os.Exit(0)
+		fmt.Printf("Unable to read global settings: %s\n", err)
+		os.Exit(1)
 	}
 
-	rc = viper.New()
-	rc.SetConfigName(projectConfigName)
-	rc.AddConfigPath(".")
-
-	for k, v := range defaultsRC {
-		rc.SetDefault(k, v)
+	projectConfig = viper.New()
+	projectConfig.SetConfigName(projectConfigName)
+	projectConfig.AddConfigPath(".") //@TODO: This will not work with alternative --project path
+	for k, v := range defaultsProject {
+		projectConfig.SetDefault(k, v)
 	}
 
-	err = rc.MergeInConfig()
+	err = projectConfig.MergeInConfig()
 	if _, ok := err.(viper.ConfigFileNotFoundError); err != nil && !ok {
-		fmt.Printf("unable to read project settings: %s\n", err)
-		os.Exit(0)
+		fmt.Printf("Unable to read project settings: %s\n", err)
+		os.Exit(1)
 	}
 }
 
 func GetBool(key string) bool {
 	check(key)
-	return viper.GetBool(key)
+	return getBool(key)
 }
 
 func GetString(key string) string {
 	check(key)
-	return viper.GetString(key)
+	return getString(key)
 }
 
 func GetOrganisation() string {
-	if rc.IsSet(Organisation) && rc.Get(Organisation) != "" {
-		return rc.Get(Organisation).(string)
-	}
-
-	fmt.Println(viper.Get(Organisation).(string))
-	return viper.Get(Organisation).(string)
+	return getString(Organisation)
 }
 
 func IsLoggedIn() bool {
-	return GetString(Token) != ""
+	return getString(Token) != ""
 }
 
 func IsProjectInit() bool {
-	return rc.GetString(ProjectSlug) != ""
+	return getString(ProjectSlug) != ""
 }
 
-func SetRC(key string, value interface{}) {
+func SetProjectConfig(key string, value interface{}) {
 	rc.Set(key, value)
 }
 
-func GetRCString(key string) string {
-	checkrc(key)
-	return rc.GetString(key)
-}
-
-func WriteRC() error {
+func WriteProjectConfig() error {
 	return rc.WriteConfig()
 }
 
-func check(key string) {
-	if !viper.IsSet(key) {
-		panic(fmt.Errorf("missing config for key %s", key))
+func getString(key string) string {
+	if projectConfig.IsSet(key) && projectConfig.GetString(key) != "" {
+		return projectConfig.GetString(key)
 	}
+
+	return globalConfig.GetString(key)
 }
 
-func checkrc(key string) {
-	if !rc.IsSet(key) {
-		panic(fmt.Errorf("missing config for key %s", key))
+func getBool(key string) bool {
+	if projectConfig.IsSet(key) {
+		return projectConfig.GetBool(key)
+	}
+
+	return globalConfig.GetBool(key)
+}
+
+func check(key string) {
+	if !globalConfig.IsSet(key) && !projectConfig.IsSet(key) {
+		fmt.Printf("Could not find value for config: %s\n", key)
+		os.Exit(1)
 	}
 }
 

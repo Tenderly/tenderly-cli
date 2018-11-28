@@ -45,10 +45,10 @@ func Start(rest rest.Rest) {
 		os.Exit(0)
 	}
 
-	config.SetRC("organisation", user.Username)
+	config.SetProjectConfig("organisation", user.Username)
 	viper.Set("organisation", user.Username)
 	viper.WriteConfig()
-	config.WriteRC()
+	config.WriteProjectConfig()
 }
 
 func promptEmail() (string, error) {

@@ -25,26 +25,13 @@ var proxyPort string
 var path string
 var network string
 
-var projectDir string
-var txHash string
-var blockNumber int
-var forcePoll bool
-var forceDial string
-
 func init() {
 	proxyCmd.PersistentFlags().StringVar(&targetSchema, "target-schema", "http", "Blockchain rpc schema.")
 	proxyCmd.PersistentFlags().StringVar(&targetHost, "target-host", "127.0.0.1", "Blockchain rpc host.")
 	proxyCmd.PersistentFlags().StringVar(&targetPort, "target-port", "8545", "Blockchain rpc port.")
 	proxyCmd.PersistentFlags().StringVar(&proxyHost, "proxy-host", "127.0.0.1", "Call host.")
 	proxyCmd.PersistentFlags().StringVar(&proxyPort, "proxy-port", "9545", "Call port.")
-	proxyCmd.PersistentFlags().StringVar(&path, "path", ".", "Path to the project build folder.")
-
-	rootCmd.PersistentFlags().StringVar(&projectDir, "project", "", "Path to the project you want to trace.")
-	rootCmd.PersistentFlags().StringVar(&network, "network", "*", "Network to listen to.")
-	rootCmd.PersistentFlags().StringVar(&txHash, "txHash", "", "Transaction hash.")
-	rootCmd.PersistentFlags().IntVar(&blockNumber, "blockNumber", 0, "BlockNumber.")
-	rootCmd.PersistentFlags().BoolVar(&forcePoll, "force-poll", false, "Force polling (don't try to run subscriptions)")
-	rootCmd.PersistentFlags().StringVar(&forceDial, "force-dial", "", "Force connection to specific host:port")
+	proxyCmd.PersistentFlags().StringVar(&path, "path", ".", "Path to the root project folder.")
 
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(authCmd)
