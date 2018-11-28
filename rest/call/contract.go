@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/spf13/viper"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/client"
@@ -33,7 +32,7 @@ func (rest *ContractCalls) UploadContracts(request UploadContractsRequest) ([]*m
 	response := client.Request(
 		"POST",
 		"api/v1/account/"+config.GetString("organisation")+"/project/"+config.GetString(config.ProjectSlug)+"/contracts",
-		viper.GetString("token"),
+		config.GetString("token"),
 		bytes.NewBuffer(contractsJson))
 
 	err = json.NewDecoder(response).Decode(&contracts)
@@ -45,8 +44,8 @@ func (rest *ContractCalls) GetContracts(id string) ([]*model.Contract, error) {
 
 	response := client.Request(
 		"GET",
-		"api/v1/account/"+viper.GetString("Username")+"/project/"+id,
-		viper.GetString("Token"),
+		"api/v1/account/"+config.GetString("Username")+"/project/"+id,
+		config.GetString("Token"),
 		nil)
 
 	err := json.NewDecoder(response).Decode(contracts)

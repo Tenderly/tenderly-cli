@@ -1,7 +1,5 @@
 package config
 
-//@TODO: Remove duplicate rc methods.
-
 import (
 	"flag"
 	"fmt"
@@ -43,8 +41,6 @@ var defaultsProject = map[string]interface{}{
 
 var globalConfigName string
 var projectConfigName string
-
-var rc *viper.Viper
 
 var globalConfig *viper.Viper
 var projectConfig *viper.Viper
@@ -107,11 +103,19 @@ func IsProjectInit() bool {
 }
 
 func SetProjectConfig(key string, value interface{}) {
-	rc.Set(key, value)
+	projectConfig.Set(key, value)
 }
 
 func WriteProjectConfig() error {
-	return rc.WriteConfig()
+	return projectConfig.WriteConfig()
+}
+
+func SetGlobalConfig(key string, value interface{}) {
+	globalConfig.Set(key, value)
+}
+
+func WriteGlobalConfig() error {
+	return globalConfig.WriteConfig()
 }
 
 func getString(key string) string {

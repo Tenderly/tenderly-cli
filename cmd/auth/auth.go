@@ -7,7 +7,6 @@ import (
 	"regexp"
 
 	"github.com/manifoldco/promptui"
-	"github.com/spf13/viper"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/call"
@@ -36,7 +35,7 @@ func Start(rest rest.Rest) {
 		os.Exit(0)
 	}
 
-	viper.Set("token", token.Token)
+	config.SetGlobalConfig("token", token.Token)
 
 	// TODO we cpan probably extract username from token
 	user, err := rest.User.User()
@@ -46,23 +45,21 @@ func Start(rest rest.Rest) {
 	}
 
 	config.SetProjectConfig("organisation", user.Username)
-	viper.Set("organisation", user.Username)
-	viper.WriteConfig()
+	config.SetGlobalConfig("organisation", user.Username)
+	config.WriteGlobalConfig()
 	config.WriteProjectConfig()
 }
 
 func promptEmail() (string, error) {
-	validate := func(input string) error {
-		re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-		if !re.MatchString(input) {
-			return errors.New("email not valid")
-		}
-		return nil
-	}
-
 	promptEmail := promptui.Prompt{
-		Label:    "Enter your email",
-		Validate: validate,
+		Label: "Enter your email",
+		Validate: func(input string) error {
+			re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+			if !re.MatchString(input) {
+				return errors.New("email not valid")
+			}
+			return nil
+		},
 	}
 
 	result, err := promptEmail.Run()
