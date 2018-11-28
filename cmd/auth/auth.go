@@ -37,17 +37,8 @@ func Start(rest rest.Rest) {
 
 	config.SetGlobalConfig("token", token.Token)
 
-	// TODO we cpan probably extract username from token
-	user, err := rest.User.User()
-	if err != nil {
-		fmt.Println(fmt.Sprintf("unable to fetch user: %s", err))
-		os.Exit(0)
-	}
-
-	config.SetProjectConfig("organisation", user.Username)
-	config.SetGlobalConfig("organisation", user.Username)
+	//@TODO: Handle errors
 	config.WriteGlobalConfig()
-	config.WriteProjectConfig()
 }
 
 func promptEmail() (string, error) {

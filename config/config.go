@@ -25,18 +25,18 @@ const (
 
 var defaultsGlobal = map[string]interface{}{
 	Token: "",
-
-	TargetHost: "8525",
-	TargetPort: "127.0.0.1",
-	ProxyPort:  "9545",
-	Path:       ".",
-	Network:    "mainnet",
 }
 
 var defaultsProject = map[string]interface{}{
 	Organisation: "",
 	ProjectName:  "",
 	ProjectSlug:  "",
+
+	TargetHost: "8525",
+	TargetPort: "127.0.0.1",
+	ProxyPort:  "9545",
+	Path:       ".",
+	Network:    "mainnet",
 }
 
 var globalConfigName string
@@ -115,7 +115,28 @@ func SetGlobalConfig(key string, value interface{}) {
 }
 
 func WriteGlobalConfig() error {
-	return globalConfig.WriteConfig()
+	err := globalConfig.WriteConfig()
+	if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		// File does not exist, we should create one.
+
+		tenderlyDir := filepath.Join(getHomeDir(), ".tenderly")
+		err := os.MkdirAll(tenderlyDir, os.FileMode(0755))
+		if err != nil {
+			return fmt.Errorf("failed creating global configuration directory: %s", err)
+		}
+
+		file, err := os.Create(filepath.Join(tenderlyDir, "config.yaml"))
+		if err != nil {
+			return fmt.Errorf("failed creating global configuration file: %s", err)
+		}
+		if err := file.Close(); err != nil {
+			return fmt.Errorf("failed saving global configuration file: %s", err)
+		}
+
+		err = globalConfig.WriteConfig()
+	}
+
+	return nil
 }
 
 func getString(key string) string {
