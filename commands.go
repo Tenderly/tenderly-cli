@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/cmd/auth"
 	initialize "github.com/tenderly/tenderly-cli/cmd/init"
@@ -17,6 +18,8 @@ import (
 	"github.com/tenderly/tenderly-cli/rest/call"
 )
 
+var shouldDebug bool
+
 var targetHost string
 var targetPort string
 var targetSchema string
@@ -26,6 +29,10 @@ var path string
 var network string
 
 func init() {
+	cobra.OnInitialize(initConfig)
+
+	rootCmd.PersistentFlags().BoolVar(&shouldDebug, "debug", false, "Turn on debug level logging.")
+
 	proxyCmd.PersistentFlags().StringVar(&targetSchema, "target-schema", "http", "Blockchain rpc schema.")
 	proxyCmd.PersistentFlags().StringVar(&targetHost, "target-host", "127.0.0.1", "Blockchain rpc host.")
 	proxyCmd.PersistentFlags().StringVar(&targetPort, "target-port", "8545", "Blockchain rpc port.")
@@ -48,6 +55,12 @@ func init() {
 	}
 
 	config.Init()
+}
+
+func initConfig() {
+	if shouldDebug {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
 }
 
 var rootCmd = &cobra.Command{
@@ -105,7 +118,7 @@ var initCmd = &cobra.Command{
 	Short: "Initialize tenderly CLI.",
 	Long:  "User authentication, project creation, contract uploading.",
 	Run: func(cmd *cobra.Command, args []string) {
-		initialize.Start(*newRest())
+		initialize.Init(*newRest())
 	},
 }
 

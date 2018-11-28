@@ -13,7 +13,7 @@ import (
 	"github.com/tenderly/tenderly-cli/rest/call"
 )
 
-func Start(rest rest.Rest) {
+func Init(rest rest.Rest) {
 	if !config.IsLoggedIn() {
 		fmt.Println("In order to use the tenderly CLI, you need to login first.")
 		fmt.Println("")
