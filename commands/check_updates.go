@@ -1,10 +1,8 @@
-package main
+package commands
 
 import (
 	"encoding/json"
 	"fmt"
-	goVersion "github.com/hashicorp/go-version"
-	"github.com/logrusorgru/aurora"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -13,6 +11,10 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/go-version"
+	"github.com/logrusorgru/aurora"
+	"github.com/spf13/cobra"
 )
 
 type releaseResult struct {
@@ -21,6 +23,18 @@ type releaseResult struct {
 }
 
 var versionAlreadyChecked bool
+
+func init() {
+	rootCmd.AddCommand(checkUpdatesCmd)
+}
+
+var checkUpdatesCmd = &cobra.Command{
+	Use:   "update-check",
+	Short: "Checks whether there is an update for the CLI",
+	Run: func(cmd *cobra.Command, args []string) {
+		CheckVersion(true)
+	},
+}
 
 func CheckVersion(force bool) {
 	if versionAlreadyChecked {
@@ -57,22 +71,22 @@ func CheckVersion(force bool) {
 	}
 
 	sort.Slice(result, func(i, j int) bool {
-		v1, err := goVersion.NewVersion(result[i].Name)
+		v1, err := version.NewVersion(result[i].Name)
 		if err != nil {
 			return true
 		}
 
-		v2, err := goVersion.NewVersion(result[j].Name)
+		v2, err := version.NewVersion(result[j].Name)
 
 		return v1.GreaterThan(v2)
 	})
 
-	currentVersion, err := goVersion.NewVersion(CurrentCLIVersion)
+	currentVersion, err := version.NewVersion(CurrentCLIVersion)
 	if err != nil {
 		return
 	}
 
-	newestVersion, err := goVersion.NewVersion(result[0].Name)
+	newestVersion, err := version.NewVersion(result[0].Name)
 	if err != nil {
 		return
 	}

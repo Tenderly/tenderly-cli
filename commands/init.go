@@ -1,42 +1,56 @@
-package init
+package commands
 
 import (
 	"errors"
 	"fmt"
 	"os"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/logrusorgru/aurora"
 	"github.com/manifoldco/promptui"
+	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/call"
 )
 
-func Init(rest rest.Rest) {
-	if !config.IsLoggedIn() {
-		fmt.Println("In order to use the tenderly CLI, you need to login first.")
-		fmt.Println("")
-		fmt.Println("Please use the", aurora.Bold(aurora.Cyan("tenderly login")), "command to get started.")
-		os.Exit(0)
-	}
+func init() {
+	rootCmd.AddCommand(initCmd)
+}
 
-	projects, err := rest.Project.GetProjects(config.GetOrganisation())
-	if err != nil {
-		fmt.Println("unable to fetch projects")
-		os.Exit(0)
-	}
+var initCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Initialize tenderly CLI.",
+	Long:  "User authentication, project creation, contract uploading.",
+	Run: func(cmd *cobra.Command, args []string) {
+		rest := newRest()
 
-	project, err := promptProjectSelect(projects, rest)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
+		logrus.Debug("Starting tenderly init command")
+		if !config.IsLoggedIn() {
+			fmt.Println("In order to use the tenderly CLI, you need to login first.")
+			fmt.Println("")
+			fmt.Println("Please use the", aurora.Bold(aurora.Cyan("tenderly login")), "command to get started.")
+			os.Exit(0)
+		}
 
-	config.SetProjectConfig(config.ProjectName, project.Name)
-	config.SetProjectConfig(config.ProjectSlug, project.Slug)
-	config.SetProjectConfig(config.Organisation, config.GetOrganisation())
-	config.WriteProjectConfig()
+		projects, err := rest.Project.GetProjects(config.GetOrganisation())
+		if err != nil {
+			fmt.Println("unable to fetch projects")
+			os.Exit(0)
+		}
+
+		project, err := promptProjectSelect(projects, rest)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
+
+		config.SetProjectConfig(config.ProjectName, project.Name)
+		config.SetProjectConfig(config.ProjectSlug, project.Slug)
+		config.SetProjectConfig(config.Organisation, config.GetOrganisation())
+		config.WriteProjectConfig()
+	},
 }
 
 func promptDefault(attribute string) (string, error) {
@@ -61,7 +75,7 @@ func promptDefault(attribute string) (string, error) {
 	return result, nil
 }
 
-func promptProjectSelect(projects []*model.Project, rest rest.Rest) (*model.Project, error) {
+func promptProjectSelect(projects []*model.Project, rest *rest.Rest) (*model.Project, error) {
 	var projectNames []string
 	projectNames = append(projectNames, "Create new project")
 	for _, project := range projects {

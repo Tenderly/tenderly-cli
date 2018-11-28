@@ -211,7 +211,7 @@ func isBatchRequest(data []byte) bool {
 	return false
 }
 
-func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, network string) error {
+func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path string) error {
 	flag.Parse()
 
 	fmt.Println(fmt.Sprintf("server will run on %s:%s", proxyHost, proxyPort))

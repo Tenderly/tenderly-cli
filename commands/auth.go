@@ -1,4 +1,4 @@
-package auth
+package commands
 
 import (
 	"errors"
@@ -7,38 +7,48 @@ import (
 	"regexp"
 
 	"github.com/manifoldco/promptui"
+	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/call"
 )
 
-func Start(rest rest.Rest) {
-	email, err := promptEmail()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
+func init() {
+	rootCmd.AddCommand(authCmd)
+}
 
-	password, err := promptPassword()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
+var authCmd = &cobra.Command{
+	Use:   "login",
+	Short: "User authentication.",
+	Run: func(cmd *cobra.Command, args []string) {
+		rest := newRest()
 
-	token, err := rest.Auth.Login(call.LoginRequest{
-		Username: email,
-		Password: password,
-	})
+		email, err := promptEmail()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
 
-	if err != nil {
-		fmt.Println("invalid credentials")
-		os.Exit(0)
-	}
+		password, err := promptPassword()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
 
-	config.SetGlobalConfig("token", token.Token)
+		token, err := rest.Auth.Login(call.LoginRequest{
+			Username: email,
+			Password: password,
+		})
 
-	//@TODO: Handle errors
-	config.WriteGlobalConfig()
+		if err != nil {
+			fmt.Println("invalid credentials")
+			os.Exit(0)
+		}
+
+		config.SetGlobalConfig("token", token.Token)
+
+		//@TODO: Handle errors
+		config.WriteGlobalConfig()
+	},
 }
 
 func promptEmail() (string, error) {
