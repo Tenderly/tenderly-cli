@@ -24,7 +24,7 @@ curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/inst
 
 ### Linux
 
-You can install the Tenderly CIA by using cURL and running our installation script:
+You can install the Tenderly CLI by using cURL and running our installation script:
 
 ```
 curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh | sh
