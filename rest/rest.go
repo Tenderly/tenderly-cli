@@ -16,8 +16,8 @@ type UserRoutes interface {
 
 type ProjectRoutes interface {
 	CreateProject(request call.ProjectRequest) (*model.Project, error)
-	GetProject(organisationId, id string) (*model.Project, error)
-	GetProjects(organisationId string) ([]*model.Project, error)
+	GetProject(accountId, id string) (*model.Project, error)
+	GetProjects(accountId string) ([]*model.Project, error)
 }
 
 type ContractRoutes interface {

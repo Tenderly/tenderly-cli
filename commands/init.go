@@ -34,9 +34,12 @@ var initCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		projects, err := rest.Project.GetProjects(config.GetOrganisation())
+		accountID := config.GetString(config.AccountID)
+
+		logrus.WithField("account_id", accountID).Debugf("Fetching projects for account")
+		projects, err := rest.Project.GetProjects(accountID)
 		if err != nil {
-			fmt.Println("unable to fetch projects")
+			logrus.WithField("err", err).Debug("Fetching projects for account failed")
 			os.Exit(0)
 		}
 
@@ -47,8 +50,7 @@ var initCmd = &cobra.Command{
 		}
 
 		config.SetProjectConfig(config.ProjectName, project.Name)
-		config.SetProjectConfig(config.ProjectSlug, project.Slug)
-		config.SetProjectConfig(config.Organisation, config.GetOrganisation())
+		config.SetProjectConfig(config.AccountID, config.GetString(config.AccountID))
 		config.WriteProjectConfig()
 	},
 }

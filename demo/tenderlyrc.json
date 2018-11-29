@@ -1,9 +1,0 @@
-{
-  "networks": [
-    "kovan",
-    "rinkeby"
-  ],
-  "organisation": "neburo10",
-  "projectname": "tester",
-  "projectslug": "tester"
-}

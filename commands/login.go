@@ -13,10 +13,10 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(authCmd)
+	rootCmd.AddCommand(loginCmd)
 }
 
-var authCmd = &cobra.Command{
+var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "User authentication.",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -45,6 +45,14 @@ var authCmd = &cobra.Command{
 		}
 
 		config.SetGlobalConfig("token", token.Token)
+
+		user, err := rest.User.User()
+		if err != nil {
+			fmt.Printf("cannot fetch user info: %s\n", err)
+			os.Exit(0)
+		}
+
+		config.SetGlobalConfig("account_id", user.ID)
 
 		//@TODO: Handle errors
 		config.WriteGlobalConfig()

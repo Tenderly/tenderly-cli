@@ -3,8 +3,10 @@ package call
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"regexp"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/client"
@@ -37,18 +39,18 @@ func (rest *ProjectCalls) CreateProject(request ProjectRequest) (*model.Project,
 
 	response := client.Request(
 		"POST",
-		"api/v1/account/"+config.GetString("organisation")+"/project",
+		"api/v1/account/"+config.GetString(config.AccountID)+"/project",
 		config.GetString("token"),
 		bytes.NewBuffer(projectJson))
 	err = json.NewDecoder(response).Decode(&project)
 	return &project, err
 }
 
-func (rest *ProjectCalls) GetProject(organisationId, id string) (*model.Project, error) {
+func (rest *ProjectCalls) GetProject(accountId, id string) (*model.Project, error) {
 	var project *model.Project
 	response := client.Request(
 		"GET",
-		"api/v1/account/"+organisationId+"/project/"+id,
+		"api/v1/account/"+accountId+"/project/"+id,
 		"",
 		nil)
 
@@ -56,14 +58,22 @@ func (rest *ProjectCalls) GetProject(organisationId, id string) (*model.Project,
 	return project, err
 }
 
-func (rest *ProjectCalls) GetProjects(organisationId string) ([]*model.Project, error) {
+func (rest *ProjectCalls) GetProjects(accountId string) ([]*model.Project, error) {
 	var projects []*model.Project
 	response := client.Request(
 		"GET",
-		"api/v1/account/"+organisationId+"/projects",
+		"api/v1/account/"+accountId+"/projects",
 		config.GetString("token"),
 		nil)
 
-	err := json.NewDecoder(response).Decode(&projects)
+	data, err := ioutil.ReadAll(response)
+	if err != nil {
+		return nil, err
+	}
+
+	logrus.WithField("payload", string(data)).Debug("Got project list response")
+
+	err = json.Unmarshal(data, &projects)
+
 	return projects, err
 }

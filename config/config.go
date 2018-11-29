@@ -11,16 +11,10 @@ import (
 )
 
 const (
-	TargetHost = "targetHost"
-	TargetPort = "targetPort"
-	ProxyPort  = "proxyPort"
-	Path       = "path"
-	Network    = "network"
+	Token = "token"
 
-	Token        = "token"
-	Organisation = "organisation"
-	ProjectName  = "projectName"
-	ProjectSlug  = "projectSlug"
+	AccountID   = "account_id"
+	ProjectName = "project"
 )
 
 var defaultsGlobal = map[string]interface{}{
@@ -28,15 +22,8 @@ var defaultsGlobal = map[string]interface{}{
 }
 
 var defaultsProject = map[string]interface{}{
-	Organisation: "",
-	ProjectName:  "",
-	ProjectSlug:  "",
-
-	TargetHost: "8525",
-	TargetPort: "127.0.0.1",
-	ProxyPort:  "9545",
-	Path:       ".",
-	Network:    "mainnet",
+	AccountID:   "",
+	ProjectName: "",
 }
 
 var globalConfigName string
@@ -90,16 +77,12 @@ func GetString(key string) string {
 	return getString(key)
 }
 
-func GetOrganisation() string {
-	return getString(Organisation)
-}
-
 func IsLoggedIn() bool {
 	return getString(Token) != ""
 }
 
 func IsProjectInit() bool {
-	return getString(ProjectSlug) != ""
+	return getString(ProjectName) != ""
 }
 
 func SetProjectConfig(key string, value interface{}) {
@@ -107,7 +90,22 @@ func SetProjectConfig(key string, value interface{}) {
 }
 
 func WriteProjectConfig() error {
-	return projectConfig.WriteConfig()
+	err := projectConfig.WriteConfig()
+	if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		// File does not exist, we should create one.
+
+		file, err := os.Create(filepath.Join(".", fmt.Sprintf("%s.yaml", projectConfigName)))
+		if err != nil {
+			return fmt.Errorf("failed creating project configuration file: %s", err)
+		}
+		if err := file.Close(); err != nil {
+			return fmt.Errorf("failed saving project configuration file: %s", err)
+		}
+
+		err = projectConfig.WriteConfig()
+	}
+
+	return nil
 }
 
 func SetGlobalConfig(key string, value interface{}) {
@@ -125,7 +123,7 @@ func WriteGlobalConfig() error {
 			return fmt.Errorf("failed creating global configuration directory: %s", err)
 		}
 
-		file, err := os.Create(filepath.Join(tenderlyDir, "config.yaml"))
+		file, err := os.Create(filepath.Join(tenderlyDir, fmt.Sprintf("%s.yaml", globalConfigName)))
 		if err != nil {
 			return fmt.Errorf("failed creating global configuration file: %s", err)
 		}

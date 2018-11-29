@@ -10,7 +10,7 @@ type ProjectID struct {
 }
 
 type Project struct {
-	ID        ProjectID `json:"id"`
+	ID        AccountID `json:"id"`
 	Name      string    `json:"name"`
 	Slug      string    `json:"slug"`
 	Owner     AccountID

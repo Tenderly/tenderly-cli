@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Sirupsen/logrus"
+	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +25,7 @@ var whoamiCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		fmt.Println(fmt.Sprintf(user.Email))
+		logrus.Infof("ID: %s", aurora.Magenta(user.ID))
+		logrus.Infof("Email: %s", aurora.Magenta(user.Email))
 	},
 }
