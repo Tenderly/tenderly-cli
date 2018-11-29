@@ -134,7 +134,7 @@ func getTruffleConfig(projectDir string) (*truffle.Config, error) {
 	}
 
 	if truffleConfig.BuildDirectory == "" {
-		truffleConfig.BuildDirectory = "./build/contracts"
+		truffleConfig.BuildDirectory = filepath.Join(".", "build", "contracts")
 	}
 
 	truffleConfig.ProjectDirectory = projectDir
