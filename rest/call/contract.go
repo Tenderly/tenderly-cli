@@ -1,7 +1,6 @@
 package call
 
 import (
-	"bytes"
 	"encoding/json"
 
 	"github.com/tenderly/tenderly-cli/config"
@@ -33,7 +32,8 @@ func (rest *ContractCalls) UploadContracts(request UploadContractsRequest) ([]*m
 		"POST",
 		"api/v1/account/"+config.GetString(config.AccountID)+"/project/"+config.GetString(config.ProjectName)+"/contracts",
 		config.GetString("token"),
-		bytes.NewBuffer(contractsJson))
+		contractsJson,
+	)
 
 	err = json.NewDecoder(response).Decode(&contracts)
 	return contracts, err
@@ -46,7 +46,8 @@ func (rest *ContractCalls) GetContracts(id string) ([]*model.Contract, error) {
 		"GET",
 		"api/v1/account/"+config.GetString("Username")+"/project/"+id,
 		config.GetString("Token"),
-		nil)
+		nil,
+	)
 
 	err := json.NewDecoder(response).Decode(contracts)
 	return contracts, err

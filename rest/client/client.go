@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -8,12 +9,15 @@ import (
 	"os"
 )
 
-func Request(method, path, token string, body io.ReadWriter) io.Reader {
-	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s", "http://api.tenderly.love", path), body)
+func Request(method, path, token string, body []byte) io.Reader {
+	req, err := http.NewRequest(
+		method,
+		fmt.Sprintf("%s/%s", "http://api.tenderly.love", path),
+		bytes.NewReader(body),
+	)
 	if err != nil {
-		// print error and exit
 		fmt.Fprintln(os.Stderr, "Failed to create request")
-		os.Exit(0)
+		os.Exit(1)
 	}
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: false}

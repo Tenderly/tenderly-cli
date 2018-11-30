@@ -1,7 +1,6 @@
 package call
 
 import (
-	"bytes"
 	"encoding/json"
 	"github.com/tenderly/tenderly-cli/rest/client"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
@@ -21,11 +20,14 @@ func (rest *AuthCalls) Register(request payloads.RegisterRequest) (*payloads.Tok
 		return nil, err
 	}
 
-	return extractToken(client.Request(
-		"POST",
-		"register",
-		"",
-		bytes.NewBuffer(data)))
+	return extractToken(
+		client.Request(
+			"POST",
+			"register",
+			"",
+			data,
+		),
+	)
 }
 
 func (rest *AuthCalls) Login(request payloads.LoginRequest) (*payloads.TokenResponse, error) {
@@ -39,7 +41,7 @@ func (rest *AuthCalls) Login(request payloads.LoginRequest) (*payloads.TokenResp
 			"POST",
 			"login",
 			"",
-			bytes.NewBuffer(data),
+			data,
 		),
 	)
 }

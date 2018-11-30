@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
+	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 	"regexp"
 
@@ -24,13 +25,13 @@ var loginCmd = &cobra.Command{
 
 		email, err := promptEmail()
 		if err != nil {
-			LogErrorf("prompt email: %s", err)
+			userError.LogErrorf("prompt email: %s", err)
 			os.Exit(1)
 		}
 
 		password, err := promptPassword()
 		if err != nil {
-			LogErrorf("prompt password: %s", err)
+			userError.LogErrorf("prompt password: %s", err)
 			os.Exit(1)
 		}
 
@@ -40,7 +41,7 @@ var loginCmd = &cobra.Command{
 		})
 
 		if err != nil {
-			LogErrorf("login call: %s", err)
+			userError.LogErrorf("login call: %s", err)
 			os.Exit(1)
 		}
 

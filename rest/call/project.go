@@ -1,12 +1,11 @@
 package call
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"regexp"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/client"
@@ -41,7 +40,8 @@ func (rest *ProjectCalls) CreateProject(request ProjectRequest) (*model.Project,
 		"POST",
 		"api/v1/account/"+config.GetString(config.AccountID)+"/project",
 		config.GetString("token"),
-		bytes.NewBuffer(projectJson))
+		projectJson,
+	)
 	err = json.NewDecoder(response).Decode(&project)
 	return &project, err
 }
@@ -52,7 +52,8 @@ func (rest *ProjectCalls) GetProject(accountId, id string) (*model.Project, erro
 		"GET",
 		"api/v1/account/"+accountId+"/project/"+id,
 		"",
-		nil)
+		nil,
+	)
 
 	err := json.NewDecoder(response).Decode(project)
 	return project, err
@@ -64,7 +65,8 @@ func (rest *ProjectCalls) GetProjects(accountId string) ([]*model.Project, error
 		"GET",
 		"api/v1/account/"+accountId+"/projects",
 		config.GetString("token"),
-		nil)
+		nil,
+	)
 
 	data, err := ioutil.ReadAll(response)
 	if err != nil {

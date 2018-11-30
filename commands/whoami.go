@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/logrusorgru/aurora"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 

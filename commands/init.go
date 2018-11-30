@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/logrusorgru/aurora"
 	"github.com/manifoldco/promptui"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
