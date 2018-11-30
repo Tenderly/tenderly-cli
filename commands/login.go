@@ -3,13 +3,13 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"os"
 	"regexp"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/rest/call"
 )
 
 func init() {
@@ -24,24 +24,24 @@ var loginCmd = &cobra.Command{
 
 		email, err := promptEmail()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(0)
+			LogErrorf("prompt email: %s", err)
+			os.Exit(1)
 		}
 
 		password, err := promptPassword()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(0)
+			LogErrorf("prompt password: %s", err)
+			os.Exit(1)
 		}
 
-		token, err := rest.Auth.Login(call.LoginRequest{
+		token, err := rest.Auth.Login(payloads.LoginRequest{
 			Username: email,
 			Password: password,
 		})
 
 		if err != nil {
-			fmt.Println("invalid credentials")
-			os.Exit(0)
+			LogErrorf("login call: %s", err)
+			os.Exit(1)
 		}
 
 		config.SetGlobalConfig("token", token.Token)
@@ -65,7 +65,7 @@ func promptEmail() (string, error) {
 		Validate: func(input string) error {
 			re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 			if !re.MatchString(input) {
-				return errors.New("email not valid")
+				return errors.New("Please enter a valid e-mail address")
 			}
 			return nil
 		},
@@ -84,6 +84,12 @@ func promptPassword() (string, error) {
 	prompt := promptui.Prompt{
 		Label: "Password",
 		Mask:  '*',
+		Validate: func(input string) error {
+			if len(input) == 0 {
+				return errors.New("Please enter your password")
+			}
+			return nil
+		},
 	}
 
 	result, err := prompt.Run()

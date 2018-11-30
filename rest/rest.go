@@ -3,11 +3,12 @@ package rest
 import (
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/call"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
 )
 
 type AuthRoutes interface {
-	Register(request call.RegisterRequest) (*call.TokenResponse, error)
-	Login(request call.LoginRequest) (*call.TokenResponse, error)
+	Register(request payloads.RegisterRequest) (*payloads.TokenResponse, error)
+	Login(request payloads.LoginRequest) (*payloads.TokenResponse, error)
 }
 
 type UserRoutes interface {
