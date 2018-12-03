@@ -2,7 +2,7 @@ package commands
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -106,7 +106,7 @@ func CheckVersion(force bool) {
 		updateCommand = aurora.Sprintf("%s", aurora.Bold(aurora.Green("curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh | sh")))
 	}
 
-	fmt.Println(
+	logrus.Info(
 		aurora.Sprintf("\nYou are running version %s of the Tenderly CLI. To update to the newest version (%s) please run the following command:\n\n%s\n\n",
 			aurora.Bold(aurora.Green(CurrentCLIVersion)),
 			aurora.Bold(aurora.Green(result[0].Name)),
