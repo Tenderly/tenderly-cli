@@ -5,15 +5,18 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/userError"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/tenderly/tenderly-cli/ethereum"
 	"github.com/tenderly/tenderly-cli/ethereum/client"
 	"github.com/tenderly/tenderly-cli/jsonrpc2"
@@ -33,7 +36,10 @@ func NewProxy(target string) (*Proxy, error) {
 
 	c, err := client.Dial(target)
 	if err != nil {
-		return nil, fmt.Errorf("failed calling target ethereum blockchain on %s", target)
+		return nil, userError.NewUserError(
+			fmt.Errorf("failed calling target ethereum blockchain on %s", target),
+			fmt.Sprintf("Couldn't connect to target Ethereum blockchain at: %s", target),
+		)
 	}
 
 	return &Proxy{
@@ -47,35 +53,60 @@ func NewProxy(target string) (*Proxy, error) {
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("Failed reading request body: %s\n", err)
+		userError.LogErrorf("failed reading request body: %s",
+			userError.NewUserError(
+				err,
+				"Failed reading proxy request",
+			),
+		)
 		return
 	}
 
 	messages, err := unmarshalMessages(data)
 	if err != nil {
-		fmt.Printf("Failed parsing request body: %s\n", err)
+		userError.LogErrorf("failed parsing request body: %s",
+			userError.NewUserError(
+				err,
+				"Failed parsing proxy request body",
+			),
+		)
 		return
 	}
 
 	for _, message := range messages {
 		err := p.client.Call(message)
 		if err != nil {
-			fmt.Printf("Failed processing proxy request: %s\n", err)
+			userError.LogErrorf("failed processing proxy request: %s",
+				userError.NewUserError(
+					err,
+					fmt.Sprintf("Failed processing proxy request: %s", err),
+				),
+			)
 
 			continue
 		}
 
-		// @TODO: Extract into a more managable format.
+		// @TODO: Extract into a more manageable format.
 		if message.Method == "eth_getTransactionReceipt" {
 			receipt, err := p.GetTraceReceipt(string(message.Params[2:68]), false)
 			if err != nil {
-				fmt.Printf("could not extract trace from: %s\n", err)
+				userError.LogErrorf("couldn't extract trace from: %s",
+					userError.NewUserError(
+						err,
+						"Couldn't extract trace",
+					),
+				)
 				continue
 			}
 
 			message.Result, err = json.Marshal(receipt)
 			if err != nil {
-				fmt.Printf("failed encoding transaction receipt: %s\n", err)
+				userError.LogErrorf("failed encoding transaction receipt: %s",
+					userError.NewUserError(
+						err,
+						fmt.Sprintf("Failed encoding transaction receipt: %s", err),
+					),
+				)
 				continue
 			}
 
@@ -90,12 +121,22 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			var failedTx string
 			err = json.Unmarshal(message.Result, &failedTx)
 			if err != nil {
-				fmt.Printf("could not extract transaction hash: %s\n", err)
+				userError.LogErrorf("couldn't extract transaction hash: %s",
+					userError.NewUserError(
+						err,
+						"Couldn't extract transaction hash",
+					),
+				)
 				continue
 			}
 			receipt, err := p.GetTraceReceipt(failedTx, true)
 			if err != nil {
-				fmt.Printf("could not extract trace: %s\n", err)
+				userError.LogErrorf("couldn't extract trace: %s",
+					userError.NewUserError(
+						err,
+						"Couldn't extract trace",
+					),
+				)
 				continue
 			}
 
@@ -112,18 +153,28 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		respData, err = json.Marshal(messages[0])
 	}
 	if err != nil {
-		fmt.Printf("Failed formatting proxy response: %s\n", err)
+		userError.LogErrorf("failed formatting proxy response: %s",
+			userError.NewUserError(
+				err,
+				"Failed formatting proxy response",
+			),
+		)
 		return
 	}
 
 	// Send the final response to the caller.
 	_, err = io.Copy(w, bytes.NewReader(respData))
 	if err != nil {
-		fmt.Printf("Failed sending proxy response: %s\n", err)
+		userError.LogErrorf("failed sending proxy response: %s",
+			userError.NewUserError(
+				err,
+				"Failed sending proxy response",
+			),
+		)
 		return
 	}
 
-	fmt.Printf("%s\n", respData)
+	logrus.Infof("%s", respData)
 }
 
 func (p *Proxy) GetTraceReceipt(tx string, wait bool) (ethereum.TransactionReceipt, error) {
@@ -138,7 +189,10 @@ func (p *Proxy) GetTraceReceipt(tx string, wait bool) (ethereum.TransactionRecei
 
 	err = p.Trace(receipt, projectPath)
 	if err != nil {
-		return nil, fmt.Errorf("get transaction trace: %s", err)
+		return nil, userError.NewUserError(
+			fmt.Errorf("get transaction trace: %s", err),
+			"Couldn't get transaction trace",
+		)
 	}
 
 	return receipt, nil
@@ -162,7 +216,7 @@ func (p *Proxy) waitForReceipt(tx string, wait bool) (ethereum.TransactionReceip
 			return nil, err
 		}
 
-		fmt.Println("waiting for transaction receipt...")
+		logrus.Info("Waiting for transaction receipt...")
 		time.Sleep(waitFor)
 	}
 
@@ -172,11 +226,17 @@ func (p *Proxy) waitForReceipt(tx string, wait bool) (ethereum.TransactionReceip
 func (p *Proxy) getReceipt(tx string) (ethereum.TransactionReceipt, error) {
 	receipt, err := p.client.GetTransactionReceipt(tx)
 	if err != nil {
-		return nil, fmt.Errorf("get transaction receipt: %s", err)
+		return nil, userError.NewUserError(
+			fmt.Errorf("get transaction receipt: %s", err),
+			"Error getting transaction receipt",
+		)
 	}
 
 	if receipt.Hash() == "" {
-		return nil, errors.New("transaction status is missing hash")
+		return nil, userError.NewUserError(
+			errors.New("transaction status is missing the hash"),
+			"Transaction status is missing the hash",
+		)
 	}
 
 	return receipt, nil
@@ -214,14 +274,26 @@ func isBatchRequest(data []byte) bool {
 func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path string) error {
 	flag.Parse()
 
-	fmt.Println(fmt.Sprintf("server will run on %s:%s", proxyHost, proxyPort))
-	fmt.Println(fmt.Sprintf("redirecting to %s:%s", targetHost, targetPort))
+	logrus.Infof("Proxy starting on %s:%s", proxyHost, proxyPort)
+	logrus.Infof("Redirecting calls to %s:%s", targetHost, targetPort)
 
 	projectPath = path
-	proxy, err := NewProxy(targetSchema + "://" + targetHost + ":" + targetPort)
+	proxy, err := NewProxy(targetSchema + "://" + getTargetHost(targetHost) + ":" + targetPort)
 	if err != nil {
-		fmt.Printf("Failed initiating target proxy %s\n", err)
+		userError.LogErrorf("failed starting proxy: %s", err)
+		os.Exit(1)
 	}
 
 	return http.ListenAndServe(proxyHost+":"+proxyPort, proxy)
+}
+
+func getTargetHost(targetHost string) string {
+	if strings.HasPrefix(targetHost, "http://") {
+		return targetHost[7:]
+	}
+	if strings.HasPrefix(targetHost, "https://") {
+		return targetHost[8:]
+	}
+
+	return targetHost
 }
