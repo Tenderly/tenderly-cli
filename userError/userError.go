@@ -11,12 +11,12 @@ type UserError struct {
 	userMessage string
 }
 
-func (e UserError) Error() string {
+func (e *UserError) Error() string {
 	return fmt.Sprintf("error while calling api: %s, message: %s", e.error, e.userMessage)
 }
 
-func NewUserError(error error, userMessage string) UserError {
-	return UserError{error: error, userMessage: userMessage}
+func NewUserError(error error, userMessage string) *UserError {
+	return &UserError{error: error, userMessage: userMessage}
 }
 
 func LogError(err error) {

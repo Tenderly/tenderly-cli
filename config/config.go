@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"fmt"
+	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -46,10 +47,19 @@ func Init() {
 	}
 
 	globalConfig.SetConfigName(globalConfigName)
-	globalConfig.AddConfigPath(filepath.Join(getHomeDir(), ".tenderly"))
+
+	configPath := filepath.Join(getHomeDir(), ".tenderly")
+
+	globalConfig.AddConfigPath(configPath)
 	err := globalConfig.ReadInConfig()
 	if _, ok := err.(viper.ConfigFileNotFoundError); err != nil && !ok {
-		fmt.Printf("Unable to read global settings: %s\n", err)
+		userError.LogErrorf(
+			"unable to read global settings: %s",
+			userError.NewUserError(
+				err,
+				fmt.Sprintf("Unable to load global settings file at: %s", configPath),
+			),
+		)
 		os.Exit(1)
 	}
 
@@ -62,7 +72,13 @@ func Init() {
 
 	err = projectConfig.MergeInConfig()
 	if _, ok := err.(viper.ConfigFileNotFoundError); err != nil && !ok {
-		fmt.Printf("Unable to read project settings: %s\n", err)
+		userError.LogErrorf(
+			"Unable to read project settings: %s",
+			userError.NewUserError(
+				err,
+				"Unable to load project settings file at: .",
+			),
+		)
 		os.Exit(1)
 	}
 }
