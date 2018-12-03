@@ -77,6 +77,10 @@ func GetString(key string) string {
 	return getString(key)
 }
 
+func GetToken() string {
+	return getString(Token)
+}
+
 func IsLoggedIn() bool {
 	return getString(Token) != ""
 }

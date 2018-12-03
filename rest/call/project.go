@@ -39,7 +39,6 @@ func (rest *ProjectCalls) CreateProject(request ProjectRequest) (*model.Project,
 	response := client.Request(
 		"POST",
 		"api/v1/account/"+config.GetString(config.AccountID)+"/project",
-		config.GetString("token"),
 		projectJson,
 	)
 	err = json.NewDecoder(response).Decode(&project)
@@ -51,7 +50,6 @@ func (rest *ProjectCalls) GetProject(accountId, id string) (*model.Project, erro
 	response := client.Request(
 		"GET",
 		"api/v1/account/"+accountId+"/project/"+id,
-		"",
 		nil,
 	)
 
@@ -64,7 +62,6 @@ func (rest *ProjectCalls) GetProjects(accountId string) ([]*model.Project, error
 	response := client.Request(
 		"GET",
 		"api/v1/account/"+accountId+"/projects",
-		config.GetString("token"),
 		nil,
 	)
 

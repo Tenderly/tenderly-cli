@@ -31,7 +31,6 @@ func (rest *ContractCalls) UploadContracts(request UploadContractsRequest) ([]*m
 	response := client.Request(
 		"POST",
 		"api/v1/account/"+config.GetString(config.AccountID)+"/project/"+config.GetString(config.ProjectName)+"/contracts",
-		config.GetString("token"),
 		contractsJson,
 	)
 
@@ -45,7 +44,6 @@ func (rest *ContractCalls) GetContracts(id string) ([]*model.Contract, error) {
 	response := client.Request(
 		"GET",
 		"api/v1/account/"+config.GetString("Username")+"/project/"+id,
-		config.GetString("Token"),
 		nil,
 	)
 

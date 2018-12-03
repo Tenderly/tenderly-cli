@@ -24,7 +24,6 @@ func (rest *AuthCalls) Register(request payloads.RegisterRequest) (*payloads.Tok
 		client.Request(
 			"POST",
 			"register",
-			"",
 			data,
 		),
 	)
@@ -40,7 +39,6 @@ func (rest *AuthCalls) Login(request payloads.LoginRequest) (*payloads.TokenResp
 		client.Request(
 			"POST",
 			"login",
-			"",
 			data,
 		),
 	)

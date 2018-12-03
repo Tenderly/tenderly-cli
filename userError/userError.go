@@ -3,6 +3,7 @@ package userError
 import (
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
 )
 
 type UserError struct {
@@ -27,6 +28,11 @@ func LogError(err error) {
 		logrus.Info(err.userMessage)
 		return
 	}
+	if err, ok := err.(*payloads.ApiError); ok {
+		logrus.Debug(err)
+		logrus.Info(err.Message)
+		return
+	}
 	logrus.Debug(err)
 }
 
@@ -37,6 +43,11 @@ func LogErrorf(format string, err error) {
 	if err, ok := err.(*UserError); ok {
 		logrus.Debug(fmt.Errorf(format, err.error))
 		logrus.Info(err.userMessage)
+		return
+	}
+	if err, ok := err.(*payloads.ApiError); ok {
+		logrus.Debug(fmt.Errorf(format, err.Slug))
+		logrus.Info(err.Message)
 		return
 	}
 	logrus.Debug(fmt.Errorf(format, err))

@@ -35,7 +35,7 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		token, err := rest.Auth.Login(payloads.LoginRequest{
+		tokenResponse, err := rest.Auth.Login(payloads.LoginRequest{
 			Username: email,
 			Password: password,
 		})
@@ -44,8 +44,12 @@ var loginCmd = &cobra.Command{
 			userError.LogErrorf("login call: %s", err)
 			os.Exit(1)
 		}
+		if tokenResponse.Error != nil {
+			userError.LogErrorf("login call: %s", tokenResponse.Error)
+			os.Exit(1)
+		}
 
-		config.SetGlobalConfig("token", token.Token)
+		config.SetGlobalConfig(config.Token, tokenResponse.Token)
 
 		user, err := rest.User.User()
 		if err != nil {
@@ -55,8 +59,13 @@ var loginCmd = &cobra.Command{
 
 		config.SetGlobalConfig("account_id", user.ID)
 
-		//@TODO: Handle errors
-		config.WriteGlobalConfig()
+		err = config.WriteGlobalConfig()
+		if err != nil {
+			userError.LogErrorf(
+				"login call: write global config: %s",
+				userError.NewUserError(err, "Couldn't write global config file"),
+			)
+		}
 	},
 }
 
