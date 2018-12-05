@@ -15,7 +15,7 @@ const (
 	Token = "token"
 
 	AccountID   = "account_id"
-	ProjectName = "project"
+	ProjectSlug = "project_slug"
 )
 
 var defaultsGlobal = map[string]interface{}{
@@ -24,7 +24,7 @@ var defaultsGlobal = map[string]interface{}{
 
 var defaultsProject = map[string]interface{}{
 	AccountID:   "",
-	ProjectName: "",
+	ProjectSlug: "",
 }
 
 var globalConfigName string
@@ -102,7 +102,7 @@ func IsLoggedIn() bool {
 }
 
 func IsProjectInit() bool {
-	return getString(ProjectName) != ""
+	return getString(ProjectSlug) != ""
 }
 
 func SetProjectConfig(key string, value interface{}) {

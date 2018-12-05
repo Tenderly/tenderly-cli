@@ -22,7 +22,7 @@ type ProjectRoutes interface {
 }
 
 type ContractRoutes interface {
-	UploadContracts(request call.UploadContractsRequest) ([]*model.Contract, error)
+	UploadContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error)
 }
 
 type Rest struct {

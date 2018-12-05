@@ -3,19 +3,21 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/briandowns/spinner"
+	"github.com/logrusorgru/aurora"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/rest"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
+	"github.com/tenderly/tenderly-cli/truffle"
+	"github.com/tenderly/tenderly-cli/userError"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"github.com/logrusorgru/aurora"
-	"github.com/spf13/cobra"
-	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/rest"
-	"github.com/tenderly/tenderly-cli/rest/call"
-	"github.com/tenderly/tenderly-cli/truffle"
+	"time"
 )
 
 func init() {
@@ -29,50 +31,82 @@ var pushCmd = &cobra.Command{
 		rest := newRest()
 
 		if !config.IsLoggedIn() {
-			fmt.Println("In order to use the tenderly CLI, you need to login first.")
-			fmt.Println("")
-			fmt.Println("Please use the", aurora.Cyan("tenderly login"), "command to get started.")
-			os.Exit(0)
+			logrus.Error("In order to use the Tenderly CLI, you need to login first.\n\n",
+				"Please use the ", aurora.Bold(aurora.Green("tenderly login")), " command to get started.")
+			os.Exit(1)
 		}
 
 		if !config.IsProjectInit() {
-			fmt.Println("you need to initiate project first")
-			os.Exit(0)
+			logrus.Error("You need to initiate the project first.\n\n",
+				"You can do this by using the ", aurora.Bold(aurora.Green("tenderly init")), " command.")
+			os.Exit(1)
 		}
 
-		fmt.Println("Setting up your project")
+		logrus.Info("Setting up your project...")
+
 		err := uploadContracts(rest)
 
 		if err != nil {
-			fmt.Println(fmt.Sprintf("unable to upload contracts: %s", err))
-			os.Exit(0)
+			userError.LogErrorf("unable to upload contracts: %s", err)
+			os.Exit(1)
 		}
 
-		fmt.Println("Go to https://dashboard.tenderly.app")
+		logrus.Infof("Contracts successfully pushed.")
+		logrus.Info(
+			"You can view your contracts at ",
+			aurora.Green(fmt.Sprintf("https://dashboard.tenderly.app/project/%s/contracts", config.GetString(config.ProjectSlug))),
+		)
 	},
 }
 
 func uploadContracts(rest *rest.Rest) error {
 	projectDir, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("get working directory: %s", err)
+		return userError.NewUserError(
+			fmt.Errorf("get workind directory: %s", err),
+			"Couldn't get working directory",
+		)
 	}
 
-	fmt.Println("Analyzing Truffle configuration")
+	logrus.Info("Analyzing Truffle configuration...")
 	truffleConfig, err := getTruffleConfig(projectDir)
 	if err != nil {
-		return fmt.Errorf("unable to fetch config: %s", err)
+		return userError.NewUserError(
+			fmt.Errorf("unable to fetch config: %s", err),
+			"Couldn't read Truffle config file",
+		)
 	}
 
 	contracts, err := getTruffleContracts(filepath.Join(projectDir, truffleConfig.BuildDirectory))
 
-	fmt.Println("We have detected the following smart contracts:")
+	logrus.Info("We have detected the following Smart Contracts:")
 	for _, contract := range contracts {
-		fmt.Println(fmt.Sprintf("- Deploying %s", contract.Name))
+		logrus.Info(fmt.Sprintf("• %s", contract.Name))
 	}
-	rest.Contract.UploadContracts(call.UploadContractsRequest{
+
+	s := spinner.New(spinner.CharSets[33], 100*time.Millisecond)
+
+	s.Start()
+
+	response, err := rest.Contract.UploadContracts(payloads.UploadContractsRequest{
 		Contracts: contracts,
 	})
+
+	s.Stop()
+
+	if err != nil {
+		return userError.NewUserError(
+			fmt.Errorf("failed uploading contracts: %s", err),
+			"Couldn't push contracts to the Tenderly servers",
+		)
+	}
+
+	if response.Error != nil {
+		return userError.NewUserError(
+			fmt.Errorf("api error uploading contracts: %s", response.Error.Slug),
+			response.Error.Message,
+		)
+	}
 
 	return nil
 }
@@ -106,7 +140,10 @@ func getTruffleConfig(projectDir string) (*truffle.Config, error) {
 func getTruffleContracts(buildDir string) ([]truffle.Contract, error) {
 	files, err := ioutil.ReadDir(buildDir)
 	if err != nil {
-		return nil, fmt.Errorf("failed listing truffle build files: %s", err)
+		return nil, userError.NewUserError(
+			fmt.Errorf("failed listing truffle build files: %s", err),
+			fmt.Sprintf("Couldn't list Truffle build folder at: %s", buildDir),
+		)
 	}
 
 	var contracts []truffle.Contract
@@ -115,15 +152,23 @@ func getTruffleContracts(buildDir string) ([]truffle.Contract, error) {
 			continue
 		}
 
-		data, err := ioutil.ReadFile(filepath.Join(buildDir, file.Name()))
+		filePath := filepath.Join(buildDir, file.Name())
+		data, err := ioutil.ReadFile(filePath)
+
 		if err != nil {
-			return nil, fmt.Errorf("failed reading truffle build files: %s", err)
+			return nil, userError.NewUserError(
+				fmt.Errorf("failed reading truffle build file: %s", err),
+				fmt.Sprintf("Couldn't read Truffle build file: %s", filePath),
+			)
 		}
 
 		var contract truffle.Contract
 		err = json.Unmarshal(data, &contract)
 		if err != nil {
-			return nil, fmt.Errorf("failed parsing truffle build files: %s", err)
+			return nil, userError.NewUserError(
+				fmt.Errorf("failed parsing truffle build file: %s", err),
+				fmt.Sprintf("Couldn't parse Truffle build file: %s", filePath),
+			)
 		}
 
 		contracts = append(contracts, contract)

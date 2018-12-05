@@ -2,16 +2,11 @@ package call
 
 import (
 	"encoding/json"
-
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/client"
-	"github.com/tenderly/tenderly-cli/truffle"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
 )
-
-type UploadContractsRequest struct {
-	Contracts []truffle.Contract `json:"contracts"`
-}
 
 type ContractCalls struct {
 }
@@ -20,17 +15,17 @@ func NewContractCalls() *ContractCalls {
 	return &ContractCalls{}
 }
 
-func (rest *ContractCalls) UploadContracts(request UploadContractsRequest) ([]*model.Contract, error) {
+func (rest *ContractCalls) UploadContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error) {
 	contractsJson, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
 
-	var contracts []*model.Contract
+	var contracts *payloads.UploadContractsResponse
 
 	response := client.Request(
 		"POST",
-		"api/v1/account/"+config.GetString(config.AccountID)+"/project/"+config.GetString(config.ProjectName)+"/contracts",
+		"api/v1/account/"+config.GetString(config.AccountID)+"/project/"+config.GetString(config.ProjectSlug)+"/contracts",
 		contractsJson,
 	)
 

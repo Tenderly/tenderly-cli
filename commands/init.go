@@ -30,7 +30,7 @@ var initCmd = &cobra.Command{
 		if !config.IsLoggedIn() {
 			fmt.Println("In order to use the tenderly CLI, you need to login first.")
 			fmt.Println("")
-			fmt.Println("Please use the", aurora.Bold(aurora.Cyan("tenderly login")), "command to get started.")
+			fmt.Println("Please use the", aurora.Green(aurora.Cyan("tenderly login")), "command to get started.")
 			os.Exit(0)
 		}
 
@@ -49,7 +49,7 @@ var initCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		config.SetProjectConfig(config.ProjectName, project.Name)
+		config.SetProjectConfig(config.ProjectSlug, project.Slug)
 		config.SetProjectConfig(config.AccountID, config.GetString(config.AccountID))
 		config.WriteProjectConfig()
 	},
