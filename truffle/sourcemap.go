@@ -46,6 +46,10 @@ func ParseContract(contract *Contract) (stacktrace.SourceMap, error) {
 
 			column++
 			i++
+
+			if i == len(rawSrc)-1 {
+				break
+			}
 		}
 
 		instruction.Line = line

@@ -54,7 +54,7 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 			}
 
 			if contract == nil {
-				return fmt.Errorf("no source found for contract with address %s on network %s\n", networkId, t.To().String())
+				return fmt.Errorf("no source found for contract with address %s on network %s\n", t.To().String(), networkId)
 			}
 		}
 
