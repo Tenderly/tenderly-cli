@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/logrusorgru/aurora"
 	"github.com/manifoldco/promptui"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -21,22 +20,15 @@ func init() {
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initialize tenderly CLI.",
+	Short: "Initialize Tenderly CLI.",
 	Long:  "User authentication, project creation, contract uploading.",
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
 
-		logrus.Debug("Starting tenderly init command")
-		if !config.IsLoggedIn() {
-			fmt.Println("In order to use the tenderly CLI, you need to login first.")
-			fmt.Println("")
-			fmt.Println("Please use the", aurora.Green(aurora.Cyan("tenderly login")), "command to get started.")
-			os.Exit(0)
-		}
+		CheckLogin()
 
 		accountID := config.GetString(config.AccountID)
 
-		logrus.WithField("account_id", accountID).Debugf("Fetching projects for account")
 		projects, err := rest.Project.GetProjects(accountID)
 		if err != nil {
 			logrus.WithField("err", err).Debug("Fetching projects for account failed")

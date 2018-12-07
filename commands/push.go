@@ -30,11 +30,7 @@ var pushCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
 
-		if !config.IsLoggedIn() {
-			logrus.Error("In order to use the Tenderly CLI, you need to login first.\n\n",
-				"Please use the ", aurora.Bold(aurora.Green("tenderly login")), " command to get started.")
-			os.Exit(1)
-		}
+		CheckLogin()
 
 		if !config.IsProjectInit() {
 			logrus.Error("You need to initiate the project first.\n\n",
