@@ -2,7 +2,7 @@
 
 ![CircleCI token](https://img.shields.io/circleci/token/d03a8a252d1d376e478938b24522714ca678cfcc/project/github/Tenderly/tenderly-cli.svg?label=Build&logo=circleci) [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/Tenderly/tenderly-cli.svg?label=Latest%20Version)](https://github.com/Tenderly/tenderly-cli)
 
-Tenderly CLI is a suite of development tools for smart contracts which allow you to monitor and track their execution.
+Tenderly CLI is a suite of development tools for Solidity Smart Contracts which allow you to monitor and track their execution.
 
 ## Installation
 
@@ -33,7 +33,7 @@ curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/inst
 
 ### Windows
 
-> Windows installation guide coming soon!
+Go to the [release page](https://github.com/Tenderly/tenderly-cli/releases), download the latest version and put it somewhere in your `$PATH`.
 
 ### Updating
 
@@ -58,7 +58,7 @@ The proxy server is currently made to work with the [Truffle framework](https://
 tenderly proxy --target-port 7545
 ```
 
-In your Truffle configuration configure your local network config to point to the running proxy or create a new network for proxy debugging.
+In your Truffle configuration, configure your local network config to point to the running proxy or create a new network for proxy debugging.
 
 ```
 module.exports = {
