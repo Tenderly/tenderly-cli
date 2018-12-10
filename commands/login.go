@@ -2,7 +2,6 @@ package commands
 
 import (
 	"errors"
-	"fmt"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
@@ -17,58 +16,69 @@ func init() {
 	rootCmd.AddCommand(loginCmd)
 }
 
+const (
+	numberOfTries = 3
+)
+
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "User authentication.",
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
+		var token string
 
-		email, err := promptEmail()
-		if err != nil {
-			userError.LogErrorf("prompt email failed: %s", err)
+		for i := 0; i < numberOfTries; i++ {
+			email, err := promptEmail()
+			if err != nil {
+				userError.LogErrorf("prompt email failed: %s", err)
+				os.Exit(1)
+			}
+
+			password, err := promptPassword()
+			if err != nil {
+				userError.LogErrorf("prompt password failed: %s", err)
+				os.Exit(1)
+			}
+
+			tokenResponse, err := rest.Auth.Login(payloads.LoginRequest{
+				Username: email,
+				Password: password,
+			})
+
+			if err != nil {
+				userError.LogErrorf("login call: %s", userError.NewUserError(
+					err,
+					"Couldn't make the login request. Please try again.",
+				))
+				continue
+			}
+			if tokenResponse.Error != nil {
+				userError.LogErrorf("login call: %s", tokenResponse.Error)
+				continue
+			}
+
+			token = tokenResponse.Token
+			break
+		}
+
+		if token == "" {
 			os.Exit(1)
 		}
 
-		password, err := promptPassword()
-		if err != nil {
-			userError.LogErrorf("prompt password failed: %s", err)
-			os.Exit(1)
-		}
-
-		tokenResponse, err := rest.Auth.Login(payloads.LoginRequest{
-			Username: email,
-			Password: password,
-		})
-
-		if err != nil {
-			userError.LogErrorf("login call: %s", userError.NewUserError(
-				err,
-				"Couldn't make the login request. Please try again.",
-			))
-			os.Exit(1)
-		}
-		if tokenResponse.Error != nil {
-			userError.LogErrorf("login call: %s", tokenResponse.Error)
-			os.Exit(1)
-		}
-
-		config.SetGlobalConfig(config.Token, tokenResponse.Token)
+		config.SetGlobalConfig(config.Token, token)
 
 		user, err := rest.User.User()
 		if err != nil {
-			fmt.Printf("cannot fetch user info: %s\n", err)
-			os.Exit(0)
+			userError.LogErrorf("cannot fetch user info: %s", userError.NewUserError(
+				err,
+				"Couldn't fetch user information. Please try again.",
+			))
+			os.Exit(1)
 		}
 
 		config.SetGlobalConfig("account_id", user.ID)
 
-		err = config.WriteGlobalConfig()
-		if err != nil {
-			userError.LogErrorf(
-				"login call: write global config: %s",
-				userError.NewUserError(err, "Couldn't write global config file"),
-			)
-		}
+		WriteGlobalConfig()
 	},
 }
 
