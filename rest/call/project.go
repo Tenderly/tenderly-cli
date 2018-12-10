@@ -2,20 +2,13 @@ package call
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"regexp"
-
-	"github.com/sirupsen/logrus"
+	"fmt"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/client"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
+	"io/ioutil"
 )
-
-var projectIDFormat = regexp.MustCompile("^[a-zA-Z0-9-_]{5,20}$")
-
-type ProjectRequest struct {
-	Name string `json:"name"`
-}
 
 type ProjectCalls struct {
 }
@@ -24,25 +17,26 @@ func NewProjectCalls() *ProjectCalls {
 	return &ProjectCalls{}
 }
 
-func (r ProjectRequest) Valid() bool {
-	return r.Name != "" && projectIDFormat.MatchString(r.Name)
-}
-
-func (rest *ProjectCalls) CreateProject(request ProjectRequest) (*model.Project, error) {
+func (rest *ProjectCalls) CreateProject(request payloads.ProjectRequest) (*payloads.ProjectResponse, error) {
 	projectJson, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
 
-	var project model.Project
+	var projectResponse payloads.ProjectResponse
 
 	response := client.Request(
 		"POST",
 		"api/v1/account/"+config.GetString(config.AccountID)+"/project",
 		projectJson,
 	)
-	err = json.NewDecoder(response).Decode(&project)
-	return &project, err
+	err = json.NewDecoder(response).Decode(&projectResponse)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed parsing create project respose: %s", err)
+	}
+
+	return &projectResponse, nil
 }
 
 func (rest *ProjectCalls) GetProject(accountId, id string) (*model.Project, error) {
@@ -57,8 +51,8 @@ func (rest *ProjectCalls) GetProject(accountId, id string) (*model.Project, erro
 	return project, err
 }
 
-func (rest *ProjectCalls) GetProjects(accountId string) ([]*model.Project, error) {
-	var projects []*model.Project
+func (rest *ProjectCalls) GetProjects(accountId string) (*payloads.GetProjectsResponse, error) {
+	var getProjectsResponse payloads.GetProjectsResponse
 	response := client.Request(
 		"GET",
 		"api/v1/account/"+accountId+"/projects",
@@ -70,9 +64,11 @@ func (rest *ProjectCalls) GetProjects(accountId string) ([]*model.Project, error
 		return nil, err
 	}
 
-	logrus.WithField("payload", string(data)).Debug("Got project list response")
+	err = json.Unmarshal(data, &getProjectsResponse)
 
-	err = json.Unmarshal(data, &projects)
+	if err != nil {
+		return nil, fmt.Errorf("failed parsing get projects respose: %s", err)
+	}
 
-	return projects, err
+	return &getProjectsResponse, nil
 }

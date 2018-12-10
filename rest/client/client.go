@@ -4,20 +4,27 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/userError"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 )
 
 func Request(method, path string, body []byte) io.Reader {
+	requestUrl := fmt.Sprintf("%s/%s", "http://api.tenderly.love", path)
 	req, err := http.NewRequest(
 		method,
-		fmt.Sprintf("%s/%s", "http://api.tenderly.love", path),
+		requestUrl,
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to create request")
+		userError.LogErrorf("failed creating request: %s", userError.NewUserError(
+			err,
+			"Failed creating request. Please try again.",
+		))
 		os.Exit(1)
 	}
 
@@ -28,12 +35,32 @@ func Request(method, path string, body []byte) io.Reader {
 		req.Header.Add("Authorization", "Bearer "+token)
 	}
 
+	logrus.WithFields(logrus.Fields{
+		"request_url":  requestUrl,
+		"request_body": string(body),
+	}).Debug("Making request")
+
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		// print error and exit
-		fmt.Fprintf(os.Stderr, "Failed to make request - %s\n", err)
-		os.Exit(0)
+		userError.LogErrorf("failed making request: %s", userError.NewUserError(
+			err,
+			"Failed making request. Please try again.",
+		))
+		os.Exit(1)
 	}
 
-	return res.Body
+	data, err := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+
+	if err != nil {
+		userError.LogErrorf("failed reading response body: %s", userError.NewUserError(
+			err,
+			"Failed reading response body. Please try again.",
+		))
+		os.Exit(1)
+	}
+
+	logrus.WithField("response_body", string(data)).Debug("Got response with body")
+
+	return bytes.NewReader(data)
 }

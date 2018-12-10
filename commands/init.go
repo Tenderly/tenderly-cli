@@ -2,16 +2,15 @@ package commands
 
 import (
 	"errors"
-	"fmt"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
+	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 
 	"github.com/manifoldco/promptui"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest"
-	"github.com/tenderly/tenderly-cli/rest/call"
 )
 
 func init() {
@@ -29,17 +28,22 @@ var initCmd = &cobra.Command{
 
 		accountID := config.GetString(config.AccountID)
 
-		projects, err := rest.Project.GetProjects(accountID)
+		projectsResponse, err := rest.Project.GetProjects(accountID)
 		if err != nil {
-			logrus.WithField("err", err).Debug("Fetching projects for account failed")
-			os.Exit(0)
+			userError.LogErrorf("failed fetching projects: %s",
+				userError.NewUserError(
+					err,
+					"Fetching projects for account failed",
+				),
+			)
+			os.Exit(1)
+		}
+		if projectsResponse.Error != nil {
+			userError.LogErrorf("get projects call: %s", projectsResponse.Error)
+			os.Exit(1)
 		}
 
-		project, err := promptProjectSelect(projects, rest)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(0)
-		}
+		project := promptProjectSelect(projectsResponse.Projects, rest)
 
 		config.SetProjectConfig(config.ProjectSlug, project.Slug)
 		config.SetProjectConfig(config.AccountID, config.GetString(config.AccountID))
@@ -69,7 +73,7 @@ func promptDefault(attribute string) (string, error) {
 	return result, nil
 }
 
-func promptProjectSelect(projects []*model.Project, rest *rest.Rest) (*model.Project, error) {
+func promptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Project {
 	var projectNames []string
 	projectNames = append(projectNames, "Create new project")
 	for _, project := range projects {
@@ -81,34 +85,39 @@ func promptProjectSelect(projects []*model.Project, rest *rest.Rest) (*model.Pro
 		Items: projectNames,
 	}
 
-	_, result, err := promptProjects.Run()
+	index, _, err := promptProjects.Run()
 	if err != nil {
-		return nil, fmt.Errorf("Prompt failed %v\n", err)
+		userError.LogErrorf("prompt project failed: %s", err)
+		os.Exit(1)
 	}
 
-	// TODO refactor
-	if result == "Create new project" {
+	if index == 0 {
 		name, err := promptDefault("Project")
 		if err != nil {
-			return nil, fmt.Errorf("Prompt failed %v\n", err)
+			userError.LogErrorf("prompt project name failed: %s", err)
+			os.Exit(1)
 		}
 
-		project, err := rest.Project.CreateProject(
-			call.ProjectRequest{
+		projectResponse, err := rest.Project.CreateProject(
+			payloads.ProjectRequest{
 				Name: name,
 			})
 		if err != nil {
-			return nil, fmt.Errorf("Request failed %v\n", err)
+			userError.LogErrorf("failed creating project: %s",
+				userError.NewUserError(
+					err,
+					"Creating the new project failed.",
+				),
+			)
+			os.Exit(1)
+		}
+		if projectResponse.Error != nil {
+			userError.LogErrorf("create project call: %s", projectResponse.Error)
+			os.Exit(1)
 		}
 
-		return project, nil
+		return projectResponse.Project
 	}
 
-	for _, project := range projects {
-		if result == project.Name {
-			return project, nil
-		}
-	}
-
-	return nil, fmt.Errorf("Prompt failed %v\n", err)
+	return projects[index-1]
 }

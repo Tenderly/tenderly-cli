@@ -2,7 +2,6 @@ package rest
 
 import (
 	"github.com/tenderly/tenderly-cli/model"
-	"github.com/tenderly/tenderly-cli/rest/call"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 )
 
@@ -16,9 +15,9 @@ type UserRoutes interface {
 }
 
 type ProjectRoutes interface {
-	CreateProject(request call.ProjectRequest) (*model.Project, error)
+	CreateProject(request payloads.ProjectRequest) (*payloads.ProjectResponse, error)
 	GetProject(accountId, id string) (*model.Project, error)
-	GetProjects(accountId string) ([]*model.Project, error)
+	GetProjects(accountId string) (*payloads.GetProjectsResponse, error)
 }
 
 type ContractRoutes interface {

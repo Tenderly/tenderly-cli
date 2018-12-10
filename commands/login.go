@@ -25,13 +25,13 @@ var loginCmd = &cobra.Command{
 
 		email, err := promptEmail()
 		if err != nil {
-			userError.LogErrorf("prompt email: %s", err)
+			userError.LogErrorf("prompt email failed: %s", err)
 			os.Exit(1)
 		}
 
 		password, err := promptPassword()
 		if err != nil {
-			userError.LogErrorf("prompt password: %s", err)
+			userError.LogErrorf("prompt password failed: %s", err)
 			os.Exit(1)
 		}
 
@@ -41,7 +41,10 @@ var loginCmd = &cobra.Command{
 		})
 
 		if err != nil {
-			userError.LogErrorf("login call: %s", err)
+			userError.LogErrorf("login call: %s", userError.NewUserError(
+				err,
+				"Couldn't make the login request. Please try again.",
+			))
 			os.Exit(1)
 		}
 		if tokenResponse.Error != nil {
@@ -83,7 +86,6 @@ func promptEmail() (string, error) {
 
 	result, err := promptEmail.Run()
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
 		return "", err
 	}
 
