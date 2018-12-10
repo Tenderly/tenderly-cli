@@ -18,8 +18,8 @@ type ContractSource struct {
 }
 
 // NewContractSource builds the Contract Source from the provided config, and scoped to the provided network.
-func NewContractSource(config *Config, networkId string, client client.Client) (stacktrace.ContractSource, error) {
-	truffleContracts, err := loadTruffleContracts(config)
+func NewContractSource(path string, networkId string, client client.Client) (stacktrace.ContractSource, error) {
+	truffleContracts, err := loadTruffleContracts(path)
 	if err != nil {
 		return nil, err
 	}
@@ -32,10 +32,9 @@ func NewContractSource(config *Config, networkId string, client client.Client) (
 	return cs, nil
 }
 
-func loadTruffleContracts(config *Config) ([]*Contract, error) {
-	absBuildDir := config.AbsoluteBuildDirectoryPath()
+func loadTruffleContracts(path string) ([]*Contract, error) {
 
-	files, err := ioutil.ReadDir(absBuildDir)
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed listing truffle build files: %s", err)
 	}
@@ -46,7 +45,7 @@ func loadTruffleContracts(config *Config) ([]*Contract, error) {
 			continue
 		}
 
-		data, err := ioutil.ReadFile(filepath.Join(absBuildDir, file.Name()))
+		data, err := ioutil.ReadFile(filepath.Join(path, file.Name()))
 		if err != nil {
 			return nil, fmt.Errorf("failed reading truffle build files: %s", err)
 		}

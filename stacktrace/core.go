@@ -180,7 +180,7 @@ func (c *Core) GenerateStackTrace(contractHash string, txTrace ethereum.Transact
 				ContractName:    contract.Name,
 				Line:            frame.Line,
 
-				Code:   string(contract.Source[im.Start : im.Start+im.Length]),
+				Code:   getLineFromContract(contract.Source, frame.Line),
 				Op:     op.String(),
 				Start:  frame.Start,
 				Length: frame.Length,
@@ -202,4 +202,30 @@ func (c *Core) initStack(contractHash string) error {
 	c.stack = NewContractStack(contract)
 
 	return nil
+}
+
+func getLineFromContract(source string, line int) string {
+	currentLine := 1
+	recording := false
+	var text string
+
+	for _, c := range source {
+		if currentLine == line && !recording {
+			recording = true
+		}
+
+		if recording {
+			if currentLine != line {
+				break
+			}
+
+			text = text + string(c)
+		}
+
+		if c == '\n' {
+			currentLine++
+		}
+	}
+
+	return strings.TrimSpace(text)
 }
