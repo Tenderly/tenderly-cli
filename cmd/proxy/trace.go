@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -17,17 +16,12 @@ import (
 var contracts map[string]*truffle.Contract
 
 func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) error {
-	config, err := getTruffleConfig(projectPath)
-	if err != nil {
-		return err
-	}
-
 	networkId, err := p.client.GetNetworkID()
 	if err != nil {
 		return err
 	}
 
-	truffleContracts, err := getTruffleContracts(filepath.Join(projectPath, config.BuildDirectory), networkId)
+	truffleContracts, err := getTruffleContracts(filepath.Join(projectPath, "build", "contracts"), networkId)
 	if err != nil {
 		return err
 	}
@@ -60,7 +54,7 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 			}
 
 			if contract == nil {
-				return fmt.Errorf("no source found for contract with address %s on network %s\n", networkId, t.To().String())
+				return fmt.Errorf("no source found for contract with address %s on network %s\n", t.To().String(), networkId)
 			}
 		}
 
@@ -80,7 +74,7 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 				networkId, t.Hash().String(), err)
 		}
 
-		source, err := truffle.NewContractSource(config, networkId, *p.client)
+		source, err := truffle.NewContractSource(filepath.Join(projectPath, "build", "contracts"), networkId, *p.client)
 		if err != nil {
 			return fmt.Errorf("cannot load truffle contracts err: %s\n", err)
 		}
@@ -111,35 +105,6 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 		return fmt.Errorf("transaction %s in unknown status on network %s\n", t.Hash().String(), networkId)
 	}
 	return nil
-}
-
-func getTruffleConfig(projectDir string) (*truffle.Config, error) {
-	trufflePath := strings.Replace(filepath.Join(projectDir, "truffle.js"), "\\", "/", -1)
-	if trufflePath[0] != '/' {
-		trufflePath = "./" + trufflePath
-	}
-	data, err := exec.Command("node", "-e", fmt.Sprintf(`
-		var config = require('%s');
-
-		console.log(JSON.stringify(config));
-	`, trufflePath)).CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("cannot find truffle.js, tried path: %s. Output: %s", trufflePath, data)
-	}
-
-	var truffleConfig truffle.Config
-	err = json.Unmarshal(data, &truffleConfig)
-	if err != nil {
-		return nil, fmt.Errorf("cannot read truffle.js")
-	}
-
-	if truffleConfig.BuildDirectory == "" {
-		truffleConfig.BuildDirectory = "./build/contracts"
-	}
-
-	truffleConfig.ProjectDirectory = projectDir
-
-	return &truffleConfig, nil
 }
 
 func getTruffleContracts(projectPath, networkID string) ([]*truffle.Contract, error) {
