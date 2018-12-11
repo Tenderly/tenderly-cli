@@ -13,7 +13,10 @@ import (
 	"github.com/tenderly/tenderly-cli/rest"
 )
 
+var projectName string
+
 func init() {
+	initCmd.PersistentFlags().StringVar(&projectName, "project", "", "The project used for generating the configuration file.")
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -43,7 +46,11 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		project := promptProjectSelect(projectsResponse.Projects, rest)
+		project := getProjectFromFlag(projectsResponse.Projects)
+
+		if project == nil {
+			project = promptProjectSelect(projectsResponse.Projects, rest)
+		}
 
 		config.SetProjectConfig(config.ProjectSlug, project.Slug)
 		config.SetProjectConfig(config.AccountID, config.GetString(config.AccountID))
@@ -71,6 +78,20 @@ func promptDefault(attribute string) (string, error) {
 	}
 
 	return result, nil
+}
+
+func getProjectFromFlag(projects []*model.Project) *model.Project {
+	if projectName == "" {
+		return nil
+	}
+
+	for _, project := range projects {
+		if project.Name == projectName {
+			return project
+		}
+	}
+
+	return nil
 }
 
 func promptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Project {
