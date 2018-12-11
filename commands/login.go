@@ -12,13 +12,18 @@ import (
 	"github.com/tenderly/tenderly-cli/config"
 )
 
-func init() {
-	rootCmd.AddCommand(loginCmd)
-}
-
 const (
 	numberOfTries = 3
 )
+
+var providedUsername string
+var providedPassword string
+
+func init() {
+	loginCmd.PersistentFlags().StringVar(&providedUsername, "username", "", "The username used for logging in.")
+	loginCmd.PersistentFlags().StringVar(&providedPassword, "password", "", "The password used for logging in.")
+	rootCmd.AddCommand(loginCmd)
+}
 
 var loginCmd = &cobra.Command{
 	Use:   "login",
@@ -28,16 +33,28 @@ var loginCmd = &cobra.Command{
 		var token string
 
 		for i := 0; i < numberOfTries; i++ {
-			email, err := promptEmail()
-			if err != nil {
-				userError.LogErrorf("prompt email failed: %s", err)
-				os.Exit(1)
+			var email string
+			var password string
+			var err error
+
+			if providedUsername == "" {
+				email, err = promptEmail()
+				if err != nil {
+					userError.LogErrorf("prompt email failed: %s", err)
+					os.Exit(1)
+				}
+			} else {
+				email = providedUsername
 			}
 
-			password, err := promptPassword()
-			if err != nil {
-				userError.LogErrorf("prompt password failed: %s", err)
-				os.Exit(1)
+			if providedPassword == "" {
+				password, err = promptPassword()
+				if err != nil {
+					userError.LogErrorf("prompt password failed: %s", err)
+					os.Exit(1)
+				}
+			} else {
+				password = providedPassword
 			}
 
 			tokenResponse, err := rest.Auth.Login(payloads.LoginRequest{
@@ -54,6 +71,9 @@ var loginCmd = &cobra.Command{
 			}
 			if tokenResponse.Error != nil {
 				userError.LogErrorf("login call: %s", tokenResponse.Error)
+				if providedUsername != "" && providedPassword != "" {
+					break
+				}
 				continue
 			}
 
