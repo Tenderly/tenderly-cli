@@ -10,16 +10,19 @@ import (
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
+	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 )
 
 var projectName string
+var reInit bool
 var force bool
 
 func init() {
 	initCmd.PersistentFlags().StringVar(&projectName, "project", "", "The project used for generating the configuration file.")
-	initCmd.PersistentFlags().BoolVar(&force, "force", false, "Force initialized the project if it is already initialized.")
+	initCmd.PersistentFlags().BoolVar(&reInit, "re-init", false, "Force initializes the project if it was already initialized.")
+	initCmd.PersistentFlags().BoolVar(&force, "force", false, "Don't check if the project directory contains the Truffle directory structure.")
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -32,10 +35,15 @@ var initCmd = &cobra.Command{
 
 		CheckLogin()
 
-		if config.IsProjectInit() && !force {
+		if config.IsProjectInit() && !reInit {
 			logrus.Info(aurora.Sprintf("The project is already initialized. If you want to set up the project again rerun this command with the %s flag.",
-				aurora.Bold(aurora.Green("--force")),
+				aurora.Bold(aurora.Green("--re-init")),
 			))
+			os.Exit(1)
+		}
+
+		if !truffle.CheckIfTruffleStructure(config.ProjectDirectory) && !force {
+			printWrongFolderMessage()
 			os.Exit(1)
 		}
 
@@ -65,6 +73,13 @@ var initCmd = &cobra.Command{
 		config.SetProjectConfig(config.ProjectSlug, project.Slug)
 		config.SetProjectConfig(config.AccountID, config.GetString(config.AccountID))
 		config.WriteProjectConfig()
+
+		logrus.Info(aurora.Sprintf("Project successfully initialized. "+
+			"You can change the project information by editing the %s file or by rerunning %s with the %s flag.",
+			aurora.Bold(aurora.Green("tenderly.yaml")),
+			aurora.Bold(aurora.Green("tenderly init")),
+			aurora.Bold(aurora.Green("--re-init")),
+		))
 	},
 }
 
@@ -151,4 +166,19 @@ func promptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Proj
 	}
 
 	return projects[index-1]
+}
+
+func printWrongFolderMessage() {
+	logrus.Info("Couldn't detect Truffle directory structure. This can be caused by:")
+	logrus.Println()
+	logrus.Info(aurora.Sprintf("\t• The directory is set incorrectly. "+
+		"If this is the case, either check if you are in the right directory or pass an alternative directory by using the %s flag.",
+		aurora.Bold(aurora.Green("--project-dir")),
+	))
+	logrus.Info(aurora.Sprintf("\t• Tenderly is having trouble reading the directory correctly. "+
+		"If you think this is the case, rerun this command with the %s flag.",
+		aurora.Bold(aurora.Green("--force")),
+	))
+
+	DetectedProjectMessage()
 }

@@ -2,11 +2,7 @@ package commands
 
 import (
 	"errors"
-	"fmt"
-	"github.com/logrusorgru/aurora"
-	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
-	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 	"regexp"
@@ -104,7 +100,7 @@ var loginCmd = &cobra.Command{
 
 		WriteGlobalConfig()
 
-		endMessage()
+		DetectedProjectMessage()
 	},
 }
 
@@ -147,32 +143,4 @@ func promptPassword() (string, error) {
 	}
 
 	return result, nil
-}
-
-func endMessage() {
-	projectDirectories := truffle.FindTruffleDirectories()
-	projectsLen := len(projectDirectories)
-	if projectsLen == 0 {
-		logrus.Info(aurora.Sprintf("Now that you are successfully logged in, you can use the %s command to initialize a new project.",
-			aurora.Bold(aurora.Green("tenderly init")),
-		))
-		return
-	}
-
-	projectWord := "project"
-	if projectsLen > 1 {
-		projectWord = "projects"
-	}
-
-	logrus.Println()
-	logrus.Infof("We have detected %d Truffle %s on your system. You can initialize any of them by running one of the following commands:",
-		projectsLen,
-		projectWord,
-	)
-	logrus.Println()
-
-	for _, project := range projectDirectories {
-		logrus.Info(aurora.Bold(fmt.Sprintf("\tcd %s; tenderly init", project)))
-	}
-	logrus.Println()
 }

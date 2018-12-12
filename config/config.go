@@ -27,16 +27,12 @@ var defaultsProject = map[string]interface{}{
 	ProjectSlug: "",
 }
 
-var globalConfigName string
-var projectConfigName string
+var GlobalConfigName string
+var ProjectConfigName string
+var ProjectDirectory string
 
 var globalConfig *viper.Viper
 var projectConfig *viper.Viper
-
-func init() {
-	flag.StringVar(&globalConfigName, "global-config", "config", "Global configuration file name (without the extension)")
-	flag.StringVar(&projectConfigName, "project-config", "tenderly", "Project configuration file name (without the extension)")
-}
 
 func Init() {
 	flag.Parse()
@@ -46,7 +42,7 @@ func Init() {
 		globalConfig.SetDefault(k, v)
 	}
 
-	globalConfig.SetConfigName(globalConfigName)
+	globalConfig.SetConfigName(GlobalConfigName)
 
 	configPath := filepath.Join(getHomeDir(), ".tenderly")
 
@@ -64,8 +60,8 @@ func Init() {
 	}
 
 	projectConfig = viper.New()
-	projectConfig.SetConfigName(projectConfigName)
-	projectConfig.AddConfigPath(".") //@TODO: This will not work with alternative --project path
+	projectConfig.SetConfigName(ProjectConfigName)
+	projectConfig.AddConfigPath(ProjectDirectory)
 	for k, v := range defaultsProject {
 		projectConfig.SetDefault(k, v)
 	}
@@ -114,7 +110,7 @@ func WriteProjectConfig() error {
 	if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 		// File does not exist, we should create one.
 
-		file, err := os.Create(filepath.Join(".", fmt.Sprintf("%s.yaml", projectConfigName)))
+		file, err := os.Create(filepath.Join(ProjectDirectory, fmt.Sprintf("%s.yaml", ProjectConfigName)))
 		if err != nil {
 			return fmt.Errorf("failed creating project configuration file: %s", err)
 		}
@@ -143,7 +139,7 @@ func WriteGlobalConfig() error {
 			return fmt.Errorf("failed creating global configuration directory: %s", err)
 		}
 
-		file, err := os.Create(filepath.Join(tenderlyDir, fmt.Sprintf("%s.yaml", globalConfigName)))
+		file, err := os.Create(filepath.Join(tenderlyDir, fmt.Sprintf("%s.yaml", GlobalConfigName)))
 		if err != nil {
 			return fmt.Errorf("failed creating global configuration file: %s", err)
 		}

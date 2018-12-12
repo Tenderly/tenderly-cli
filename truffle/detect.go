@@ -51,7 +51,7 @@ func FindTruffleDirectories() []string {
 		}
 
 		dir := path.Dir(possibleDirectory)
-		if !checkIfTruffleStructure(dir) {
+		if !CheckIfTruffleStructure(dir) {
 			continue
 		}
 
@@ -71,7 +71,7 @@ func FindTruffleDirectories() []string {
 	return result
 }
 
-func checkIfTruffleStructure(directory string) bool {
+func CheckIfTruffleStructure(directory string) bool {
 	for _, truffleFolder := range truffleFolders {
 		folderPath := path.Join(directory, truffleFolder)
 		if _, err := os.Stat(folderPath); err != nil {

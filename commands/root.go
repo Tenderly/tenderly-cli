@@ -24,6 +24,12 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Turn on debug level logging.")
+	rootCmd.PersistentFlags().StringVar(&config.GlobalConfigName, "global-config", "config", "Global configuration file name (without the extension)")
+	rootCmd.PersistentFlags().StringVar(&config.ProjectConfigName, "project-config", "tenderly", "Project configuration file name (without the extension)")
+	rootCmd.PersistentFlags().StringVar(&config.ProjectDirectory,
+		"project-dir", ".",
+		"The directory in which the Truffle project resides. If not provided assumes the current working directory.",
+	)
 }
 
 func Execute() {
