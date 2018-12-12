@@ -2,21 +2,24 @@ package commands
 
 import (
 	"errors"
-	"github.com/tenderly/tenderly-cli/rest/payloads"
-	"github.com/tenderly/tenderly-cli/userError"
-	"os"
-
+	"github.com/logrusorgru/aurora"
 	"github.com/manifoldco/promptui"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
+	"github.com/tenderly/tenderly-cli/userError"
+	"os"
 )
 
 var projectName string
+var force bool
 
 func init() {
 	initCmd.PersistentFlags().StringVar(&projectName, "project", "", "The project used for generating the configuration file.")
+	initCmd.PersistentFlags().BoolVar(&force, "force", false, "Force initialized the project if it is already initialized.")
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -28,6 +31,13 @@ var initCmd = &cobra.Command{
 		rest := newRest()
 
 		CheckLogin()
+
+		if config.IsProjectInit() && !force {
+			logrus.Info(aurora.Sprintf("The project is already initialized. If you want to set up the project again rerun this command with the %s flag.",
+				aurora.Bold(aurora.Green("--force")),
+			))
+			os.Exit(1)
+		}
 
 		accountID := config.GetString(config.AccountID)
 
