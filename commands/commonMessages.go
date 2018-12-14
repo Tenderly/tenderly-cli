@@ -29,23 +29,31 @@ func WriteGlobalConfig() {
 	}
 }
 
-func DetectedProjectMessage() {
+func DetectedProjectMessage(
+	printLoginSuccess bool,
+	action string,
+	commandFmt string,
+) {
 	projectDirectories := truffle.FindTruffleDirectories()
 	projectsLen := len(projectDirectories)
-	if projectsLen == 0 {
+	if printLoginSuccess {
 		logrus.Info(aurora.Sprintf("Now that you are successfully logged in, you can use the %s command to initialize a new project.",
 			aurora.Bold(aurora.Green("tenderly init")),
 		))
+	}
+
+	if projectsLen == 0 {
 		return
 	}
 
 	projectWord := "project"
-	initializationSentence := aurora.Sprintf("You can initialize it by running the following command:\n\n%s",
+	initializationSentence := aurora.Sprintf("You can %s it by running the following command:\n\n%s",
+		action,
 		aurora.Bold(fmt.Sprintf("\tcd %s; tenderly init", projectDirectories[0])),
 	)
 	if projectsLen > 1 {
 		projectWord = "projects"
-		initializationSentence = "You can initialize any of them by running one of the following commands:"
+		initializationSentence = fmt.Sprintf("You can %s them by running one of the following commands:", action)
 	}
 
 	logrus.Println()
@@ -61,7 +69,27 @@ func DetectedProjectMessage() {
 	}
 
 	for _, project := range projectDirectories {
-		logrus.Info(aurora.Bold(fmt.Sprintf("\tcd %s; tenderly init", project)))
+		format := fmt.Sprintf("\t%s", commandFmt)
+		logrus.Info(aurora.Bold(fmt.Sprintf(format, project)))
 	}
 	logrus.Println()
+}
+
+func WrongFolderMessage(action string, commandFmt string) {
+	logrus.Info("Couldn't detect Truffle directory structure. This can be caused by:")
+	logrus.Println()
+	logrus.Info(aurora.Sprintf("\t• The directory is not set correctly. "+
+		"If this is the case, either check if you are in the right directory or pass an alternative directory by using the %s flag.",
+		aurora.Bold(aurora.Green("--project-dir")),
+	))
+	logrus.Info(aurora.Sprintf("\t• Tenderly is having trouble reading the directory correctly. "+
+		"If you think this is the case, rerun this command with the %s flag.",
+		aurora.Bold(aurora.Green("--force")),
+	))
+
+	DetectedProjectMessage(
+		false,
+		action,
+		commandFmt,
+	)
 }

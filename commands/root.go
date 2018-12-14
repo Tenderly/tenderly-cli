@@ -28,7 +28,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&config.ProjectConfigName, "project-config", "tenderly", "Project configuration file name (without the extension)")
 	rootCmd.PersistentFlags().StringVar(&config.ProjectDirectory,
 		"project-dir", ".",
-		"The directory in which the Truffle project resides. If not provided assumes the current working directory.",
+		"The directory in which your Truffle project resides. If not provided assumes the current working directory.",
 	)
 }
 

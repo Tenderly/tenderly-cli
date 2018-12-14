@@ -17,12 +17,13 @@ import (
 
 var projectName string
 var reInit bool
-var force bool
+var forceInit bool
 
 func init() {
 	initCmd.PersistentFlags().StringVar(&projectName, "project", "", "The project used for generating the configuration file.")
 	initCmd.PersistentFlags().BoolVar(&reInit, "re-init", false, "Force initializes the project if it was already initialized.")
-	initCmd.PersistentFlags().BoolVar(&force, "force", false, "Don't check if the project directory contains the Truffle directory structure.")
+	initCmd.PersistentFlags().BoolVar(&forceInit, "force", false, "Don't check if the project directory contains the Truffle directory structure. "+
+		"If not provided assumes the current working directory.")
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -42,8 +43,8 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if !truffle.CheckIfTruffleStructure(config.ProjectDirectory) && !force {
-			printWrongFolderMessage()
+		if !truffle.CheckIfTruffleStructure(config.ProjectDirectory) && !forceInit {
+			WrongFolderMessage("initialize", "cd %s; tenderly init")
 			os.Exit(1)
 		}
 
@@ -166,19 +167,4 @@ func promptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Proj
 	}
 
 	return projects[index-1]
-}
-
-func printWrongFolderMessage() {
-	logrus.Info("Couldn't detect Truffle directory structure. This can be caused by:")
-	logrus.Println()
-	logrus.Info(aurora.Sprintf("\t• The directory is set incorrectly. "+
-		"If this is the case, either check if you are in the right directory or pass an alternative directory by using the %s flag.",
-		aurora.Bold(aurora.Green("--project-dir")),
-	))
-	logrus.Info(aurora.Sprintf("\t• Tenderly is having trouble reading the directory correctly. "+
-		"If you think this is the case, rerun this command with the %s flag.",
-		aurora.Bold(aurora.Green("--force")),
-	))
-
-	DetectedProjectMessage()
 }

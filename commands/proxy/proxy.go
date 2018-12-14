@@ -3,7 +3,6 @@ package proxy
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -272,8 +271,6 @@ func isBatchRequest(data []byte) bool {
 }
 
 func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path string) error {
-	flag.Parse()
-
 	logrus.Infof("Proxy starting on %s:%s", proxyHost, proxyPort)
 	logrus.Infof("Redirecting calls to %s:%s", targetHost, targetPort)
 
