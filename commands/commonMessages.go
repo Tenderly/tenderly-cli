@@ -46,10 +46,12 @@ func DetectedProjectMessage(
 		return
 	}
 
+	format := fmt.Sprintf("\t%s", commandFmt)
+
 	projectWord := "project"
 	initializationSentence := aurora.Sprintf("You can %s it by running the following command:\n\n%s",
 		action,
-		aurora.Bold(fmt.Sprintf("\tcd %s; tenderly init", projectDirectories[0])),
+		aurora.Bold(fmt.Sprintf(format, projectDirectories[0])),
 	)
 	if projectsLen > 1 {
 		projectWord = "projects"
@@ -68,8 +70,8 @@ func DetectedProjectMessage(
 		return
 	}
 
+	format = fmt.Sprintf("\t%s", commandFmt)
 	for _, project := range projectDirectories {
-		format := fmt.Sprintf("\t%s", commandFmt)
 		logrus.Info(aurora.Bold(fmt.Sprintf(format, project)))
 	}
 	logrus.Println()
