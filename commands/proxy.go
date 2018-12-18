@@ -23,7 +23,7 @@ func init() {
 	proxyCmd.PersistentFlags().StringVar(&targetPort, "target-port", "8545", "Blockchain rpc port.")
 	proxyCmd.PersistentFlags().StringVar(&proxyHost, "proxy-host", "127.0.0.1", "Call host.")
 	proxyCmd.PersistentFlags().StringVar(&proxyPort, "proxy-port", "9545", "Call port.")
-	proxyCmd.PersistentFlags().BoolVar(&forceProxy, "force", false, "Call port.")
+	proxyCmd.PersistentFlags().BoolVar(&forceProxy, "force", false, "Don't check if the provided directory is a Truffle project.")
 
 	rootCmd.AddCommand(proxyCmd)
 }
