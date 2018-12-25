@@ -50,7 +50,7 @@ func CheckVersion(force bool) {
 
 	versionAlreadyChecked = true
 
-	response, err := http.Get("https://api.github.com/repos/bencicandrej/tenderly-cli/releases")
+	response, err := http.Get("https://api.github.com/repos/tenderly/tenderly-cli/releases")
 
 	if err != nil {
 		return
