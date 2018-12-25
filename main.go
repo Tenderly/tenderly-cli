@@ -1,32 +1,14 @@
 package main
 
-import (
-	"fmt"
-	"os"
-	"strings"
-)
+import "github.com/tenderly/tenderly-cli/commands"
 
 var (
 	version = ""
 )
 
-var CurrentCLIVersion string
-
-func Execute() {
-	CurrentCLIVersion = version
-
-	if !strings.HasPrefix(CurrentCLIVersion, "v") {
-		CurrentCLIVersion = fmt.Sprintf("v%s", CurrentCLIVersion)
-	}
-
-	CheckVersion(false)
-
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
 func main() {
-	Execute()
+	//@TODO: Change ldflags so this is no longer necessary.
+	commands.SetCurrentCLIVersion(version)
+
+	commands.Execute()
 }

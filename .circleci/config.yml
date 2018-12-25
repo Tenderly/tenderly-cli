@@ -8,29 +8,13 @@ jobs:
     - checkout
     - run: go get ./...
     - run: GOOS=windows go get -u github.com/spf13/cobra
+    - run: GOOS=windows go get -u github.com/konsorten/go-windows-terminal-sequences
     - run: curl -sL https://git.io/goreleaser | bash
-  publish_npm:
-    docker:
-    - image: circleci/node:8.9.1
-    steps:
-    - checkout
-    - run: 'sed -i -e "s/\"version\": \".*\"/\"version\": \"$(echo $CIRCLE_TAG | cut -c 2-)\"/g" .npm/package.json'
-    - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-    - run: cp README.md .npm/README.md
-    - run: cd .npm && npm publish
 workflows:
   version: 2
   release:
     jobs:
     - release:
-        filters:
-          branches:
-            ignore: /.*/
-          tags:
-            only: /v[0-9]+(\.[0-9]+)*(-.*)*/
-    - publish_npm:
-        requires:
-        - release
         filters:
           branches:
             ignore: /.*/
