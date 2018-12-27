@@ -65,7 +65,11 @@ func uploadContracts(rest *rest.Rest) error {
 	}
 
 	logrus.Info("Analyzing Truffle configuration...")
-	truffleConfig, err := getTruffleConfig(projectDir)
+	truffleConfig, err := getTruffleConfig("truffle.js", projectDir)
+	if err != nil {
+		truffleConfig, err = getTruffleConfig("truffle-config.js", projectDir)
+	}
+
 	if err != nil {
 		return userError.NewUserError(
 			fmt.Errorf("unable to fetch config: %s", err),
@@ -107,21 +111,21 @@ func uploadContracts(rest *rest.Rest) error {
 	return nil
 }
 
-func getTruffleConfig(projectDir string) (*truffle.Config, error) {
-	trufflePath := filepath.Join(projectDir, "truffle.js")
+func getTruffleConfig(configName string, projectDir string) (*truffle.Config, error) {
+	trufflePath := filepath.Join(projectDir, configName)
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
 		var config = require('%s');
 
 		console.log(JSON.stringify(config));
 	`, trufflePath)).CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("cannot find truffle.js, tried path: %s", trufflePath)
+		return nil, fmt.Errorf("cannot find %s, tried path: %s", configName, trufflePath)
 	}
 
 	var truffleConfig truffle.Config
 	err = json.Unmarshal(data, &truffleConfig)
 	if err != nil {
-		return nil, fmt.Errorf("cannot read truffle.js")
+		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 
 	if truffleConfig.BuildDirectory == "" {
