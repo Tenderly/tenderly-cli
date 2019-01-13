@@ -84,7 +84,7 @@ func mapTruffleContracts(truffleContracts []*Contract, networkId string) map[str
 			continue
 		}
 
-		contracts[network.Address] = &stacktrace.ContractDetails{
+		contracts[strings.ToLower(network.Address)] = &stacktrace.ContractDetails{
 			Name: truffleContract.Name,
 			Hash: network.Address,
 
