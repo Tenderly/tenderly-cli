@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"github.com/tenderly/tenderly-cli/userError"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -15,6 +12,10 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/userError"
 
 	"github.com/tenderly/tenderly-cli/ethereum"
 	"github.com/tenderly/tenderly-cli/ethereum/client"

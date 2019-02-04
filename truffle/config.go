@@ -15,5 +15,14 @@ type Config struct {
 }
 
 func (c *Config) AbsoluteBuildDirectoryPath() string {
-	return filepath.Join(c.ProjectDirectory, c.BuildDirectory)
+	if c.BuildDirectory == "" {
+		c.BuildDirectory = filepath.Join(".", "build", "contracts")
+	}
+
+	switch c.BuildDirectory[0] {
+	case '.':
+		return filepath.Join(c.ProjectDirectory, c.BuildDirectory)
+	default:
+		return c.BuildDirectory
+	}
 }

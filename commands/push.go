@@ -77,7 +77,7 @@ func uploadContracts(rest *rest.Rest) error {
 		)
 	}
 
-	contracts, err := getTruffleContracts(filepath.Join(projectDir, truffleConfig.BuildDirectory))
+	contracts, err := getTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath())
 
 	logrus.Info("We have detected the following Smart Contracts:")
 	for _, contract := range contracts {
@@ -126,10 +126,6 @@ func getTruffleConfig(configName string, projectDir string) (*truffle.Config, er
 	err = json.Unmarshal(data, &truffleConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read %s", configName)
-	}
-
-	if truffleConfig.BuildDirectory == "" {
-		truffleConfig.BuildDirectory = filepath.Join(".", "build", "contracts")
 	}
 
 	truffleConfig.ProjectDirectory = projectDir
