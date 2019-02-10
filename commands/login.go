@@ -124,7 +124,7 @@ func promptAuthenticationMethod() {
 			"Email",
 			aurora.Sprintf(
 				"Authentication token (can be found under %s)",
-				aurora.Bold(aurora.Green("https://dashboard.tenderly.app/settings")),
+				aurora.Bold(aurora.Green("https://dashboard.tenderly.app/account/security")),
 			),
 		},
 	}
