@@ -16,6 +16,9 @@ var logoutCmd = &cobra.Command{
 	Short: "Use this command to logout of the currently logged in Tenderly account",
 	Run: func(cmd *cobra.Command, args []string) {
 		config.SetGlobalConfig(config.Token, "")
+		config.SetGlobalConfig(config.Email, "")
+		config.SetGlobalConfig(config.Username, "")
+		config.SetGlobalConfig(config.AccountID, "")
 		WriteGlobalConfig()
 		logrus.Info("Successfully logged out.\n\n",
 			"If you want to login again, use the ", aurora.Bold(aurora.Green("tenderly login")), " command.")

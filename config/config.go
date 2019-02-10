@@ -15,6 +15,8 @@ const (
 	Token = "token"
 
 	AccountID   = "account_id"
+	Username    = "username"
+	Email       = "email"
 	ProjectSlug = "project_slug"
 )
 
@@ -86,6 +88,10 @@ func GetBool(key string) bool {
 
 func GetString(key string) string {
 	check(key)
+	return getString(key)
+}
+
+func MaybeGetString(key string) string {
 	return getString(key)
 }
 

@@ -34,9 +34,17 @@ var loginCmd = &cobra.Command{
 	Short: "User authentication.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if config.IsLoggedIn() && !forceLogin {
+			alreadyLoggedIn := config.GetString(config.Username)
+			if len(alreadyLoggedIn) == 0 {
+				alreadyLoggedIn = config.GetString(config.Email)
+			}
+			if len(alreadyLoggedIn) == 0 {
+				alreadyLoggedIn = config.GetString(config.AccountID)
+			}
+
 			logrus.Info(aurora.Sprintf("It seems that you are already logged in with the account %s. "+
 				"If this is not you or you want to login with a different account rerun this command with the %s flag.",
-				aurora.Bold(aurora.Green(config.GetString(config.AccountID))),
+				aurora.Bold(aurora.Green(alreadyLoggedIn)),
 				aurora.Bold(aurora.Green("--force")),
 			))
 			os.Exit(0)
@@ -71,7 +79,7 @@ var loginCmd = &cobra.Command{
 			}
 
 			tokenResponse, err := rest.Auth.Login(payloads.LoginRequest{
-				Username: email,
+				Email:    email,
 				Password: password,
 			})
 
@@ -109,7 +117,9 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		config.SetGlobalConfig("account_id", user.ID)
+		config.SetGlobalConfig(config.AccountID, user.ID)
+		config.SetGlobalConfig(config.Email, user.Email)
+		config.SetGlobalConfig(config.Username, user.Username)
 
 		WriteGlobalConfig()
 

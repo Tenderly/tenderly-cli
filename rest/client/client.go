@@ -14,7 +14,12 @@ import (
 )
 
 func Request(method, path string, body []byte) io.Reader {
-	requestUrl := fmt.Sprintf("%s/%s", "http://api.tenderly.love", path)
+	apiBase := "http://api.tenderly.love"
+	if alternativeApiBase := config.MaybeGetString("api_base"); len(alternativeApiBase) != 0 {
+		apiBase = alternativeApiBase
+	}
+
+	requestUrl := fmt.Sprintf("%s/%s", apiBase, path)
 	req, err := http.NewRequest(
 		method,
 		requestUrl,
