@@ -17,6 +17,7 @@ var whoamiCmd = &cobra.Command{
 	Use:   "whoami",
 	Short: "Who am I.",
 	Run: func(cmd *cobra.Command, args []string) {
+		CheckLogin()
 		rest := newRest()
 
 		user, err := rest.User.User()
@@ -25,7 +26,10 @@ var whoamiCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		logrus.Infof("ID: %s", aurora.Magenta(user.ID))
-		logrus.Infof("Email: %s", aurora.Magenta(user.Email))
+		logrus.Infof("ID: %s", aurora.Green(user.ID))
+		logrus.Infof("Email: %s", aurora.Green(user.Email))
+		if len(user.Username) != 0 {
+			logrus.Infof("Username: %s", aurora.Green(user.Username))
+		}
 	},
 }
