@@ -79,6 +79,15 @@ func uploadContracts(rest *rest.Rest) error {
 
 	contracts, err := getTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath())
 
+	if len(contracts) == 0 {
+		return userError.NewUserError(
+			fmt.Errorf("no contracts found in build dir: %s", truffleConfig.AbsoluteBuildDirectoryPath()),
+			aurora.Sprintf("No contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
+				aurora.Bold(aurora.Green(truffleConfig.AbsoluteBuildDirectoryPath())),
+			),
+		)
+	}
+
 	logrus.Info("We have detected the following Smart Contracts:")
 	for _, contract := range contracts {
 		logrus.Info(fmt.Sprintf("• %s", contract.Name))
@@ -105,6 +114,38 @@ func uploadContracts(rest *rest.Rest) error {
 		return userError.NewUserError(
 			fmt.Errorf("api error uploading contracts: %s", response.Error.Slug),
 			response.Error.Message,
+		)
+	}
+
+	if len(response.Contracts) != len(contracts) {
+		var nonPushedContracts []string
+
+		for _, contract := range contracts {
+			for networkId, network := range contract.Networks {
+				var found bool
+				for _, pushedContract := range response.Contracts {
+					if pushedContract.DeploymentInformation.Address == network.Address && pushedContract.DeploymentInformation.NetworkID == networkId {
+						found = true
+						break
+					}
+				}
+				if !found {
+					nonPushedContracts = append(nonPushedContracts, aurora.Sprintf(
+						"• %s on network %s with address %s",
+						aurora.Bold(aurora.Red(contract.Name)),
+						aurora.Bold(aurora.Red(networkId)),
+						aurora.Bold(aurora.Red(network.Address)),
+					))
+				}
+			}
+		}
+
+		return userError.NewUserError(
+			fmt.Errorf("unexpected number of pushed contracts. Got: %d expected: %d", len(response.Contracts), len(contracts)),
+			fmt.Sprintf("Some of the contracts haven't been pushed. This can happen when the contract isn't deployed to a supported network or some other error might have occurred. "+
+				"Below is the list with all the contracts that weren't pushed successfully:\n%s",
+				strings.Join(nonPushedContracts, "\n"),
+			),
 		)
 	}
 

@@ -7,6 +7,6 @@ type UploadContractsRequest struct {
 }
 
 type UploadContractsResponse struct {
-	Contracts []truffle.Contract `json:"contracts"`
-	Error     *ApiError          `json:"error"`
+	Contracts []truffle.ApiContract `json:"contracts"`
+	Error     *ApiError             `json:"error"`
 }

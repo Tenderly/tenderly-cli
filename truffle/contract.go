@@ -46,6 +46,33 @@ type ContractAst struct {
 	Src             string           `json:"src"`
 }
 
+type ApiContract struct {
+	ID string `json:"id"`
+
+	AccountID string `json:"account_id"`
+	ProjectID string `json:"project_id"`
+
+	NetworkID string `json:"network_id"`
+	Public    bool   `json:"public"`
+
+	Address string `json:"address"`
+
+	Name string `json:"contract_name"`
+
+	Abi                   string                    `json:"abi"`
+	Bytecode              string                    `json:"bytecode"`
+	Source                string                    `json:"source"`
+	SourceMap             string                    `json:"source_map"`
+	DeploymentInformation *ApiDeploymentInformation `json:"deployment_information"`
+
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type ApiDeploymentInformation struct {
+	NetworkID string `json:"network_id"`
+	Address   string `json:"address"`
+}
+
 func NewContract(truffleContract Contract) (*stacktrace.Contract, error) {
 	abiString, err := json.Marshal(truffleContract.Abi)
 	if err != nil {
