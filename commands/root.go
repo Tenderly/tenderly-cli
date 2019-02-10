@@ -3,6 +3,7 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -34,8 +35,11 @@ func init() {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		//@TODO: Print some common failure text here.
-		logrus.Errorf("Command failed with error: %s", err)
+		initLog()
+		userError.LogErrorf("command failed with error: %s", userError.NewUserError(
+			err,
+			"Command failed",
+		))
 		os.Exit(1)
 	}
 }
@@ -43,11 +47,17 @@ func Execute() {
 var rootCmd = &cobra.Command{
 	Use:   "tenderly",
 	Short: "Tenderly CLI is a suite of development tools for smart contracts.",
-	Long: "Tenderly CLI is a suite of development tools for smart contracts which allows your to monitor and debugMode them on any network.\n\n" +
+	Long: "Tenderly CLI is a suite of development tools for smart contracts which allows your to monitor and debug them on any network.\n\n" +
 		"To report a bug or give feedback send us an email at support@tenderly.app or join our Discord channel at https://discord.gg/eCWjuvt\n",
 }
 
 func initConfig() {
+	initLog()
+
+	config.Init()
+}
+
+func initLog() {
 	logrus.SetFormatter(&logrus.TextFormatter{
 		DisableLevelTruncation: true,
 	})
@@ -58,8 +68,6 @@ func initConfig() {
 		logrus.SetLevel(logrus.DebugLevel)
 		logrus.SetReportCaller(true)
 	}
-
-	config.Init()
 }
 
 func printHelp() {

@@ -73,7 +73,7 @@ var initCmd = &cobra.Command{
 
 		config.SetProjectConfig(config.ProjectSlug, project.Slug)
 		config.SetProjectConfig(config.AccountID, config.GetString(config.AccountID))
-		config.WriteProjectConfig()
+		WriteProjectConfig()
 
 		logrus.Info(aurora.Sprintf("Project successfully initialized. "+
 			"You can change the project information by editing the %s file or by rerunning %s with the %s flag.",

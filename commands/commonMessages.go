@@ -22,8 +22,19 @@ func WriteGlobalConfig() {
 	err := config.WriteGlobalConfig()
 	if err != nil {
 		userError.LogErrorf(
-			"login call: write global config: %s",
+			"write global config: %s",
 			userError.NewUserError(err, "Couldn't write global config file"),
+		)
+		os.Exit(1)
+	}
+}
+
+func WriteProjectConfig() {
+	err := config.WriteProjectConfig()
+	if err != nil {
+		userError.LogErrorf(
+			"write project config: %s",
+			userError.NewUserError(err, "Couldn't write project config file"),
 		)
 		os.Exit(1)
 	}

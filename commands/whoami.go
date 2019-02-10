@@ -26,10 +26,10 @@ var whoamiCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		logrus.Infof("ID: %s", aurora.Green(user.ID))
-		logrus.Infof("Email: %s", aurora.Green(user.Email))
+		logrus.Infof("ID: %s", aurora.Bold(aurora.Green(user.ID)))
+		logrus.Infof("Email: %s", aurora.Bold(aurora.Green(user.Email)))
 		if len(user.Username) != 0 {
-			logrus.Infof("Username: %s", aurora.Green(user.Username))
+			logrus.Infof("Username: %s", aurora.Bold(aurora.Green(user.Username)))
 		}
 	},
 }
