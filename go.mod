@@ -1,4 +1,4 @@
-module github.com/Tenderly/tenderly-cli
+module github.com/tenderly/tenderly-cli
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
@@ -18,7 +18,6 @@ require (
 	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.3.1
-	github.com/tenderly/tenderly-cli v0.2.0
 	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 )
