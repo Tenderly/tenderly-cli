@@ -28,7 +28,7 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 
 	contracts = make(map[string]*truffle.Contract)
 	for _, contract := range truffleContracts {
-		contracts[contract.Networks[networkId].Address] = contract
+		contracts[strings.ToLower(contract.Networks[networkId].Address)] = contract
 	}
 
 	t, err := p.client.GetTransaction(receipt.Hash())
