@@ -18,7 +18,7 @@ var proxyPort string
 var forceProxy bool
 
 func init() {
-	proxyCmd.PersistentFlags().StringVar(&targetSchema, "target-schema", "http", "Blockchain rpc schema.")
+	proxyCmd.PersistentFlags().StringVar(&targetSchema, "target-schema", "", "Blockchain rpc schema.")
 	proxyCmd.PersistentFlags().StringVar(&targetHost, "target-host", "127.0.0.1", "Blockchain rpc host.")
 	proxyCmd.PersistentFlags().StringVar(&targetPort, "target-port", "8545", "Blockchain rpc port.")
 	proxyCmd.PersistentFlags().StringVar(&proxyHost, "proxy-host", "127.0.0.1", "Call host.")

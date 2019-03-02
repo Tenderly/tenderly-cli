@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/logrusorgru/aurora"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -273,10 +275,13 @@ func isBatchRequest(data []byte) bool {
 
 func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path string) error {
 	logrus.Infof("Proxy starting on %s:%s", proxyHost, proxyPort)
-	logrus.Infof("Redirecting calls to %s:%s", targetHost, targetPort)
 
 	projectPath = path
-	proxy, err := NewProxy(targetSchema + "://" + getTargetHost(targetHost) + ":" + targetPort)
+
+	host := getTargetHost(targetHost, targetSchema, targetPort)
+	logrus.Infof("Redirecting calls to %s", host)
+
+	proxy, err := NewProxy(host)
 	if err != nil {
 		userError.LogErrorf("failed starting proxy: %s", err)
 		os.Exit(1)
@@ -285,13 +290,31 @@ func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path stri
 	return http.ListenAndServe(proxyHost+":"+proxyPort, proxy)
 }
 
-func getTargetHost(targetHost string) string {
-	if strings.HasPrefix(targetHost, "http://") {
-		return targetHost[7:]
-	}
-	if strings.HasPrefix(targetHost, "https://") {
-		return targetHost[8:]
+func getTargetHost(targetHost, targetSchema, targetPort string) string {
+	initialSchema := "http"
+	if strings.HasPrefix(targetHost, "https") {
+		initialSchema = "https"
 	}
 
-	return targetHost
+	re := regexp.MustCompile(`^(https?://|www\.)+`)
+
+	host := fmt.Sprintf("%s://%s", initialSchema, re.ReplaceAllString(targetHost, ""))
+
+	parsedUrl, err := url.Parse(host)
+	if err != nil {
+		userError.LogErrorf("couldn't parse target host: %s", userError.NewUserError(
+			err,
+			aurora.Sprintf("Couldn't parse target host: %s", aurora.Bold(aurora.Red(host))),
+		))
+		os.Exit(1)
+	}
+
+	if len(targetSchema) > 0 {
+		parsedUrl.Scheme = targetSchema
+	}
+	if len(targetPort) > 0 {
+		parsedUrl.Host = fmt.Sprintf("%s:%s", parsedUrl.Hostname(), targetPort)
+	}
+
+	return parsedUrl.String()
 }
