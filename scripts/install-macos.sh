@@ -5,7 +5,7 @@ NEW_VERSION="$(curl -s https://api.github.com/repos/Tenderly/tenderly-cli/releas
 EXISTS="$(command -v tenderly)"
 
 if [ "$EXISTS" != "" ]; then
-  CUR_VERSION="$(tenderly version | cut -d'v' -f3)"
+  CUR_VERSION="$(tenderly version | sed -n 1p | cut -d'v' -f3)"
   echo "\nCurrent Version: $CUR_VERSION => New Version: $NEW_VERSION\n"
 fi
 
@@ -35,7 +35,7 @@ if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
   location="$(which tenderly)"
   echo "Tenderly CLI installed to: $location\n"
 
-  version="$(tenderly version | cut -d'v' -f3)"
+  version="$(tenderly version | sed -n 1p | cut -d'v' -f3)"
   echo "New Tenderly version installed: $version\n"
 
 else
