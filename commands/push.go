@@ -83,7 +83,7 @@ func uploadContracts(rest *rest.Rest) error {
 		return userError.NewUserError(
 			fmt.Errorf("no contracts found in build dir: %s", truffleConfig.AbsoluteBuildDirectoryPath()),
 			aurora.Sprintf("No contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
-				aurora.Bold(aurora.Green(truffleConfig.AbsoluteBuildDirectoryPath())),
+				aurora.Bold(aurora.Red(truffleConfig.AbsoluteBuildDirectoryPath())),
 			),
 		)
 	}
@@ -154,13 +154,14 @@ func uploadContracts(rest *rest.Rest) error {
 
 func getTruffleConfig(configName string, projectDir string) (*truffle.Config, error) {
 	trufflePath := filepath.Join(projectDir, configName)
+	logrus.Debugf("Trying truffle config path: %s", trufflePath)
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
 		var config = require('%s');
 
 		console.log(JSON.stringify(config));
 	`, trufflePath)).CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("cannot find %s, tried path: %s", configName, trufflePath)
+		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, trufflePath, err)
 	}
 
 	var truffleConfig truffle.Config
@@ -206,6 +207,10 @@ func getTruffleContracts(buildDir string) ([]truffle.Contract, error) {
 				fmt.Errorf("failed parsing truffle build file: %s", err),
 				fmt.Sprintf("Couldn't parse Truffle build file: %s", filePath),
 			)
+		}
+
+		if len(contract.Networks) == 0 {
+			continue
 		}
 
 		contracts = append(contracts, contract)
