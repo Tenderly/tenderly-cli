@@ -14,7 +14,7 @@ import (
 )
 
 func Request(method, path string, body []byte) io.Reader {
-	apiBase := "http://api.tenderly.love"
+	apiBase := "http://api.tenderly.dev"
 	if alternativeApiBase := config.MaybeGetString("api_base"); len(alternativeApiBase) != 0 {
 		apiBase = alternativeApiBase
 	}
