@@ -117,4 +117,4 @@ You can also join our [Discord server](https://discord.gg/fBvDJYR) or create an 
 
 -----
 
-Made with ♥ by [Tenderly](https://tenderly.app)
+Made with ♥ by [Tenderly](https://tenderly.dev)
