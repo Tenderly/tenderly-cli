@@ -48,6 +48,11 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		if config.IsProjectInit() && reInit {
+			config.SetProjectConfig(config.ProjectSlug, "")
+			config.SetProjectConfig(config.AccountID, "")
+		}
+
 		accountID := config.GetString(config.AccountID)
 
 		projectsResponse, err := rest.Project.GetProjects(accountID)

@@ -47,7 +47,7 @@ var pushCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		logrus.Infof("Contracts successfully pushed.")
+		logrus.Infof("Smart Contracts successfully pushed.")
 		logrus.Info(
 			"You can view your contracts at ",
 			aurora.Green(fmt.Sprintf("https://dashboard.tenderly.dev/project/%s/contracts", config.GetString(config.ProjectSlug))),
