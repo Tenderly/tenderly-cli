@@ -68,6 +68,13 @@ type Log interface {
 
 type TransactionReceipt interface {
 	Hash() string
+	TransactionIndex() hexutil.Big
+
+	BlockHash() common.Hash
+	BlockNumber() hexutil.Big
+
+	From() common.Address
+	To() *common.Address
 
 	GasUsed() *hexutil.Big
 	CumulativeGasUsed() *hexutil.Big
@@ -76,6 +83,7 @@ type TransactionReceipt interface {
 	Status() string
 	SetStatus(trace string)
 	Logs() []Log
+	LogsBloom() hexutil.Bytes
 }
 
 // States Types
