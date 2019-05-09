@@ -93,19 +93,22 @@ func (l *Log) Topics() []string {
 }
 
 type TransactionReceipt struct {
-	TTransactionHash  string `json:"transactionHash"`
-	TTransactionIndex string `json:"transactionIndex"`
-	TBlockHash        string `json:"blockHash"`
-	TBlockNumber      string `json:"blockNumber"`
+	TTransactionHash  string      `json:"transactionHash"`
+	TTransactionIndex hexutil.Big `json:"transactionIndex"`
+	TBlockHash        common.Hash `json:"blockHash"`
+	TBlockNumber      hexutil.Big `json:"blockNumber"`
+
+	TFrom common.Address  `json:"from"`
+	TTo   *common.Address `json:"to"`
 
 	TGasUsed           *hexutil.Big    `json:"gasUsed"`
 	TCumulativeGasUsed *hexutil.Big    `json:"cumulativeGasUsed"`
 	TContractAddress   *common.Address `json:"contractAddress"`
 
-	TStatus    string  `json:"status"` // Can be null, if null do a check anyways. 0x0 fail, 0x1 success
-	TLogs      []*Log  `json:"logs"`
-	TLogsBloom string  `json:"logsBloom"`
-	TRoot      *string `json:"root"`
+	TStatus    string        `json:"status"` // Can be null, if null do a check anyways. 0x0 fail, 0x1 success
+	TLogs      []*Log        `json:"logs"`
+	TLogsBloom hexutil.Bytes `json:"logsBloom"`
+	TRoot      *string       `json:"root"`
 }
 
 func (t *TransactionReceipt) SetStatus(trace string) {
@@ -114,6 +117,26 @@ func (t *TransactionReceipt) SetStatus(trace string) {
 
 func (t *TransactionReceipt) Hash() string {
 	return t.TTransactionHash
+}
+
+func (t *TransactionReceipt) TransactionIndex() hexutil.Big {
+	return t.TTransactionIndex
+}
+
+func (t *TransactionReceipt) BlockHash() common.Hash {
+	return t.TBlockHash
+}
+
+func (t *TransactionReceipt) BlockNumber() hexutil.Big {
+	return t.TBlockNumber
+}
+
+func (t *TransactionReceipt) From() common.Address {
+	return t.TFrom
+}
+
+func (t *TransactionReceipt) To() *common.Address {
+	return t.TTo
 }
 
 func (t *TransactionReceipt) GasUsed() *hexutil.Big {
@@ -140,6 +163,10 @@ func (t *TransactionReceipt) Logs() []ethereum.Log {
 	}
 
 	return logs
+}
+
+func (t *TransactionReceipt) LogsBloom() hexutil.Bytes {
+	return t.TLogsBloom
 }
 
 // States Types
