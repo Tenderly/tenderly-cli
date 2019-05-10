@@ -32,3 +32,4 @@ changelog:
     - '^docs:'
     - '^test:'
     - '^Merge remote-tracking branch'
+ignore: true
