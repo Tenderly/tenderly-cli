@@ -1,14 +1,15 @@
 project_name: tenderly
 builds:
-- env:
-  - CGO_ENABLED=0
-- goos:
-  - windows
-archive:
-  replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
+  - env:
+      - CGO_ENABLED=0
+  - id: tenderly-windows
+    goos:
+      - windows
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -29,6 +30,6 @@ changelog:
   sort: asc
   filters:
     exclude:
-    - '^docs:'
-    - '^test:'
-    - '^Merge remote-tracking branch'
+      - '^docs:'
+      - '^test:'
+      - '^Merge remote-tracking branch'
