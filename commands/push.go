@@ -77,12 +77,22 @@ func uploadContracts(rest *rest.Rest) error {
 		)
 	}
 
-	contracts, err := getTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath())
+	contracts, numberOfContractsWithANetwork, err := getTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath())
 
 	if len(contracts) == 0 {
 		return userError.NewUserError(
 			fmt.Errorf("no contracts found in build dir: %s", truffleConfig.AbsoluteBuildDirectoryPath()),
-			aurora.Sprintf("No contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
+			aurora.Sprintf("No contracts detected in build directory: %s. "+
+				"This can happen when no contracts have been migrated yet or the %s hasn't been run yet.",
+				aurora.Bold(aurora.Red(truffleConfig.AbsoluteBuildDirectoryPath())),
+				aurora.Bold(aurora.Green("truffle compile")),
+			),
+		)
+	}
+	if numberOfContractsWithANetwork == 0 {
+		return userError.NewUserError(
+			fmt.Errorf("no contracts with a netowrk found in build dir: %s", truffleConfig.AbsoluteBuildDirectoryPath()),
+			aurora.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
 				aurora.Bold(aurora.Red(truffleConfig.AbsoluteBuildDirectoryPath())),
 			),
 		)
@@ -90,7 +100,11 @@ func uploadContracts(rest *rest.Rest) error {
 
 	logrus.Info("We have detected the following Smart Contracts:")
 	for _, contract := range contracts {
-		logrus.Info(fmt.Sprintf("• %s", contract.Name))
+		if len(contract.Networks) > 0 {
+			logrus.Info(fmt.Sprintf("• %s", contract.Name))
+		} else {
+			logrus.Info(fmt.Sprintf("• %s (not deployed to any network, will be used as a library contract)", contract.Name))
+		}
 	}
 
 	s := spinner.New(spinner.CharSets[33], 100*time.Millisecond)
@@ -175,16 +189,17 @@ func getTruffleConfig(configName string, projectDir string) (*truffle.Config, er
 	return &truffleConfig, nil
 }
 
-func getTruffleContracts(buildDir string) ([]truffle.Contract, error) {
+func getTruffleContracts(buildDir string) ([]truffle.Contract, int, error) {
 	files, err := ioutil.ReadDir(buildDir)
 	if err != nil {
-		return nil, userError.NewUserError(
+		return nil, 0, userError.NewUserError(
 			fmt.Errorf("failed listing truffle build files: %s", err),
 			fmt.Sprintf("Couldn't list Truffle build folder at: %s", buildDir),
 		)
 	}
 
 	var contracts []truffle.Contract
+	var numberOfContractsWithANetwork int
 	for _, file := range files {
 		if file.IsDir() || !strings.HasSuffix(file.Name(), ".json") {
 			continue
@@ -194,7 +209,7 @@ func getTruffleContracts(buildDir string) ([]truffle.Contract, error) {
 		data, err := ioutil.ReadFile(filePath)
 
 		if err != nil {
-			return nil, userError.NewUserError(
+			return nil, 0, userError.NewUserError(
 				fmt.Errorf("failed reading truffle build file: %s", err),
 				fmt.Sprintf("Couldn't read Truffle build file: %s", filePath),
 			)
@@ -203,18 +218,17 @@ func getTruffleContracts(buildDir string) ([]truffle.Contract, error) {
 		var contract truffle.Contract
 		err = json.Unmarshal(data, &contract)
 		if err != nil {
-			return nil, userError.NewUserError(
+			return nil, 0, userError.NewUserError(
 				fmt.Errorf("failed parsing truffle build file: %s", err),
 				fmt.Sprintf("Couldn't parse Truffle build file: %s", filePath),
 			)
 		}
 
-		if len(contract.Networks) == 0 {
-			continue
-		}
-
 		contracts = append(contracts, contract)
+		if len(contract.Networks) > 0 {
+			numberOfContractsWithANetwork++
+		}
 	}
 
-	return contracts, nil
+	return contracts, numberOfContractsWithANetwork, nil
 }
