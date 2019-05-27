@@ -131,10 +131,13 @@ func uploadContracts(rest *rest.Rest) error {
 		)
 	}
 
-	if len(response.Contracts) != len(contracts) {
+	if len(response.Contracts) != numberOfContractsWithANetwork {
 		var nonPushedContracts []string
 
 		for _, contract := range contracts {
+			if len(contract.Networks) == 0 {
+				continue
+			}
 			for networkId, network := range contract.Networks {
 				var found bool
 				for _, pushedContract := range response.Contracts {
