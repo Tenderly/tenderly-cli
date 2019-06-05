@@ -4,7 +4,7 @@ import "github.com/tenderly/tenderly-cli/truffle"
 
 type UploadContractsRequest struct {
 	Contracts []truffle.Contract `json:"contracts"`
-	Config    Config             `json:"config"`
+	Config    *Config            `json:"config,omitempty"`
 }
 
 type UploadContractsResponse struct {

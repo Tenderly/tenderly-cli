@@ -21,6 +21,7 @@ type Config struct {
 	ProjectDirectory string                   `json:"project_directory"`
 	BuildDirectory   string                   `json:"contracts_build_directory"`
 	Networks         map[string]NetworkConfig `json:"networks"`
+	Solc             map[string]Optimizer     `json:"solc"`
 	Compilers        map[string]Compiler      `json:"compilers"`
 }
 

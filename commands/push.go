@@ -21,6 +21,11 @@ import (
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
+const (
+	newTruffleConfigFile = "truffle-config.js"
+	oldTruffleConfigFile = "truffle.js"
+)
+
 func init() {
 	rootCmd.AddCommand(pushCmd)
 }
@@ -66,9 +71,12 @@ func uploadContracts(rest *rest.Rest) error {
 	}
 
 	logrus.Info("Analyzing Truffle configuration...")
-	truffleConfig, err := getTruffleConfig("truffle-config.js", projectDir)
+	truffleConfigFile := newTruffleConfigFile
+
+	truffleConfig, err := getTruffleConfig(truffleConfigFile, projectDir)
 	if err != nil {
-		truffleConfig, err = getTruffleConfig("truffle.js", projectDir)
+		truffleConfigFile = oldTruffleConfigFile
+		truffleConfig, err = getTruffleConfig(truffleConfigFile, projectDir)
 	}
 
 	if err != nil {
@@ -112,12 +120,22 @@ func uploadContracts(rest *rest.Rest) error {
 
 	s.Start()
 
-	response, err := rest.Contract.UploadContracts(payloads.UploadContractsRequest{
-		Contracts: contracts,
-		Config: payloads.Config{
+	var configPayload *payloads.Config
+	if truffleConfigFile == newTruffleConfigFile && truffleConfig.Compilers != nil {
+		configPayload = &payloads.Config{
 			OptimizationsUsed:  truffleConfig.Compilers["solc"].Optimizer.Enabled,
 			OptimizationsCount: truffleConfig.Compilers["solc"].Optimizer.Runs,
-		},
+		}
+	} else if truffleConfigFile == oldTruffleConfigFile && truffleConfig.Solc != nil {
+		configPayload = &payloads.Config{
+			OptimizationsUsed:  truffleConfig.Solc["optimizer"].Enabled,
+			OptimizationsCount: truffleConfig.Solc["optimizer"].Runs,
+		}
+	}
+
+	response, err := rest.Contract.UploadContracts(payloads.UploadContractsRequest{
+		Contracts: contracts,
+		Config:    configPayload,
 	})
 
 	s.Stop()
