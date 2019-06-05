@@ -8,10 +8,20 @@ type NetworkConfig struct {
 	NetworkID interface{} `json:"network_id"`
 }
 
+type Compiler struct {
+	Version   string    `json:"version"`
+	Optimizer Optimizer `json:"optimizer"`
+}
+
+type Optimizer struct {
+	Enabled bool `json:"enabled"`
+	Runs    int  `json:"runs"`
+}
 type Config struct {
 	ProjectDirectory string                   `json:"project_directory"`
 	BuildDirectory   string                   `json:"contracts_build_directory"`
 	Networks         map[string]NetworkConfig `json:"networks"`
+	Compilers        map[string]Compiler      `json:"compilers"`
 }
 
 func (c *Config) AbsoluteBuildDirectoryPath() string {

@@ -16,7 +16,7 @@ func NewContractCalls() *ContractCalls {
 }
 
 func (rest *ContractCalls) UploadContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error) {
-	contractsJson, err := json.Marshal(request)
+	uploadJson, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +26,7 @@ func (rest *ContractCalls) UploadContracts(request payloads.UploadContractsReque
 	response := client.Request(
 		"POST",
 		"api/v1/account/"+config.GetString(config.AccountID)+"/project/"+config.GetString(config.ProjectSlug)+"/contracts",
-		contractsJson,
+		uploadJson,
 	)
 
 	err = json.NewDecoder(response).Decode(&contracts)

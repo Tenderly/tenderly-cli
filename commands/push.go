@@ -3,6 +3,13 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/briandowns/spinner"
 	"github.com/logrusorgru/aurora"
 	"github.com/sirupsen/logrus"
@@ -12,12 +19,6 @@ import (
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 func init() {
@@ -65,9 +66,9 @@ func uploadContracts(rest *rest.Rest) error {
 	}
 
 	logrus.Info("Analyzing Truffle configuration...")
-	truffleConfig, err := getTruffleConfig("truffle.js", projectDir)
+	truffleConfig, err := getTruffleConfig("truffle-config.js", projectDir)
 	if err != nil {
-		truffleConfig, err = getTruffleConfig("truffle-config.js", projectDir)
+		truffleConfig, err = getTruffleConfig("truffle.js", projectDir)
 	}
 
 	if err != nil {
@@ -113,6 +114,10 @@ func uploadContracts(rest *rest.Rest) error {
 
 	response, err := rest.Contract.UploadContracts(payloads.UploadContractsRequest{
 		Contracts: contracts,
+		Config: payloads.Config{
+			OptimizationsUsed:  truffleConfig.Compilers["solc"].Optimizer.Enabled,
+			OptimizationsCount: truffleConfig.Compilers["solc"].Optimizer.Runs,
+		},
 	})
 
 	s.Stop()
