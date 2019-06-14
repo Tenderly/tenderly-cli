@@ -14,7 +14,8 @@ type Compiler struct {
 }
 
 type CompilerSettings struct {
-	Optimizer *Optimizer `json:"optimizer"`
+	Optimizer  *Optimizer `json:"optimizer"`
+	EvmVersion *string    `json:"evmVersion"`
 }
 
 type Optimizer struct {

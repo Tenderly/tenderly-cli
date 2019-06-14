@@ -13,6 +13,7 @@ type UploadContractsResponse struct {
 }
 
 type Config struct {
-	OptimizationsUsed  *bool `json:"optimizations_used,omitempty"`
-	OptimizationsCount *int  `json:"optimizations_count,omitempty"`
+	OptimizationsUsed  *bool   `json:"optimizations_used,omitempty"`
+	OptimizationsCount *int    `json:"optimizations_count,omitempty"`
+	EvmVersion         *string `json:"evm_version,omitempty"`
 }

@@ -264,10 +264,18 @@ func parseNewTruffleConfig(compilers map[string]truffle.Compiler) *payloads.Conf
 		return nil
 	}
 
-	return &payloads.Config{
+	payload := payloads.Config{
+		EvmVersion:         compiler.Settings.EvmVersion,
 		OptimizationsUsed:  compiler.Settings.Optimizer.Enabled,
 		OptimizationsCount: compiler.Settings.Optimizer.Runs,
 	}
+
+	if compiler.Settings.Optimizer != nil {
+		payload.OptimizationsUsed = compiler.Settings.Optimizer.Enabled
+		payload.OptimizationsCount = compiler.Settings.Optimizer.Runs
+	}
+
+	return &payload
 }
 
 func parseOldTruffleConfig(solc map[string]truffle.Optimizer) *payloads.Config {
