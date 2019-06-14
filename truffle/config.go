@@ -9,14 +9,19 @@ type NetworkConfig struct {
 }
 
 type Compiler struct {
-	Version   string    `json:"version"`
-	Optimizer Optimizer `json:"optimizer"`
+	Version  string            `json:"version"`
+	Settings *CompilerSettings `json:"settings"`
+}
+
+type CompilerSettings struct {
+	Optimizer *Optimizer `json:"optimizer"`
 }
 
 type Optimizer struct {
-	Enabled bool `json:"enabled"`
-	Runs    int  `json:"runs"`
+	Enabled *bool `json:"enabled"`
+	Runs    *int  `json:"runs"`
 }
+
 type Config struct {
 	ProjectDirectory string                   `json:"project_directory"`
 	BuildDirectory   string                   `json:"contracts_build_directory"`

@@ -13,6 +13,6 @@ type UploadContractsResponse struct {
 }
 
 type Config struct {
-	OptimizationsUsed  bool `json:"optimizations_used"`
-	OptimizationsCount int  `json:"optimizations_count"`
+	OptimizationsUsed  *bool `json:"optimizations_used,omitempty"`
+	OptimizationsCount *int  `json:"optimizations_count,omitempty"`
 }

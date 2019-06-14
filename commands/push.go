@@ -122,15 +122,9 @@ func uploadContracts(rest *rest.Rest) error {
 
 	var configPayload *payloads.Config
 	if truffleConfigFile == newTruffleConfigFile && truffleConfig.Compilers != nil {
-		configPayload = &payloads.Config{
-			OptimizationsUsed:  truffleConfig.Compilers["solc"].Optimizer.Enabled,
-			OptimizationsCount: truffleConfig.Compilers["solc"].Optimizer.Runs,
-		}
+		configPayload = parseNewTruffleConfig(truffleConfig.Compilers)
 	} else if truffleConfigFile == oldTruffleConfigFile && truffleConfig.Solc != nil {
-		configPayload = &payloads.Config{
-			OptimizationsUsed:  truffleConfig.Solc["optimizer"].Enabled,
-			OptimizationsCount: truffleConfig.Solc["optimizer"].Runs,
-		}
+		configPayload = parseOldTruffleConfig(truffleConfig.Solc)
 	}
 
 	response, err := rest.Contract.UploadContracts(payloads.UploadContractsRequest{
@@ -257,4 +251,34 @@ func getTruffleContracts(buildDir string) ([]truffle.Contract, int, error) {
 	}
 
 	return contracts, numberOfContractsWithANetwork, nil
+}
+
+func parseNewTruffleConfig(compilers map[string]truffle.Compiler) *payloads.Config {
+	if _, exists := compilers["solc"]; !exists {
+		return nil
+	}
+
+	compiler := compilers["solc"]
+
+	if compiler.Settings == nil || compiler.Settings.Optimizer == nil {
+		return nil
+	}
+
+	return &payloads.Config{
+		OptimizationsUsed:  compiler.Settings.Optimizer.Enabled,
+		OptimizationsCount: compiler.Settings.Optimizer.Runs,
+	}
+}
+
+func parseOldTruffleConfig(solc map[string]truffle.Optimizer) *payloads.Config {
+	if _, exists := solc["optimizer"]; !exists {
+		return nil
+	}
+
+	optimizer := solc["optimizer"]
+
+	return &payloads.Config{
+		OptimizationsUsed:  optimizer.Enabled,
+		OptimizationsCount: optimizer.Runs,
+	}
 }
