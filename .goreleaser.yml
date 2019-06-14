@@ -14,18 +14,18 @@ checksum:
   name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ .Tag }}-next"
-brew:
-  name: tenderly
-  github:
-    owner: Tenderly
-    name: homebrew-tenderly
-  commit_author:
-    name: Tenderly bot
-    email: hi@tenderly.app
-  homepage: "https://github.com/Tenderly/tenderly-cli"
-  description: "Tenderly helps you observe your contracts in any environment."
-  install: |
-    bin.install "tenderly"
+brews:
+  - name: tenderly
+    github:
+      owner: Tenderly
+      name: homebrew-tenderly
+    commit_author:
+      name: Tenderly bot
+      email: hi@tenderly.app
+    homepage: "https://github.com/Tenderly/tenderly-cli"
+    description: "Tenderly helps you observe your contracts in any environment."
+    install: |
+      bin.install "tenderly"
 changelog:
   sort: asc
   filters:
