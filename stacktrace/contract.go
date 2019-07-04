@@ -19,14 +19,6 @@ func NewContractAddress(address string) ContractAddress {
 	return ContractAddress(address)
 }
 
-func NewNetworkID(id string) NetworkID {
-	return NetworkID(id)
-}
-
-func NewContractID(name string) ContractID {
-	return ContractID(fmt.Sprintf("%s", name))
-}
-
 func (address ContractAddress) String() string {
 	return string(address)
 }
@@ -34,13 +26,6 @@ func (address ContractAddress) String() string {
 type DeploymentInformation struct {
 	NetworkID NetworkID       `json:"network_id"`
 	Address   ContractAddress `json:"address"`
-}
-
-func NewContractDeployment(id NetworkID, address ContractAddress) *DeploymentInformation {
-	return &DeploymentInformation{
-		NetworkID: id,
-		Address:   address,
-	}
 }
 
 func (deployment DeploymentInformation) String() string {
