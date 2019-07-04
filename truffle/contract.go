@@ -1,11 +1,7 @@
 package truffle
 
 import (
-	"encoding/json"
-	"fmt"
 	"time"
-
-	"github.com/tenderly/tenderly-cli/stacktrace"
 )
 
 type Contract struct {
@@ -59,11 +55,10 @@ type ApiContract struct {
 
 	Name string `json:"contract_name"`
 
-	Abi                   string                    `json:"abi"`
-	Bytecode              string                    `json:"bytecode"`
-	Source                string                    `json:"source"`
-	SourceMap             string                    `json:"source_map"`
-	DeploymentInformation *ApiDeploymentInformation `json:"deployment_information"`
+	Abi       string `json:"abi"`
+	Bytecode  string `json:"bytecode"`
+	Source    string `json:"source"`
+	SourceMap string `json:"source_map"`
 
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -71,35 +66,4 @@ type ApiContract struct {
 type ApiDeploymentInformation struct {
 	NetworkID string `json:"network_id"`
 	Address   string `json:"address"`
-}
-
-func NewContract(truffleContract Contract) (*stacktrace.Contract, error) {
-	abiString, err := json.Marshal(truffleContract.Abi)
-	if err != nil {
-		return nil, fmt.Errorf("marshal abi string: %s", err)
-	}
-
-	var deploymentInformation *stacktrace.DeploymentInformation
-
-	for networkID, network := range truffleContract.Networks {
-		//@TODO(bogdan): Add multiple deployments or something similar
-		deploymentInformation = stacktrace.NewContractDeployment(
-			stacktrace.NewNetworkID(networkID),
-			stacktrace.NewContractAddress(network.Address),
-		)
-		break
-	}
-
-	return &stacktrace.Contract{
-		ID: stacktrace.NewContractID(truffleContract.Name),
-
-		Name:                  truffleContract.Name,
-		Abi:                   string(abiString),
-		Bytecode:              truffleContract.DeployedBytecode,
-		SourceMap:             truffleContract.DeployedSourceMap,
-		Source:                truffleContract.Source,
-		DeploymentInformation: *deploymentInformation,
-
-		CreatedAt: time.Now(),
-	}, nil
 }

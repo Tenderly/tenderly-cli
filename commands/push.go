@@ -158,7 +158,7 @@ func uploadContracts(rest *rest.Rest) error {
 			for networkId, network := range contract.Networks {
 				var found bool
 				for _, pushedContract := range response.Contracts {
-					if pushedContract.DeploymentInformation.Address == network.Address && pushedContract.DeploymentInformation.NetworkID == networkId {
+					if pushedContract.Address == strings.ToLower(network.Address) && pushedContract.NetworkID == strings.ToLower(networkId) {
 						found = true
 						break
 					}
@@ -245,9 +245,7 @@ func getTruffleContracts(buildDir string) ([]truffle.Contract, int, error) {
 		}
 
 		contracts = append(contracts, contract)
-		if len(contract.Networks) > 0 {
-			numberOfContractsWithANetwork++
-		}
+		numberOfContractsWithANetwork += len(contract.Networks)
 	}
 
 	return contracts, numberOfContractsWithANetwork, nil
