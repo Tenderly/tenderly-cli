@@ -1,6 +1,11 @@
 package truffle
 
 import (
+	"encoding/json"
+	"github.com/pkg/errors"
+	"io/ioutil"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -66,4 +71,37 @@ type ApiContract struct {
 type ApiDeploymentInformation struct {
 	NetworkID string `json:"network_id"`
 	Address   string `json:"address"`
+}
+
+func GetTruffleContracts(buildDir string) ([]Contract, int, error) {
+	files, err := ioutil.ReadDir(buildDir)
+	if err != nil {
+		return nil, 0, errors.Wrap(err, "failed listing truffle build files")
+	}
+
+	var contracts []Contract
+	var numberOfContractsWithANetwork int
+	for _, file := range files {
+		if file.IsDir() || !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+
+		filePath := filepath.Join(buildDir, file.Name())
+		data, err := ioutil.ReadFile(filePath)
+
+		if err != nil {
+			return nil, 0, errors.Wrap(err, "failed reading truffle build file")
+		}
+
+		var contract Contract
+		err = json.Unmarshal(data, &contract)
+		if err != nil {
+			return nil, 0, errors.Wrap(err, "failed parsing truffle build file")
+		}
+
+		contracts = append(contracts, contract)
+		numberOfContractsWithANetwork += len(contract.Networks)
+	}
+
+	return contracts, numberOfContractsWithANetwork, nil
 }

@@ -1,6 +1,17 @@
 package truffle
 
-import "path/filepath"
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/sirupsen/logrus"
+	"os/exec"
+	"path/filepath"
+)
+
+const (
+	NewTruffleConfigFile = "truffle-config.js"
+	OldTruffleConfigFile = "truffle.js"
+)
 
 type NetworkConfig struct {
 	Host      string      `json:"host"`
@@ -42,4 +53,27 @@ func (c *Config) AbsoluteBuildDirectoryPath() string {
 	default:
 		return c.BuildDirectory
 	}
+}
+
+func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
+	trufflePath := filepath.Join(projectDir, configName)
+	logrus.Debugf("Trying truffle config path: %s", trufflePath)
+	data, err := exec.Command("node", "-e", fmt.Sprintf(`
+		var config = require('%s');
+
+		console.log(JSON.stringify(config));
+	`, trufflePath)).CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, trufflePath, err)
+	}
+
+	var truffleConfig Config
+	err = json.Unmarshal(data, &truffleConfig)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read %s", configName)
+	}
+
+	truffleConfig.ProjectDirectory = projectDir
+
+	return &truffleConfig, nil
 }

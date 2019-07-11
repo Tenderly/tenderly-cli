@@ -1,11 +1,9 @@
 package commands
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/pkg/errors"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -19,11 +17,6 @@ import (
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
-)
-
-const (
-	newTruffleConfigFile = "truffle-config.js"
-	oldTruffleConfigFile = "truffle.js"
 )
 
 func init() {
@@ -62,21 +55,21 @@ var pushCmd = &cobra.Command{
 }
 
 func uploadContracts(rest *rest.Rest) error {
-	projectDir, err := os.Getwd()
+	projectDir, err := filepath.Abs(config.ProjectDirectory)
 	if err != nil {
 		return userError.NewUserError(
-			fmt.Errorf("get workind directory: %s", err),
-			"Couldn't get working directory",
+			fmt.Errorf("get absolute project dir: %s", err),
+			"Couldn't get absolute project path",
 		)
 	}
 
 	logrus.Info("Analyzing Truffle configuration...")
-	truffleConfigFile := newTruffleConfigFile
+	truffleConfigFile := truffle.NewTruffleConfigFile
 
-	truffleConfig, err := getTruffleConfig(truffleConfigFile, projectDir)
+	truffleConfig, err := truffle.GetTruffleConfig(truffleConfigFile, projectDir)
 	if err != nil {
-		truffleConfigFile = oldTruffleConfigFile
-		truffleConfig, err = getTruffleConfig(truffleConfigFile, projectDir)
+		truffleConfigFile = truffle.OldTruffleConfigFile
+		truffleConfig, err = truffle.GetTruffleConfig(truffleConfigFile, projectDir)
 	}
 
 	if err != nil {
@@ -86,7 +79,13 @@ func uploadContracts(rest *rest.Rest) error {
 		)
 	}
 
-	contracts, numberOfContractsWithANetwork, err := getTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath())
+	contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath())
+	if err != nil {
+		return userError.NewUserError(
+			errors.Wrap(err, "unable to get truffle contracts"),
+			fmt.Sprintf("Couldn't read Truffle build files at: %s", truffleConfig.AbsoluteBuildDirectoryPath()),
+		)
+	}
 
 	if len(contracts) == 0 {
 		return userError.NewUserError(
@@ -121,10 +120,10 @@ func uploadContracts(rest *rest.Rest) error {
 	s.Start()
 
 	var configPayload *payloads.Config
-	if truffleConfigFile == newTruffleConfigFile && truffleConfig.Compilers != nil {
-		configPayload = parseNewTruffleConfig(truffleConfig.Compilers)
-	} else if truffleConfigFile == oldTruffleConfigFile && truffleConfig.Solc != nil {
-		configPayload = parseOldTruffleConfig(truffleConfig.Solc)
+	if truffleConfigFile == truffle.NewTruffleConfigFile && truffleConfig.Compilers != nil {
+		configPayload = payloads.ParseNewTruffleConfig(truffleConfig.Compilers)
+	} else if truffleConfigFile == truffle.OldTruffleConfigFile && truffleConfig.Solc != nil {
+		configPayload = payloads.ParseOldTruffleConfig(truffleConfig.Solc)
 	}
 
 	response, err := rest.Contract.UploadContracts(payloads.UploadContractsRequest{
@@ -184,107 +183,4 @@ func uploadContracts(rest *rest.Rest) error {
 	}
 
 	return nil
-}
-
-func getTruffleConfig(configName string, projectDir string) (*truffle.Config, error) {
-	trufflePath := filepath.Join(projectDir, configName)
-	logrus.Debugf("Trying truffle config path: %s", trufflePath)
-	data, err := exec.Command("node", "-e", fmt.Sprintf(`
-		var config = require('%s');
-
-		console.log(JSON.stringify(config));
-	`, trufflePath)).CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, trufflePath, err)
-	}
-
-	var truffleConfig truffle.Config
-	err = json.Unmarshal(data, &truffleConfig)
-	if err != nil {
-		return nil, fmt.Errorf("cannot read %s", configName)
-	}
-
-	truffleConfig.ProjectDirectory = projectDir
-
-	return &truffleConfig, nil
-}
-
-func getTruffleContracts(buildDir string) ([]truffle.Contract, int, error) {
-	files, err := ioutil.ReadDir(buildDir)
-	if err != nil {
-		return nil, 0, userError.NewUserError(
-			fmt.Errorf("failed listing truffle build files: %s", err),
-			fmt.Sprintf("Couldn't list Truffle build folder at: %s", buildDir),
-		)
-	}
-
-	var contracts []truffle.Contract
-	var numberOfContractsWithANetwork int
-	for _, file := range files {
-		if file.IsDir() || !strings.HasSuffix(file.Name(), ".json") {
-			continue
-		}
-
-		filePath := filepath.Join(buildDir, file.Name())
-		data, err := ioutil.ReadFile(filePath)
-
-		if err != nil {
-			return nil, 0, userError.NewUserError(
-				fmt.Errorf("failed reading truffle build file: %s", err),
-				fmt.Sprintf("Couldn't read Truffle build file: %s", filePath),
-			)
-		}
-
-		var contract truffle.Contract
-		err = json.Unmarshal(data, &contract)
-		if err != nil {
-			return nil, 0, userError.NewUserError(
-				fmt.Errorf("failed parsing truffle build file: %s", err),
-				fmt.Sprintf("Couldn't parse Truffle build file: %s", filePath),
-			)
-		}
-
-		contracts = append(contracts, contract)
-		numberOfContractsWithANetwork += len(contract.Networks)
-	}
-
-	return contracts, numberOfContractsWithANetwork, nil
-}
-
-func parseNewTruffleConfig(compilers map[string]truffle.Compiler) *payloads.Config {
-	if _, exists := compilers["solc"]; !exists {
-		return nil
-	}
-
-	compiler := compilers["solc"]
-
-	if compiler.Settings == nil || compiler.Settings.Optimizer == nil {
-		return nil
-	}
-
-	payload := payloads.Config{
-		EvmVersion:         compiler.Settings.EvmVersion,
-		OptimizationsUsed:  compiler.Settings.Optimizer.Enabled,
-		OptimizationsCount: compiler.Settings.Optimizer.Runs,
-	}
-
-	if compiler.Settings.Optimizer != nil {
-		payload.OptimizationsUsed = compiler.Settings.Optimizer.Enabled
-		payload.OptimizationsCount = compiler.Settings.Optimizer.Runs
-	}
-
-	return &payload
-}
-
-func parseOldTruffleConfig(solc map[string]truffle.Optimizer) *payloads.Config {
-	if _, exists := solc["optimizer"]; !exists {
-		return nil
-	}
-
-	optimizer := solc["optimizer"]
-
-	return &payloads.Config{
-		OptimizationsUsed:  optimizer.Enabled,
-		OptimizationsCount: optimizer.Runs,
-	}
 }
