@@ -60,9 +60,12 @@ var initCmd = &cobra.Command{
 			userError.LogErrorf("failed fetching projects: %s",
 				userError.NewUserError(
 					err,
-					"Fetching projects for account failed",
+					"Fetching projects for account failed. This can happen if you are running an older version of the Tenderly CLI.",
 				),
 			)
+
+			CheckVersion(true, true)
+
 			os.Exit(1)
 		}
 		if projectsResponse.Error != nil {
@@ -158,9 +161,12 @@ func promptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Proj
 			userError.LogErrorf("failed creating project: %s",
 				userError.NewUserError(
 					err,
-					"Creating the new project failed.",
+					"Creating the new project failed. This can happen if you are running an older version of the Tenderly CLI.",
 				),
 			)
+
+			CheckVersion(true, true)
+
 			os.Exit(1)
 		}
 		if projectResponse.Error != nil {

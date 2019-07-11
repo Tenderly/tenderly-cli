@@ -34,12 +34,25 @@ func init() {
 }
 
 func Execute() {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Debug(fmt.Sprintf("encountered unexcepted error: %s", r))
+			logrus.Error("\nEncountered an unexpected error. This can happen if you are running an older version of the Tenderly CLI.")
+
+			CheckVersion(true, true)
+
+			os.Exit(1)
+		}
+	}()
 	if err := rootCmd.Execute(); err != nil {
 		initLog()
 		userError.LogErrorf("command failed with error: %s", userError.NewUserError(
 			err,
-			"Command failed",
+			"Command failed. This can happen if you are running an older version of the Tenderly CLI.",
 		))
+
+		CheckVersion(true, true)
+
 		os.Exit(1)
 	}
 }

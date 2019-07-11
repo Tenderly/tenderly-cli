@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 
 	"github.com/logrusorgru/aurora"
@@ -23,6 +24,13 @@ var whoamiCmd = &cobra.Command{
 		user, err := rest.User.User()
 		if err != nil {
 			fmt.Println(err)
+			userError.LogErrorf("failed whoami: %s", userError.NewUserError(
+				err,
+				"Failed fetching user information. This can happen if you are running an older version of the Tenderly CLI.",
+			))
+
+			CheckVersion(true, true)
+
 			os.Exit(0)
 		}
 

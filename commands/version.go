@@ -30,5 +30,5 @@ func SetCurrentCLIVersion(version string) {
 		CurrentCLIVersion = fmt.Sprintf("v%s", CurrentCLIVersion)
 	}
 
-	CheckVersion(false)
+	CheckVersion(false, false)
 }

@@ -98,8 +98,11 @@ var loginCmd = &cobra.Command{
 
 			userError.LogErrorf("cannot fetch user info: %s", userError.NewUserError(
 				err,
-				"Couldn't fetch user information. Please try again.",
+				"Couldn't fetch user information. Please try again. This can happen if you are running an older version of the Tenderly CLI.",
 			))
+
+			CheckVersion(true, true)
+
 			os.Exit(1)
 		}
 

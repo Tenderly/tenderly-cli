@@ -50,11 +50,11 @@ var checkUpdatesCmd = &cobra.Command{
 	Use:   "update-check",
 	Short: "Checks whether there is an update for the CLI",
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckVersion(true)
+		CheckVersion(true, false)
 	},
 }
 
-func CheckVersion(force bool) {
+func CheckVersion(force bool, encounteredError bool) {
 	if versionAlreadyChecked {
 		return
 	}
@@ -72,6 +72,10 @@ func CheckVersion(force bool) {
 
 	if err != nil || (response != nil && response.StatusCode != 200) {
 		if force {
+			if response != nil {
+				logrus.Debugf("Status code: %d", response.StatusCode)
+			}
+
 			userError.LogErrorf("failed creating github releases request: %s", userError.NewUserError(
 				err,
 				"\nFailed fetching newest releases from GitHub. Please try again.\n",
@@ -84,10 +88,13 @@ func CheckVersion(force bool) {
 
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		if force {
+		if force && !encounteredError {
 			userError.LogErrorf("failed reading github releases request: %s", userError.NewUserError(
 				err,
-				"\nFailed parsing latest releases from GitHub. Please try again.\n",
+				aurora.Sprintf(
+					"\nFailed parsing latest releases from GitHub. Please try again. If the problem persists, please follow the installation steps described at %s to re-install the CLI.\n",
+					aurora.Bold(aurora.Green("https://github.com/Tenderly/tenderly-cli#installation")),
+				),
 			))
 		}
 		return
@@ -97,10 +104,13 @@ func CheckVersion(force bool) {
 	err = json.Unmarshal(contents, &result)
 
 	if err != nil || len(result) == 0 {
-		if force {
+		if force && !encounteredError {
 			userError.LogErrorf("error unmarshaling github releases: %s", userError.NewUserError(
 				err,
-				"\nFailed parsing latest releases from GitHub. Please try again.\n",
+				aurora.Sprintf(
+					"\nFailed parsing latest releases from GitHub. Please try again. If the problem persists, please follow the installation steps described at %s to re-install the CLI.\n",
+					aurora.Bold(aurora.Green("https://github.com/Tenderly/tenderly-cli#installation")),
+				),
 			))
 		}
 		return
@@ -122,7 +132,7 @@ func CheckVersion(force bool) {
 
 	currentVersion, err := version.NewVersion(CurrentCLIVersion)
 	if err != nil {
-		if force {
+		if force && !encounteredError {
 			userError.LogErrorf("cannot parse current cli version: %s", userError.NewUserError(
 				err,
 				aurora.Sprintf(
@@ -136,7 +146,7 @@ func CheckVersion(force bool) {
 
 	newestVersion, err := version.NewVersion(result[0].Name)
 	if err != nil {
-		if force {
+		if force && !encounteredError {
 			userError.LogErrorf("cannot parse newest cli version: %s", userError.NewUserError(
 				err,
 				aurora.Sprintf(
@@ -149,7 +159,7 @@ func CheckVersion(force bool) {
 	}
 
 	if !newestVersion.GreaterThan(currentVersion) {
-		if force {
+		if force && !encounteredError {
 			logrus.Info(aurora.Sprintf(
 				"\nYou are already running the newest version of the Tenderly CLI: %s.\n",
 				aurora.Bold(aurora.Green(CurrentCLIVersion)),
@@ -183,7 +193,7 @@ func CheckVersion(force bool) {
 		return
 	}
 
-	logrus.Infof("Below are the notes for this release:\n\n%s", cliMessage)
+	logrus.Infof("Below are the notes for this release:\n\n%s\n", cliMessage)
 }
 
 func getMacOSInstallationCommand() string {
