@@ -43,7 +43,7 @@ func (rest *ContractCalls) VerifyContracts(request payloads.UploadContractsReque
 
 	response := client.Request(
 		"POST",
-		"api/v1/account/"+config.GetString(config.AccountID)+"/verify-contracts",
+		"api/v1/account/me/verify-contracts",
 		uploadJson,
 	)
 
