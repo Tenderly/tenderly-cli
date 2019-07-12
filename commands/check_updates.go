@@ -262,7 +262,7 @@ func getCliMessage(release releaseResult) (string, error) {
 	var args []interface{}
 
 	for _, part := range cliMessage.Parts {
-		formattedPart := aurora.Gray(part.Text)
+		formattedPart := aurora.White(part.Text)
 
 		for i := len(part.Formatting) - 1; i >= 0; i-- {
 			switch part.Formatting[i] {
