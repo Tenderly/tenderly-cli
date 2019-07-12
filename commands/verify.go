@@ -20,41 +20,35 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(pushCmd)
+	rootCmd.AddCommand(verifyCmd)
 }
 
-var pushCmd = &cobra.Command{
-	Use:   "push",
-	Short: "Pushes the contracts to the configured project. After the contracts are pushed they are actively monitored by Tenderly.",
+var verifyCmd = &cobra.Command{
+	Use:   "verify",
+	Short: "Verifies all the contracts on Tenderly. After the contacts are verified they are listed on the Tenderly public contract listing which can be found here: https://dashboard.tenderly.dev/public-contracts.",
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
 
 		CheckLogin()
 
-		if !config.IsProjectInit() {
-			logrus.Error("You need to initiate the project first.\n\n",
-				"You can do this by using the ", aurora.Bold(aurora.Green("tenderly init")), " command.")
-			os.Exit(1)
-		}
+		logrus.Info("Verifying your contracts...")
 
-		logrus.Info("Setting up your project...")
-
-		err := uploadContracts(rest)
+		err := verifyContracts(rest)
 
 		if err != nil {
-			userError.LogErrorf("unable to upload contracts: %s", err)
+			userError.LogErrorf("unable to verify contracts: %s", err)
 			os.Exit(1)
 		}
 
-		logrus.Infof("Smart Contracts successfully pushed.")
+		logrus.Infof("Smart Contracts successfully verified.")
 		logrus.Info(
 			"You can view your contracts at ",
-			aurora.Bold(aurora.Green(fmt.Sprintf("https://dashboard.tenderly.dev/project/%s/contracts", config.GetString(config.ProjectSlug)))),
+			aurora.Bold(aurora.Green(fmt.Sprintf("https://dashboard.tenderly.dev/public-contracts"))),
 		)
 	},
 }
 
-func uploadContracts(rest *rest.Rest) error {
+func verifyContracts(rest *rest.Rest) error {
 	projectDir, err := filepath.Abs(config.ProjectDirectory)
 	if err != nil {
 		return userError.NewUserError(
@@ -126,7 +120,7 @@ func uploadContracts(rest *rest.Rest) error {
 		configPayload = payloads.ParseOldTruffleConfig(truffleConfig.Solc)
 	}
 
-	response, err := rest.Contract.UploadContracts(payloads.UploadContractsRequest{
+	response, err := rest.Contract.VerifyContracts(payloads.UploadContractsRequest{
 		Contracts: contracts,
 		Config:    configPayload,
 	})
@@ -136,7 +130,7 @@ func uploadContracts(rest *rest.Rest) error {
 	if err != nil {
 		return userError.NewUserError(
 			fmt.Errorf("failed uploading contracts: %s", err),
-			"Couldn't push contracts to the Tenderly servers",
+			"Couldn't verify contracts to the Tenderly servers",
 		)
 	}
 
@@ -174,9 +168,9 @@ func uploadContracts(rest *rest.Rest) error {
 		}
 
 		return userError.NewUserError(
-			fmt.Errorf("unexpected number of pushed contracts. Got: %d expected: %d", len(response.Contracts), len(contracts)),
-			fmt.Sprintf("Some of the contracts haven't been pushed. This can happen when the contract isn't deployed to a supported network or some other error might have occurred. "+
-				"Below is the list with all the contracts that weren't pushed successfully:\n%s",
+			fmt.Errorf("unexpected number of verified contracts. Got: %d expected: %d", len(response.Contracts), len(contracts)),
+			fmt.Sprintf("Some of the contracts haven't been verified. This can happen when the contract isn't deployed to a supported network or some other error might have occurred. "+
+				"Below is the list with all the contracts that weren't verified successfully:\n%s",
 				strings.Join(nonPushedContracts, "\n"),
 			),
 		)

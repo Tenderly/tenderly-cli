@@ -22,6 +22,7 @@ type ProjectRoutes interface {
 
 type ContractRoutes interface {
 	UploadContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error)
+	VerifyContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error)
 }
 
 type Rest struct {

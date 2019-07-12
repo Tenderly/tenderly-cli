@@ -33,6 +33,24 @@ func (rest *ContractCalls) UploadContracts(request payloads.UploadContractsReque
 	return contracts, err
 }
 
+func (rest *ContractCalls) VerifyContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error) {
+	uploadJson, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+
+	var contracts *payloads.UploadContractsResponse
+
+	response := client.Request(
+		"POST",
+		"api/v1/account/"+config.GetString(config.AccountID)+"/verify-contracts",
+		uploadJson,
+	)
+
+	err = json.NewDecoder(response).Decode(&contracts)
+	return contracts, err
+}
+
 func (rest *ContractCalls) GetContracts(id string) ([]*model.Contract, error) {
 	var contracts []*model.Contract
 
