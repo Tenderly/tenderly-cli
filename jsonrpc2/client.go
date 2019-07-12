@@ -10,8 +10,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"github.com/nebojsa94/smart-alert/backend/jsonrpc2"
 )
 
 var id int64
@@ -131,8 +129,8 @@ func (c *Client) CallRequest(res interface{}, req *Request) error {
 		return fmt.Errorf("request failed: [ %d ] %s", resMsg.Error.Code, resMsg.Error.Message)
 	}
 
-	if _, ok := res.(*jsonrpc2.Message); ok {
-		res.(*jsonrpc2.Message).Result = resMsg.Result
+	if _, ok := res.(*Message); ok {
+		res.(*Message).Result = resMsg.Result
 		return nil
 	}
 
