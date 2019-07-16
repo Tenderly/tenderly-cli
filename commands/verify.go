@@ -31,6 +31,11 @@ var verifyCmd = &cobra.Command{
 
 		CheckLogin()
 
+		if !truffle.CheckIfTruffleStructure(config.ProjectDirectory) && !forceInit {
+			WrongFolderMessage("verify", "cd %s; tenderly verify")
+			os.Exit(1)
+		}
+
 		logrus.Info("Verifying your contracts...")
 
 		err := verifyContracts(rest)
