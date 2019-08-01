@@ -13,7 +13,7 @@ if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
 
   echo "Installing version $NEW_VERSION\n"
 
-  pushd /tmp/ > /dev/null
+  cd /tmp/
 
   curl -s https://api.github.com/repos/Tenderly/tenderly-cli/releases/latest \
   | grep "browser_download_url.*Darwin_amd64\.tar\.gz" \
@@ -30,7 +30,7 @@ if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
 
   mv tenderly /usr/local/bin/
 
-  popd > /dev/null
+  cd -
 
   location="$(which tenderly)"
   echo "Tenderly CLI installed to: $location\n"
