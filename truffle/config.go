@@ -57,18 +57,30 @@ func (c *Config) AbsoluteBuildDirectoryPath() string {
 
 func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
 	trufflePath := filepath.Join(projectDir, configName)
+	divider := getDivider()
+
 	logrus.Debugf("Trying truffle config path: %s", trufflePath)
+
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
 		var config = require('%s');
 
-		console.log(JSON.stringify(config));
-	`, trufflePath)).CombinedOutput()
+		console.log("%s" + JSON.stringify(config) + "%s");
+	`, trufflePath, divider, divider)).CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, trufflePath, err)
 	}
 
+	configString, err := extractConfigWithDivider(string(data), divider)
+	if err != nil {
+		logrus.Debugf("failed extracting config with divider: %s", err)
+		return nil, fmt.Errorf("cannot read %s", configName)
+	}
+
+	fmt.Println(string(data))
+	fmt.Println(string(configString))
+
 	var truffleConfig Config
-	err = json.Unmarshal(data, &truffleConfig)
+	err = json.Unmarshal([]byte(configString), &truffleConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
@@ -76,4 +88,8 @@ func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
 	truffleConfig.ProjectDirectory = projectDir
 
 	return &truffleConfig, nil
+}
+
+func getDivider() string {
+	return fmt.Sprintf("======%s======", randSeq(10))
 }

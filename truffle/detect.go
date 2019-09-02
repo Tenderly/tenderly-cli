@@ -11,7 +11,6 @@ import (
 )
 
 var truffleFolders = []string{
-	"build",
 	"contracts",
 	"migrations",
 }
