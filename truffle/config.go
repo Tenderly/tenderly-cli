@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 const (
@@ -70,8 +72,12 @@ func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
 		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, trufflePath, err)
 	}
 
+	if runtime.GOOS == "windows" {
+		trufflePath = strings.ReplaceAll(trufflePath, `\`, `\\`)
+	}
+
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
-		var config = require('%s');
+		var config = require("%s");
 
 		console.log("%s" + JSON.stringify(config) + "%s");
 	`, trufflePath, divider, divider)).CombinedOutput()
