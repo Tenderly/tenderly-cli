@@ -2,7 +2,7 @@ version: 2
 jobs:
   release:
     docker:
-    - image: circleci/golang:1.12.7
+    - image: circleci/golang:1.13
     working_directory: /go/src/github.com/tenderly/tenderly-cli
     environment:
       GO111MODULE: "on"

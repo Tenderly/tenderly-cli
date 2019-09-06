@@ -68,9 +68,17 @@ func uploadContracts(rest *rest.Rest) error {
 
 	truffleConfig, err := truffle.GetTruffleConfig(truffleConfigFile, projectDir)
 	if err != nil {
-		logrus.Errorf("couldn't read new truffle config file: %s", err)
+		logrus.Debugf("couldn't read new truffle config file: %s", err)
 		truffleConfigFile = truffle.OldTruffleConfigFile
 		truffleConfig, err = truffle.GetTruffleConfig(truffleConfigFile, projectDir)
+	}
+
+	if os.IsNotExist(err) {
+		logrus.Debugf("couldn't read truffle config file: %s", err)
+		return userError.NewUserError(
+			fmt.Errorf("unable to fetch config: %s", err),
+			"Couldn't find Truffle config file",
+		)
 	}
 
 	if err != nil {

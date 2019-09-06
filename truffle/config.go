@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"os"
 	"os/exec"
 	"path/filepath"
 )
@@ -61,13 +62,21 @@ func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
 
 	logrus.Debugf("Trying truffle config path: %s", trufflePath)
 
+	_, err := os.Stat(trufflePath)
+	if os.IsNotExist(err) {
+		return nil, err
+	}
+	if err != nil {
+		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, trufflePath, err)
+	}
+
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
 		var config = require('%s');
 
 		console.log("%s" + JSON.stringify(config) + "%s");
 	`, trufflePath, divider, divider)).CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, trufflePath, err)
+		return nil, fmt.Errorf("cannot evaluate %s, tried path: %s, error: %s", configName, trufflePath, err)
 	}
 
 	configString, err := extractConfigWithDivider(string(data), divider)
@@ -75,9 +84,6 @@ func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
 		logrus.Debugf("failed extracting config with divider: %s", err)
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
-
-	fmt.Println(string(data))
-	fmt.Println(string(configString))
 
 	var truffleConfig Config
 	err = json.Unmarshal([]byte(configString), &truffleConfig)
