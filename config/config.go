@@ -18,6 +18,12 @@ const (
 	Username    = "username"
 	Email       = "email"
 	ProjectSlug = "project_slug"
+
+	ProxyTargetSchema = "proxy_target_schema"
+	ProxyTargetHost   = "proxy_target_host"
+	ProxyTargetPort   = "proxy_target_port"
+	ProxyHost         = "proxy_host"
+	ProxyPort         = "proxy_port"
 )
 
 var defaultsGlobal = map[string]interface{}{

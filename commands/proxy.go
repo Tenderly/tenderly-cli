@@ -16,6 +16,7 @@ var targetSchema string
 var proxyHost string
 var proxyPort string
 var forceProxy bool
+var writeProxyConfig bool
 
 func init() {
 	proxyCmd.PersistentFlags().StringVar(&targetSchema, "target-schema", "", "Blockchain rpc schema.")
@@ -24,6 +25,7 @@ func init() {
 	proxyCmd.PersistentFlags().StringVar(&proxyHost, "proxy-host", "127.0.0.1", "Call host.")
 	proxyCmd.PersistentFlags().StringVar(&proxyPort, "proxy-port", "9545", "Call port.")
 	proxyCmd.PersistentFlags().BoolVar(&forceProxy, "force", false, "Don't check if the provided directory is a Truffle project.")
+	proxyCmd.PersistentFlags().BoolVar(&writeProxyConfig, "write-config", false, "Write proxy settings to the project configuration file")
 
 	rootCmd.AddCommand(proxyCmd)
 }
@@ -36,8 +38,48 @@ var proxyCmd = &cobra.Command{
 			WrongFolderMessage("proxy", "tenderly proxy --project-dir=\"%s\"")
 			os.Exit(1)
 		}
+
+		if writeProxyConfig {
+			config.SetProjectConfig(config.ProxyTargetSchema, targetSchema)
+			config.SetProjectConfig(config.ProxyTargetHost, targetHost)
+			config.SetProjectConfig(config.ProxyTargetPort, targetPort)
+			config.SetProjectConfig(config.ProxyHost, proxyHost)
+			config.SetProjectConfig(config.ProxyPort, proxyPort)
+
+			WriteProjectConfig()
+		}
+
+		loadProxyConfigFromProject()
+
 		if err := proxy.Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, config.ProjectDirectory); err != nil {
 			log.Fatal(err)
 		}
 	},
+}
+
+func loadProxyConfigFromProject() {
+	configProxyTargetSchema := config.MaybeGetString(config.ProxyTargetSchema)
+	if configProxyTargetSchema != "" {
+		targetSchema = configProxyTargetSchema
+	}
+
+	configProxyTargetHost := config.MaybeGetString(config.ProxyTargetHost)
+	if configProxyTargetHost != "" {
+		targetHost = configProxyTargetHost
+	}
+
+	configProxyTargetPort := config.MaybeGetString(config.ProxyTargetPort)
+	if configProxyTargetPort != "" {
+		targetPort = configProxyTargetPort
+	}
+
+	configProxyHost := config.MaybeGetString(config.ProxyHost)
+	if configProxyHost != "" {
+		proxyHost = configProxyHost
+	}
+
+	configProxyPort := config.MaybeGetString(config.ProxyPort)
+	if configProxyPort != "" {
+		proxyPort = configProxyPort
+	}
 }
