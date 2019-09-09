@@ -15,13 +15,13 @@ import (
 
 var contracts map[string]*truffle.Contract
 
-func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) error {
+func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath, buildDir string) error {
 	networkId, err := p.client.GetNetworkID()
 	if err != nil {
 		return err
 	}
 
-	truffleContracts, err := getTruffleContracts(filepath.Join(projectPath, "build", "contracts"), networkId)
+	truffleContracts, err := getTruffleContracts(buildDir, networkId)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 				networkId, t.Hash().String(), err)
 		}
 
-		source, err := truffle.NewContractSource(filepath.Join(projectPath, "build", "contracts"), networkId, *p.client)
+		source, err := truffle.NewContractSource(buildDir, networkId, *p.client)
 		if err != nil {
 			return fmt.Errorf("cannot load truffle contracts err: %s\n", err)
 		}
@@ -107,8 +107,8 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath string) e
 	return nil
 }
 
-func getTruffleContracts(projectPath, networkID string) ([]*truffle.Contract, error) {
-	files, err := ioutil.ReadDir(projectPath)
+func getTruffleContracts(buildDir, networkID string) ([]*truffle.Contract, error) {
+	files, err := ioutil.ReadDir(buildDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed listing truffle build files: %s", err)
 	}
@@ -119,7 +119,7 @@ func getTruffleContracts(projectPath, networkID string) ([]*truffle.Contract, er
 			continue
 		}
 
-		data, err := ioutil.ReadFile(filepath.Join(projectPath, file.Name()))
+		data, err := ioutil.ReadFile(filepath.Join(buildDir, file.Name()))
 		if err != nil {
 			return nil, fmt.Errorf("failed reading truffle build files: %s", err)
 		}

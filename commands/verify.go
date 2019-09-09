@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -54,28 +53,12 @@ var verifyCmd = &cobra.Command{
 }
 
 func verifyContracts(rest *rest.Rest) error {
-	projectDir, err := filepath.Abs(config.ProjectDirectory)
-	if err != nil {
-		return userError.NewUserError(
-			fmt.Errorf("get absolute project dir: %s", err),
-			"Couldn't get absolute project path",
-		)
-	}
 
 	logrus.Info("Analyzing Truffle configuration...")
-	truffleConfigFile := truffle.NewTruffleConfigFile
 
-	truffleConfig, err := truffle.GetTruffleConfig(truffleConfigFile, projectDir)
+	truffleConfig, err := MustGetTruffleConfig()
 	if err != nil {
-		truffleConfigFile = truffle.OldTruffleConfigFile
-		truffleConfig, err = truffle.GetTruffleConfig(truffleConfigFile, projectDir)
-	}
-
-	if err != nil {
-		return userError.NewUserError(
-			fmt.Errorf("unable to fetch config: %s", err),
-			"Couldn't read Truffle config file",
-		)
+		return err
 	}
 
 	contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath())
@@ -119,9 +102,9 @@ func verifyContracts(rest *rest.Rest) error {
 	s.Start()
 
 	var configPayload *payloads.Config
-	if truffleConfigFile == truffle.NewTruffleConfigFile && truffleConfig.Compilers != nil {
+	if truffleConfig.ConfigType == truffle.NewTruffleConfigFile && truffleConfig.Compilers != nil {
 		configPayload = payloads.ParseNewTruffleConfig(truffleConfig.Compilers)
-	} else if truffleConfigFile == truffle.OldTruffleConfigFile && truffleConfig.Solc != nil {
+	} else if truffleConfig.ConfigType == truffle.OldTruffleConfigFile && truffleConfig.Solc != nil {
 		configPayload = payloads.ParseOldTruffleConfig(truffleConfig.Solc)
 	}
 

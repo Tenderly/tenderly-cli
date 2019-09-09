@@ -32,6 +32,7 @@ type Proxy struct {
 }
 
 var projectPath string
+var buildDirectory string
 
 func NewProxy(target string) (*Proxy, error) {
 	targetUrl, _ := url.Parse(target)
@@ -189,7 +190,7 @@ func (p *Proxy) GetTraceReceipt(tx string, wait bool) (ethereum.TransactionRecei
 		return receipt, nil
 	}
 
-	err = p.Trace(receipt, projectPath)
+	err = p.Trace(receipt, projectPath, buildDirectory)
 	if err != nil {
 		return nil, userError.NewUserError(
 			fmt.Errorf("get transaction trace: %s", err),
@@ -273,10 +274,11 @@ func isBatchRequest(data []byte) bool {
 	return false
 }
 
-func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path string) error {
+func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, buildDir string) error {
 	logrus.Infof("Proxy starting on %s:%s", proxyHost, proxyPort)
 
 	projectPath = path
+	buildDirectory = buildDir
 
 	host := getTargetHost(targetHost, targetSchema, targetPort)
 	logrus.Infof("Redirecting calls to %s", host)

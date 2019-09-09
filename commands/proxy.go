@@ -3,6 +3,7 @@ package commands
 import (
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/truffle"
+	"github.com/tenderly/tenderly-cli/userError"
 	"log"
 	"os"
 
@@ -51,7 +52,13 @@ var proxyCmd = &cobra.Command{
 
 		loadProxyConfigFromProject()
 
-		if err := proxy.Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, config.ProjectDirectory); err != nil {
+		truffleConfig, err := MustGetTruffleConfig()
+		if err != nil {
+			userError.LogErrorf("unable to upload contracts: %s", err)
+			os.Exit(1)
+		}
+
+		if err := proxy.Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, truffleConfig.ProjectDirectory, truffleConfig.AbsoluteBuildDirectoryPath()); err != nil {
 			log.Fatal(err)
 		}
 	},

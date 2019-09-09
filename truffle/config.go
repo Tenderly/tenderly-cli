@@ -43,6 +43,7 @@ type Config struct {
 	Networks         map[string]NetworkConfig `json:"networks"`
 	Solc             map[string]Optimizer     `json:"solc"`
 	Compilers        map[string]Compiler      `json:"compilers"`
+	ConfigType       string                   `json:"-"`
 }
 
 func (c *Config) AbsoluteBuildDirectoryPath() string {
@@ -98,6 +99,7 @@ func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
 	}
 
 	truffleConfig.ProjectDirectory = projectDir
+	truffleConfig.ConfigType = configName
 
 	return &truffleConfig, nil
 }
