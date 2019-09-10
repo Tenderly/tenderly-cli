@@ -107,6 +107,7 @@ Now when your transactions fail you can see the exact line of code in which the 
 | --target-host | "127.0.0.1" | Target host of your Blockchain RPC |
 | --target-port | "8545" | Target port of your Blockchain RPC |
 | --target-schema | "http" | Blockchain RPC protocol |
+| --write-config | / | Write proxy settings to the project configuration file |
 | --help | / | Help for proxy command |
 
 ## Report Bugs / Feedback
