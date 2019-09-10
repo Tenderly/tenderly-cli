@@ -19,7 +19,7 @@ if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
   | grep "browser_download_url.*Darwin_amd64\.tar\.gz" \
   | cut -d ":" -f 2,3 \
   | tr -d \" \
-  | wget -qi -
+  | xargs curl -sOJ
 
   tarball="$(find . -name "*Darwin_amd64.tar.gz" 2>/dev/null)"
   tar -xzf $tarball
