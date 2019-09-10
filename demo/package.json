@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "truffle": "^4.1.14",
+    "truffle": "5.0.35",
     "truffle-hdwallet-provider-privkey": "^0.3.0"
   }
 }
