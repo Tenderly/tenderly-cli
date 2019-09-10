@@ -3,7 +3,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"github.com/logrusorgru/aurora"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
@@ -48,10 +47,10 @@ var loginCmd = &cobra.Command{
 				alreadyLoggedIn = config.GetString(config.AccountID)
 			}
 
-			logrus.Info(aurora.Sprintf("It seems that you are already logged in with the account %s. "+
+			logrus.Info(colorizer.Sprintf("It seems that you are already logged in with the account %s. "+
 				"If this is not you or you want to login with a different account rerun this command with the %s flag.",
-				aurora.Bold(aurora.Green(alreadyLoggedIn)),
-				aurora.Bold(aurora.Green("--force")),
+				colorizer.Bold(colorizer.Green(alreadyLoggedIn)),
+				colorizer.Bold(colorizer.Green("--force")),
 			))
 			os.Exit(0)
 		}
@@ -70,11 +69,11 @@ var loginCmd = &cobra.Command{
 		} else {
 			userError.LogErrorf("unsupported authentication method: %s", userError.NewUserError(
 				fmt.Errorf("non-supported authentication method: %s", providedAuthenticationMethod),
-				aurora.Sprintf(
+				colorizer.Sprintf(
 					"The %s can either be %s or %s",
-					aurora.Bold(aurora.Green("--authentication-method")),
-					aurora.Bold(aurora.Green("email")),
-					aurora.Bold(aurora.Green("token")),
+					colorizer.Bold(colorizer.Green("--authentication-method")),
+					colorizer.Bold(colorizer.Green("email")),
+					colorizer.Bold(colorizer.Green("token")),
 				),
 			))
 			os.Exit(1)
@@ -125,9 +124,9 @@ func promptAuthenticationMethod() {
 		Label: "Select authentication method",
 		Items: []string{
 			"Email",
-			aurora.Sprintf(
+			colorizer.Sprintf(
 				"Authentication token (can be found under %s)",
-				aurora.Bold(aurora.Green("https://dashboard.tenderly.dev/account/security")),
+				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.dev/account/security")),
 			),
 		},
 	}

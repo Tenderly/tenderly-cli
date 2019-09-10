@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-version"
-	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
 
@@ -91,9 +90,9 @@ func CheckVersion(force bool, encounteredError bool) {
 		if force && !encounteredError {
 			userError.LogErrorf("failed reading github releases request: %s", userError.NewUserError(
 				err,
-				aurora.Sprintf(
+				colorizer.Sprintf(
 					"\nFailed parsing latest releases from GitHub. Please try again. If the problem persists, please follow the installation steps described at %s to re-install the CLI.\n",
-					aurora.Bold(aurora.Green("https://github.com/Tenderly/tenderly-cli#installation")),
+					colorizer.Bold(colorizer.Green("https://github.com/Tenderly/tenderly-cli#installation")),
 				),
 			))
 		}
@@ -107,9 +106,9 @@ func CheckVersion(force bool, encounteredError bool) {
 		if force && !encounteredError {
 			userError.LogErrorf("error unmarshaling github releases: %s", userError.NewUserError(
 				err,
-				aurora.Sprintf(
+				colorizer.Sprintf(
 					"\nFailed parsing latest releases from GitHub. Please try again. If the problem persists, please follow the installation steps described at %s to re-install the CLI.\n",
-					aurora.Bold(aurora.Green("https://github.com/Tenderly/tenderly-cli#installation")),
+					colorizer.Bold(colorizer.Green("https://github.com/Tenderly/tenderly-cli#installation")),
 				),
 			))
 		}
@@ -135,9 +134,9 @@ func CheckVersion(force bool, encounteredError bool) {
 		if force && !encounteredError {
 			userError.LogErrorf("cannot parse current cli version: %s", userError.NewUserError(
 				err,
-				aurora.Sprintf(
+				colorizer.Sprintf(
 					"\nCannot parse the current version of the Tenderly CLI. Please follow the installation steps described at %s to re-install the CLI.\n",
-					aurora.Bold(aurora.Green("https://github.com/Tenderly/tenderly-cli#installation")),
+					colorizer.Bold(colorizer.Green("https://github.com/Tenderly/tenderly-cli#installation")),
 				),
 			))
 		}
@@ -149,9 +148,9 @@ func CheckVersion(force bool, encounteredError bool) {
 		if force && !encounteredError {
 			userError.LogErrorf("cannot parse newest cli version: %s", userError.NewUserError(
 				err,
-				aurora.Sprintf(
+				colorizer.Sprintf(
 					"\nCannot parse the newest version of the Tenderly CLI. Please follow the installation steps described at %s to re-install the CLI.\n",
-					aurora.Bold(aurora.Green("https://github.com/Tenderly/tenderly-cli#installation")),
+					colorizer.Bold(colorizer.Green("https://github.com/Tenderly/tenderly-cli#installation")),
 				),
 			))
 		}
@@ -160,9 +159,9 @@ func CheckVersion(force bool, encounteredError bool) {
 
 	if !newestVersion.GreaterThan(currentVersion) {
 		if force && !encounteredError {
-			logrus.Info(aurora.Sprintf(
+			logrus.Info(colorizer.Sprintf(
 				"\nYou are already running the newest version of the Tenderly CLI: %s.\n",
-				aurora.Bold(aurora.Green(CurrentCLIVersion)),
+				colorizer.Bold(colorizer.Green(CurrentCLIVersion)),
 			))
 		}
 		return
@@ -176,13 +175,13 @@ func CheckVersion(force bool, encounteredError bool) {
 	case "linux":
 		fallthrough
 	default:
-		updateCommand = aurora.Sprintf("%s", aurora.Bold(aurora.Green("curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh | sh")))
+		updateCommand = colorizer.Sprintf("%s", colorizer.Bold(colorizer.Green("curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh | sh")))
 	}
 
 	logrus.Info(
-		aurora.Sprintf("\nYou are running version %s of the Tenderly CLI. To update to the newest version (%s) please follow the instructions below:\n\n%s\n",
-			aurora.Bold(aurora.Green(CurrentCLIVersion)),
-			aurora.Bold(aurora.Green(result[0].Name)),
+		colorizer.Sprintf("\nYou are running version %s of the Tenderly CLI. To update to the newest version (%s) please follow the instructions below:\n\n%s\n",
+			colorizer.Bold(colorizer.Green(CurrentCLIVersion)),
+			colorizer.Bold(colorizer.Green(result[0].Name)),
 			updateCommand,
 		),
 	)
@@ -199,10 +198,10 @@ func CheckVersion(force bool, encounteredError bool) {
 func getMacOSInstallationCommand() string {
 	path, err := os.Executable()
 
-	defaultMessage := aurora.Sprintf("If you installed the CLI via Homebrew you can update it by running:\n\n%s\n\n"+
+	defaultMessage := colorizer.Sprintf("If you installed the CLI via Homebrew you can update it by running:\n\n%s\n\n"+
 		"Alternatively, if you installed the CLI via the installation script, you can update your installation by running the same script again:\n\n%s",
-		aurora.Bold(aurora.Green("brew update && brew upgrade tenderly")),
-		aurora.Bold(aurora.Green("curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-macos.sh | sh")),
+		colorizer.Bold(colorizer.Green("brew update && brew upgrade tenderly")),
+		colorizer.Bold(colorizer.Green("curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-macos.sh | sh")),
 	)
 
 	if err != nil {
@@ -216,13 +215,13 @@ func getMacOSInstallationCommand() string {
 	}
 
 	if strings.Contains(link, "Cellar") {
-		return aurora.Sprintf("It seems you installed the CLI via Homebrew, so you can update it by running:\n\n%s",
-			aurora.Bold(aurora.Green("brew update && brew upgrade tenderly")),
+		return colorizer.Sprintf("It seems you installed the CLI via Homebrew, so you can update it by running:\n\n%s",
+			colorizer.Bold(colorizer.Green("brew update && brew upgrade tenderly")),
 		)
 	}
 
-	return aurora.Sprintf("It seems you installed the CLI via the installation script, so you can update it by running:\n\n%s",
-		aurora.Bold(aurora.Green("curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-macos.sh | sh")),
+	return colorizer.Sprintf("It seems you installed the CLI via the installation script, so you can update it by running:\n\n%s",
+		colorizer.Bold(colorizer.Green("curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-macos.sh | sh")),
 	)
 }
 
@@ -262,23 +261,23 @@ func getCliMessage(release releaseResult) (string, error) {
 	var args []interface{}
 
 	for _, part := range cliMessage.Parts {
-		formattedPart := aurora.White(part.Text)
+		formattedPart := colorizer.White(part.Text)
 
 		for i := len(part.Formatting) - 1; i >= 0; i-- {
 			switch part.Formatting[i] {
 			case "bold":
-				formattedPart = aurora.Bold(formattedPart)
+				formattedPart = colorizer.Bold(formattedPart)
 			case "green":
-				formattedPart = aurora.Green(formattedPart)
+				formattedPart = colorizer.Green(formattedPart)
 			case "red":
-				formattedPart = aurora.Red(formattedPart)
+				formattedPart = colorizer.Red(formattedPart)
 			}
 		}
 
 		args = append(args, formattedPart)
 	}
 
-	message := aurora.Sprintf(cliMessage.Format, args...)
+	message := colorizer.Sprintf(cliMessage.Format, args...)
 
 	return message, nil
 }

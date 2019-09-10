@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"github.com/logrusorgru/aurora"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
@@ -21,6 +20,6 @@ var logoutCmd = &cobra.Command{
 		config.SetGlobalConfig(config.AccountID, "")
 		WriteGlobalConfig()
 		logrus.Info("Successfully logged out.\n\n",
-			"If you want to login again, use the ", aurora.Bold(aurora.Green("tenderly login")), " command.")
+			"If you want to login again, use the ", colorizer.Bold(colorizer.Green("tenderly login")), " command.")
 	},
 }

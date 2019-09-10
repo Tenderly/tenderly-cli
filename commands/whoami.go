@@ -4,7 +4,6 @@ import (
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 
-	"github.com/logrusorgru/aurora"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -32,10 +31,10 @@ var whoamiCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		logrus.Infof("ID: %s", aurora.Bold(aurora.Green(user.ID)))
-		logrus.Infof("Email: %s", aurora.Bold(aurora.Green(user.Email)))
+		logrus.Infof("ID: %s", colorizer.Bold(colorizer.Green(user.ID)))
+		logrus.Infof("Email: %s", colorizer.Bold(colorizer.Green(user.Email)))
 		if len(user.Username) != 0 {
-			logrus.Infof("Username: %s", aurora.Bold(aurora.Green(user.Username)))
+			logrus.Infof("Username: %s", colorizer.Bold(colorizer.Green(user.Username)))
 		}
 	},
 }

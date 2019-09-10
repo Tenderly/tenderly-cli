@@ -58,7 +58,16 @@ var proxyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if err := proxy.Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, truffleConfig.ProjectDirectory, truffleConfig.AbsoluteBuildDirectoryPath()); err != nil {
+		if err := proxy.Start(
+			targetSchema,
+			targetHost,
+			targetPort,
+			proxyHost,
+			proxyPort,
+			truffleConfig.ProjectDirectory,
+			truffleConfig.AbsoluteBuildDirectoryPath(),
+			colorizer,
+		); err != nil {
 			log.Fatal(err)
 		}
 	},

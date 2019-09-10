@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"github.com/logrusorgru/aurora"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/truffle"
@@ -13,7 +12,7 @@ import (
 func CheckLogin() {
 	if !config.IsLoggedIn() {
 		logrus.Error("In order to use the Tenderly CLI, you need to login first.\n\n",
-			"Please use the ", aurora.Bold(aurora.Green("tenderly login")), " command to get started.")
+			"Please use the ", colorizer.Bold(colorizer.Green("tenderly login")), " command to get started.")
 		os.Exit(1)
 	}
 }
@@ -48,8 +47,8 @@ func DetectedProjectMessage(
 	projectDirectories := truffle.FindTruffleDirectories()
 	projectsLen := len(projectDirectories)
 	if printLoginSuccess {
-		logrus.Info(aurora.Sprintf("Now that you are successfully logged in, you can use the %s command to initialize a new project.",
-			aurora.Bold(aurora.Green("tenderly init")),
+		logrus.Info(colorizer.Sprintf("Now that you are successfully logged in, you can use the %s command to initialize a new project.",
+			colorizer.Bold(colorizer.Green("tenderly init")),
 		))
 	}
 
@@ -60,9 +59,9 @@ func DetectedProjectMessage(
 	format := fmt.Sprintf("\t%s", commandFmt)
 
 	projectWord := "project"
-	initializationSentence := aurora.Sprintf("You can %s it by running the following command:\n\n%s",
+	initializationSentence := colorizer.Sprintf("You can %s it by running the following command:\n\n%s",
 		action,
-		aurora.Bold(fmt.Sprintf(format, projectDirectories[0])),
+		colorizer.Bold(fmt.Sprintf(format, projectDirectories[0])),
 	)
 	if projectsLen > 1 {
 		projectWord = "projects"
@@ -83,7 +82,7 @@ func DetectedProjectMessage(
 
 	format = fmt.Sprintf("\t%s", commandFmt)
 	for _, project := range projectDirectories {
-		logrus.Info(aurora.Bold(fmt.Sprintf(format, project)))
+		logrus.Info(colorizer.Bold(fmt.Sprintf(format, project)))
 	}
 	logrus.Println()
 }
@@ -91,13 +90,13 @@ func DetectedProjectMessage(
 func WrongFolderMessage(action string, commandFmt string) {
 	logrus.Info("Couldn't detect Truffle directory structure. This can be caused by:")
 	logrus.Println()
-	logrus.Info(aurora.Sprintf("\t• The directory is not set correctly. "+
+	logrus.Info(colorizer.Sprintf("\t• The directory is not set correctly. "+
 		"If this is the case, either check if you are in the right directory or pass an alternative directory by using the %s flag.",
-		aurora.Bold(aurora.Green("--project-dir")),
+		colorizer.Bold(colorizer.Green("--project-dir")),
 	))
-	logrus.Info(aurora.Sprintf("\t• Tenderly is having trouble reading the directory correctly. "+
+	logrus.Info(colorizer.Sprintf("\t• Tenderly is having trouble reading the directory correctly. "+
 		"If you think this is the case, rerun this command with the %s flag.",
-		aurora.Bold(aurora.Green("--force")),
+		colorizer.Bold(colorizer.Green("--force")),
 	))
 
 	DetectedProjectMessage(

@@ -3,6 +3,7 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"github.com/logrusorgru/aurora"
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 
@@ -12,6 +13,7 @@ import (
 )
 
 var debugMode bool
+var colorizer aurora.Aurora
 
 type TenderlyStandardFormatter struct {
 }
@@ -71,13 +73,13 @@ func initConfig() {
 }
 
 func initLog() {
-	logrus.SetFormatter(&logrus.TextFormatter{
-		DisableLevelTruncation: true,
-	})
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 	if !debugMode {
+		colorizer = aurora.NewAurora(true)
 		logrus.SetFormatter(&TenderlyStandardFormatter{})
 	}
 	if debugMode {
+		colorizer = aurora.NewAurora(false)
 		logrus.SetLevel(logrus.DebugLevel)
 		logrus.SetReportCaller(true)
 	}

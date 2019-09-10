@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/briandowns/spinner"
-	"github.com/logrusorgru/aurora"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
@@ -32,7 +31,7 @@ var pushCmd = &cobra.Command{
 
 		if !config.IsProjectInit() {
 			logrus.Error("You need to initiate the project first.\n\n",
-				"You can do this by using the ", aurora.Bold(aurora.Green("tenderly init")), " command.")
+				"You can do this by using the ", colorizer.Bold(colorizer.Green("tenderly init")), " command.")
 			os.Exit(1)
 		}
 
@@ -48,7 +47,7 @@ var pushCmd = &cobra.Command{
 		logrus.Infof("Smart Contracts successfully pushed.")
 		logrus.Info(
 			"You can view your contracts at ",
-			aurora.Bold(aurora.Green(fmt.Sprintf("https://dashboard.tenderly.dev/project/%s/contracts", config.GetString(config.ProjectSlug)))),
+			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.dev/project/%s/contracts", config.GetString(config.ProjectSlug)))),
 		)
 	},
 }
@@ -72,18 +71,18 @@ func uploadContracts(rest *rest.Rest) error {
 	if len(contracts) == 0 {
 		return userError.NewUserError(
 			fmt.Errorf("no contracts found in build dir: %s", truffleConfig.AbsoluteBuildDirectoryPath()),
-			aurora.Sprintf("No contracts detected in build directory: %s. "+
+			colorizer.Sprintf("No contracts detected in build directory: %s. "+
 				"This can happen when no contracts have been migrated yet or the %s hasn't been run yet.",
-				aurora.Bold(aurora.Red(truffleConfig.AbsoluteBuildDirectoryPath())),
-				aurora.Bold(aurora.Green("truffle compile")),
+				colorizer.Bold(colorizer.Red(truffleConfig.AbsoluteBuildDirectoryPath())),
+				colorizer.Bold(colorizer.Green("truffle compile")),
 			),
 		)
 	}
 	if numberOfContractsWithANetwork == 0 {
 		return userError.NewUserError(
 			fmt.Errorf("no contracts with a netowrk found in build dir: %s", truffleConfig.AbsoluteBuildDirectoryPath()),
-			aurora.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
-				aurora.Bold(aurora.Red(truffleConfig.AbsoluteBuildDirectoryPath())),
+			colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
+				colorizer.Bold(colorizer.Red(truffleConfig.AbsoluteBuildDirectoryPath())),
 			),
 		)
 	}
@@ -145,11 +144,11 @@ func uploadContracts(rest *rest.Rest) error {
 					}
 				}
 				if !found {
-					nonPushedContracts = append(nonPushedContracts, aurora.Sprintf(
+					nonPushedContracts = append(nonPushedContracts, colorizer.Sprintf(
 						"• %s on network %s with address %s",
-						aurora.Bold(aurora.Red(contract.Name)),
-						aurora.Bold(aurora.Red(networkId)),
-						aurora.Bold(aurora.Red(network.Address)),
+						colorizer.Bold(colorizer.Red(contract.Name)),
+						colorizer.Bold(colorizer.Red(networkId)),
+						colorizer.Bold(colorizer.Red(network.Address)),
 					))
 				}
 			}

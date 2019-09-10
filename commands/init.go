@@ -2,7 +2,6 @@ package commands
 
 import (
 	"errors"
-	"github.com/logrusorgru/aurora"
 	"github.com/manifoldco/promptui"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -37,8 +36,8 @@ var initCmd = &cobra.Command{
 		CheckLogin()
 
 		if config.IsProjectInit() && !reInit {
-			logrus.Info(aurora.Sprintf("The project is already initialized. If you want to set up the project again rerun this command with the %s flag.",
-				aurora.Bold(aurora.Green("--re-init")),
+			logrus.Info(colorizer.Sprintf("The project is already initialized. If you want to set up the project again rerun this command with the %s flag.",
+				colorizer.Bold(colorizer.Green("--re-init")),
 			))
 			os.Exit(1)
 		}
@@ -83,11 +82,11 @@ var initCmd = &cobra.Command{
 		config.SetProjectConfig(config.AccountID, config.GetString(config.AccountID))
 		WriteProjectConfig()
 
-		logrus.Info(aurora.Sprintf("Project successfully initialized. "+
+		logrus.Info(colorizer.Sprintf("Project successfully initialized. "+
 			"You can change the project information by editing the %s file or by rerunning %s with the %s flag.",
-			aurora.Bold(aurora.Green("tenderly.yaml")),
-			aurora.Bold(aurora.Green("tenderly init")),
-			aurora.Bold(aurora.Green("--re-init")),
+			colorizer.Bold(colorizer.Green("tenderly.yaml")),
+			colorizer.Bold(colorizer.Green("tenderly init")),
+			colorizer.Bold(colorizer.Green("--re-init")),
 		))
 	},
 }

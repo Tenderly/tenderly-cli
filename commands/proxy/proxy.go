@@ -274,13 +274,13 @@ func isBatchRequest(data []byte) bool {
 	return false
 }
 
-func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, buildDir string) error {
+func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, buildDir string, colorizer aurora.Aurora) error {
 	logrus.Infof("Proxy starting on %s:%s", proxyHost, proxyPort)
 
 	projectPath = path
 	buildDirectory = buildDir
 
-	host := getTargetHost(targetHost, targetSchema, targetPort)
+	host := getTargetHost(targetHost, targetSchema, targetPort, colorizer)
 	logrus.Infof("Redirecting calls to %s", host)
 
 	proxy, err := NewProxy(host)
@@ -292,7 +292,7 @@ func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, bui
 	return http.ListenAndServe(proxyHost+":"+proxyPort, proxy)
 }
 
-func getTargetHost(targetHost, targetSchema, targetPort string) string {
+func getTargetHost(targetHost, targetSchema, targetPort string, colorizer aurora.Aurora) string {
 	initialSchema := "http"
 	if strings.HasPrefix(targetHost, "https") {
 		initialSchema = "https"
@@ -306,7 +306,7 @@ func getTargetHost(targetHost, targetSchema, targetPort string) string {
 	if err != nil {
 		userError.LogErrorf("couldn't parse target host: %s", userError.NewUserError(
 			err,
-			aurora.Sprintf("Couldn't parse target host: %s", aurora.Bold(aurora.Red(host))),
+			colorizer.Sprintf("Couldn't parse target host: %s", colorizer.Bold(colorizer.Red(host))),
 		))
 		os.Exit(1)
 	}
