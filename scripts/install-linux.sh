@@ -6,12 +6,12 @@ EXISTS="$(command -v tenderly)"
 
 if [ "$EXISTS" != "" ]; then
   CUR_VERSION="$(tenderly version | sed -n 1p | cut -d'v' -f3)"
-  echo "\nCurrent Version: $CUR_VERSION => New Version: $NEW_VERSION\n"
+  echo -e "\nCurrent Version: $CUR_VERSION => New Version: $NEW_VERSION\n"
 fi
 
 if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
 
-  echo "Installing version $NEW_VERSION\n"
+  echo -e "Installing version $NEW_VERSION\n"
 
   cd /tmp/
 
@@ -26,18 +26,18 @@ if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
 
   chmod +x tenderly
 
-  echo "Moving CLI to /usr/local/bin/\n"
+  echo -e "Moving CLI to /usr/local/bin/\n"
 
   mv tenderly /usr/local/bin/
 
   cd -
 
   location="$(which tenderly)"
-  echo "Tenderly CLI installed to: $location\n"
+  echo -e "Tenderly CLI installed to: $location\n"
 
   version="$(tenderly version | sed -n 1p | cut -d'v' -f3)"
-  echo "New Tenderly version installed: $version\n"
+  echo -e "New Tenderly version installed: $version\n"
 
 else
-  echo "Latest version already installed\n"
+  echo -e "Latest version already installed\n"
 fi
