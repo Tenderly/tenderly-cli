@@ -6,14 +6,14 @@ EXISTS="$(command -v tenderly)"
 
 if [ "$EXISTS" != "" ]; then
   CUR_VERSION="$(tenderly version | sed -n 1p | cut -d'v' -f3)"
-  echo -e "\nCurrent Version: $CUR_VERSION => New Version: $NEW_VERSION\n"
+  printf "\nCurrent Version: %s => New Version: %s\n" $CUR_VERSION $NEW_VERSION
 fi
 
 if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
 
-  echo -e "Installing version $NEW_VERSION\n"
+  printf "Installing version %s\n" $NEW_VERSION
 
-  cd /tmp/
+  cd /tmp/ > /dev/null
 
   curl -s https://api.github.com/repos/Tenderly/tenderly-cli/releases/latest \
   | grep "browser_download_url.*Linux_amd64\.tar\.gz" \
@@ -26,18 +26,18 @@ if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
 
   chmod +x tenderly
 
-  echo -e "Moving CLI to /usr/local/bin/\n"
+  printf "Moving CLI to /usr/local/bin/\n"
 
   mv tenderly /usr/local/bin/
 
-  cd -
+  cd - > /dev/null
 
   location="$(which tenderly)"
-  echo -e "Tenderly CLI installed to: $location\n"
+  printf "Tenderly CLI installed to: %s\n" $location
 
   version="$(tenderly version | sed -n 1p | cut -d'v' -f3)"
-  echo -e "New Tenderly version installed: $version\n"
+  printf "New Tenderly version installed: %s\n" $version
 
 else
-  echo -e "Latest version already installed\n"
+  printf "Latest version already installed\n"
 fi
