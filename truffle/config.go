@@ -83,7 +83,7 @@ func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
 		console.log("%s" + JSON.stringify(config) + "%s");
 	`, trufflePath, divider, divider)).CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("cannot evaluate %s, tried path: %s, error: %s", configName, trufflePath, err)
+		return nil, fmt.Errorf("cannot evaluate %s, tried path: %s, error: %s, output: %s", configName, trufflePath, err, string(data))
 	}
 
 	configString, err := extractConfigWithDivider(string(data), divider)
