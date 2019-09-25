@@ -9,8 +9,8 @@ jobs:
     steps:
     - checkout
     - run: go get ./...
-    - run: GOOS=windows go get -u github.com/spf13/cobra
-    - run: GOOS=windows go get -u github.com/konsorten/go-windows-terminal-sequences
+    - run: GOOS=windows go get github.com/spf13/cobra
+    - run: GOOS=windows go get github.com/konsorten/go-windows-terminal-sequences
     - run: curl -sL https://git.io/goreleaser | bash
 workflows:
   version: 2
