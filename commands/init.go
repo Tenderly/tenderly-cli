@@ -93,8 +93,9 @@ var initCmd = &cobra.Command{
 
 func promptDefault(attribute string) (string, error) {
 	validate := func(input string) error {
-		if len(input) < 6 {
-			return errors.New("project name must have more than 6 characters")
+		length := len(input)
+		if length < 1 || length > 100 {
+			return errors.New("project name must be between 1 and 100 characters")
 		}
 		return nil
 	}
