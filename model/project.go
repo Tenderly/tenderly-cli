@@ -13,6 +13,6 @@ type Project struct {
 	ID        AccountID `json:"id"`
 	Name      string    `json:"name"`
 	Slug      string    `json:"slug"`
-	Owner     AccountID
+	Owner     AccountID `json:"owner_id"`
 	CreatedAt time.Time `json:"created_at"`
 }
