@@ -2,11 +2,12 @@ package truffle
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type Contract struct {
@@ -38,12 +39,17 @@ type ContractNetwork struct {
 	TransactionHash string      `json:"transactionHash"`
 }
 
+type Node struct {
+	NodeType     string `json:"nodeType"`
+	AbsolutePath string `json:"absolutePath"`
+}
+
 type ContractAst struct {
 	AbsolutePath    string           `json:"absolutePath"`
 	ExportedSymbols map[string][]int `json:"exportedSymbols"`
 	Id              int              `json:"id"`
 	NodeType        string           `json:"nodeType"`
-	Nodes           interface{}      `json:"nodes"`
+	Nodes           []Node           `json:"nodes"`
 	Src             string           `json:"src"`
 }
 
@@ -79,6 +85,7 @@ func GetTruffleContracts(buildDir string) ([]Contract, int, error) {
 		return nil, 0, errors.Wrap(err, "failed listing truffle build files")
 	}
 
+	sources := make(map[string]bool)
 	var contracts []Contract
 	var numberOfContractsWithANetwork int
 	for _, file := range files {
@@ -99,8 +106,29 @@ func GetTruffleContracts(buildDir string) ([]Contract, int, error) {
 			return nil, 0, errors.Wrap(err, "failed parsing truffle build file")
 		}
 
+		sources[contract.SourcePath] = true
+		for _, node := range contract.Ast.Nodes {
+			if node.NodeType == "ImportDirective" && !sources[node.AbsolutePath] {
+				sources[node.AbsolutePath] = false
+			}
+		}
+
 		contracts = append(contracts, contract)
 		numberOfContractsWithANetwork += len(contract.Networks)
+	}
+
+	for path, included := range sources {
+		if !included {
+			source, err := ioutil.ReadFile(path)
+			if err != nil {
+				return nil, 0, errors.Wrap(err, "failed reading contract source file")
+			}
+
+			contracts = append(contracts, Contract{
+				Source:     string(source),
+				SourcePath: path,
+			})
+		}
 	}
 
 	return contracts, numberOfContractsWithANetwork, nil
