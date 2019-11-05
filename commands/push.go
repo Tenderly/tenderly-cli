@@ -20,7 +20,7 @@ import (
 var deploymentTag string
 
 func init() {
-	initCmd.PersistentFlags().StringVar(&deploymentTag, "tag", "", "Optional tag used for filtering and referencing pushed contracts")
+	pushCmd.PersistentFlags().StringVar(&deploymentTag, "tag", "", "Optional tag used for filtering and referencing pushed contracts")
 	rootCmd.AddCommand(pushCmd)
 }
 
