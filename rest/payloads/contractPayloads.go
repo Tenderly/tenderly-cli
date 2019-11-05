@@ -1,10 +1,13 @@
 package payloads
 
-import "github.com/tenderly/tenderly-cli/truffle"
+import (
+	"github.com/tenderly/tenderly-cli/truffle"
+)
 
 type UploadContractsRequest struct {
 	Contracts []truffle.Contract `json:"contracts"`
 	Config    *Config            `json:"config,omitempty"`
+	Tag       string             `json:"tag,omitempty"`
 }
 
 type UploadContractsResponse struct {

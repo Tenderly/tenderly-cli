@@ -17,7 +17,10 @@ import (
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
+var deploymentTag string
+
 func init() {
+	initCmd.PersistentFlags().StringVar(&deploymentTag, "tag", "", "Optional tag used for filtering and referencing pushed contracts")
 	rootCmd.AddCommand(pushCmd)
 }
 
@@ -110,6 +113,7 @@ func uploadContracts(rest *rest.Rest) error {
 	response, err := rest.Contract.UploadContracts(payloads.UploadContractsRequest{
 		Contracts: contracts,
 		Config:    configPayload,
+		Tag:       deploymentTag,
 	})
 
 	s.Stop()
