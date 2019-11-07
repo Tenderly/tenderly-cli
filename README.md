@@ -4,6 +4,19 @@
 
 Tenderly CLI is a suite of development tools that allows you to debug, monitor and track the execution of your smart contracts.
 
+## Table of Contents
+
+* [Installation](#installation)
+* [Usage](#usage)
+    * [Login](#login)
+    * [Init](#init)
+    * [Push](#push)
+    * [Local Proxy Debugging](#proxy-debugging)
+    * [Check for updates](#check-for-updates)
+    * [Version](#version)
+    * [Who am I?](#who-am-i)
+    * [Logout](#logout)
+
 ## Installation
 
 ### macOS
