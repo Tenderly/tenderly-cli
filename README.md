@@ -19,7 +19,6 @@ Or if your prefer you can also install by using cURL and running our installatio
 
 ```
 curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-macos.sh | sh
-
 ```
 
 ### Linux
@@ -28,7 +27,6 @@ You can install the Tenderly CLI by using cURL and running our installation scri
 
 ```
 curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh | sh
-
 ```
 
 ### Windows
@@ -48,6 +46,64 @@ brew upgrade tenderly
 ```
 
 ## Usage
+
+### Login
+
+The `login` command is used to authenticate the Tenderly CLI with your [Tenderly Dashboard](https://dashboard.tenderly.dev).
+
+```
+tenderly login
+```
+
+#### Command Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| --authentication-method | / | Pick the authentication method. Possible values are email or token |
+| --email | / | The email used when authentication method is email |
+| --password | / | The password used when authentication method is email |
+| --token | / | The token used when authentication method is token |
+| --force | false | Don't check if you are already logged in |
+| --help | / | Help for login command |
+
+### Init
+
+The `init` command is used to connect your local project directory with a project in the [Tenderly Dashboard](https://dashboard.tenderly.dev).
+
+```
+tenderly init
+```
+
+#### Command Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| --project | / | The project name used for generating the configuration file |
+| --re-init | false | Force initializes the project if it was already initialized |
+| --help | / | Help for init command |
+
+### Push
+
+The `push` command is used to add your contracts to the [Tenderly Dashboard](https://dashboard.tenderly.dev).
+
+```
+tenderly push
+```
+
+#### Command Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| --tag | / | Optional tag used for filtering and referencing pushed contracts |
+| --help | / | Help for push command |
+
+### Verify
+
+The `verify` command uploads your smart contracts and verifies them on [Tenderly](https://tenderly.dev).
+
+```
+tenderly verify
+```
 
 ### Proxy Debugging
 
@@ -101,7 +157,7 @@ Now when your transactions fail you can see the exact line of code in which the 
 
 | Flag | Default | Description |
 | --- | --- | --- |
-| --path | "./" | Path to the project build folder where your Truffle configuration is located. |
+| --path | "./" | Path to the project build folder where your Truffle configuration is located |
 | --proxy-host | "127.0.0.1" | Host on which the proxy will be listening |
 | --proxy-port | "9545" | Port on which the proxy will be listening |
 | --target-host | "127.0.0.1" | Target host of your Blockchain RPC |
@@ -109,6 +165,45 @@ Now when your transactions fail you can see the exact line of code in which the 
 | --target-schema | "http" | Blockchain RPC protocol |
 | --write-config | / | Write proxy settings to the project configuration file |
 | --help | / | Help for proxy command |
+
+### Check for updates
+
+The `update-check` command checks if there is a new version of the Tenderly CLI and gives update instructions and changelog information.
+
+### Version
+
+The `version` command prints out the current version of the Tenderly CLI.
+
+```
+tenderly version
+```
+
+### Who am I?
+
+The `whomai` command prints out basic information about the currently logged in account
+
+```
+tenderly whoami
+```
+
+### Logout
+
+The `logout` command disconnects your local Tenderly CLI from your [Tenderly Dashboard](https://dashboard.tenderly.dev)
+
+```
+tenderly logout
+```
+
+### Global Flags
+
+In addition to command specific flags, the following flags can be passed to any command
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| --debug | false | Turn on debug level logging |
+| --global-config | config | Global configuration file name (without the extension) |
+| --project-config | tenderly | Project configuration file name (without the extension) |
+| --project-dir | "./" | The directory in which your Truffle project resides |
 
 ## Report Bugs / Feedback
 
