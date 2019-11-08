@@ -79,11 +79,18 @@ type ApiDeploymentInformation struct {
 	Address   string `json:"address"`
 }
 
-func GetTruffleContracts(buildDir string) ([]Contract, int, error) {
+func GetTruffleContracts(buildDir string, networkIDs ...string) ([]Contract, int, error) {
 	files, err := ioutil.ReadDir(buildDir)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "failed listing truffle build files")
 	}
+
+	networkIDFilterMap := make(map[string]bool)
+	for _, networkID := range networkIDs {
+		networkIDFilterMap[networkID] = true
+	}
+
+	hasNetworkFilters := len(networkIDFilterMap) > 0
 
 	sources := make(map[string]bool)
 	var contracts []Contract
@@ -110,6 +117,18 @@ func GetTruffleContracts(buildDir string) ([]Contract, int, error) {
 		for _, node := range contract.Ast.Nodes {
 			if node.NodeType == "ImportDirective" && !sources[node.AbsolutePath] {
 				sources[node.AbsolutePath] = false
+			}
+		}
+
+		if len(contract.Networks) > 0 && hasNetworkFilters {
+			for networkID := range contract.Networks {
+				if !networkIDFilterMap[networkID] {
+					delete(contract.Networks, networkID)
+				}
+			}
+
+			if len(contract.Networks) == 0 {
+				continue
 			}
 		}
 

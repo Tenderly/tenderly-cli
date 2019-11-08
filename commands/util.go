@@ -10,6 +10,7 @@ import (
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func newRest() *rest.Rest {
@@ -61,4 +62,19 @@ func MustGetTruffleConfig() (*truffle.Config, error) {
 	}
 
 	return truffleConfig, nil
+}
+
+func extractNetworkIDs(networkIDs string) []string {
+	if networkIDs == "" {
+		return nil
+	}
+
+	if !strings.Contains(networkIDs, ",") {
+		return []string{networkIDs}
+	}
+
+	return strings.Split(
+		strings.ReplaceAll(networkIDs, " ", ""),
+		",",
+	)
 }

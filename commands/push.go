@@ -18,9 +18,11 @@ import (
 )
 
 var deploymentTag string
+var pushNetworks string
 
 func init() {
 	pushCmd.PersistentFlags().StringVar(&deploymentTag, "tag", "", "Optional tag used for filtering and referencing pushed contracts")
+	pushCmd.PersistentFlags().StringVar(&pushNetworks, "networks", "", "A comma separated list of networks to push")
 	rootCmd.AddCommand(pushCmd)
 }
 
@@ -63,7 +65,9 @@ func uploadContracts(rest *rest.Rest) error {
 		return err
 	}
 
-	contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath())
+	networkIDs := extractNetworkIDs(pushNetworks)
+
+	contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), networkIDs...)
 	if err != nil {
 		return userError.NewUserError(
 			errors.Wrap(err, "unable to get truffle contracts"),

@@ -17,7 +17,10 @@ import (
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
+var verifyNetworks string
+
 func init() {
+	verifyCmd.PersistentFlags().StringVar(&pushNetworks, "networks", "", "A comma separated list of networks to verify")
 	rootCmd.AddCommand(verifyCmd)
 }
 
@@ -60,7 +63,9 @@ func verifyContracts(rest *rest.Rest) error {
 		return err
 	}
 
-	contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath())
+	networkIDs := extractNetworkIDs(verifyNetworks)
+
+	contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), networkIDs...)
 	if err != nil {
 		return userError.NewUserError(
 			errors.Wrap(err, "unable to get truffle contracts"),
