@@ -113,12 +113,11 @@ tenderly push
 
 #### Advanced usage
 
-It is possible to push to multiple projects by editing the `tenderly.yaml` file and provide a map of projects and their networks:
+It is possible to push to multiple projects by editing the `tenderly.yaml` file and providing a map of projects and their networks. To do this remove the already provided `project_slug` property and replace it with the `projects` property like the example below;
 
 ```yaml
 account_id: 46e0edc4-ab78-4cb0-b019-666d3cb3651e # This will be prepopulated by the init command 
-project_slug: hello # This is the initial project which was connected with the init command. After adding the projects mapping below, this property becomes optional
-projects:
+projects: # running tenderly push will push the smart contracts to all of the provided projects
   my-cool-project:
     networks:
     - "1" # mainnet
