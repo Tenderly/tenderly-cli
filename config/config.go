@@ -120,7 +120,7 @@ func IsLoggedIn() bool {
 }
 
 func IsProjectInit() bool {
-	return getString(ProjectSlug) != ""
+	return getString(ProjectSlug) != "" || len(MaybeGetMap(Projects)) >= 0
 }
 
 func SetProjectConfig(key string, value interface{}) {
