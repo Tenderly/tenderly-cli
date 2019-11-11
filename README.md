@@ -107,8 +107,25 @@ tenderly push
 
 | Flag | Default | Description |
 | --- | --- | --- |
+| --networks | / | A comma separated list of network ids to push |
 | --tag | / | Optional tag used for filtering and referencing pushed contracts |
 | --help | / | Help for push command |
+
+#### Advanced usage
+
+It is possible to push to multiple projects by editing the `tenderly.yaml` file and provide a map of projects and their networks:
+
+```yaml
+account_id: 46e0edc4-ab78-4cb0-b019-666d3cb3651e # This will be prepopulated by the init command 
+project_slug: hello # This is the initial project which was connected with the init command. After adding the projects mapping below, this property becomes optional
+projects:
+  my-cool-project:
+    networks:
+    - "1" # mainnet
+    - "42" # kovan
+  my-other-project:
+    # if the networks property is not provided or is empty the project will be pushed to all of the migrated networks
+```
 
 ### Verify
 
@@ -117,6 +134,13 @@ The `verify` command uploads your smart contracts and verifies them on [Tenderly
 ```
 tenderly verify
 ```
+
+#### Command Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| --networks | / | A comma separated list of network ids to verify |
+| --help | / | Help for verify command |
 
 ### Proxy Debugging
 

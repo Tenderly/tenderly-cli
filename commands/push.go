@@ -211,7 +211,9 @@ func getProjectConfiguration() (ProjectConfigurationMap, error) {
 	for projectSlug, projectConfig := range configMap {
 		singleConfigMap, ok := projectConfig.(map[string]interface{})
 		if !ok {
-			return nil, fmt.Errorf("invalid single project configuration entry: %s", projectSlug)
+			projectConfigurationMap[projectSlug] = &ProjectConfiguration{}
+			logrus.Debugf("Invalid configuration provided for project: %s", projectSlug)
+			continue
 		}
 
 		networks, ok := singleConfigMap["networks"].([]interface{})
