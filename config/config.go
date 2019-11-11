@@ -19,6 +19,8 @@ const (
 	Email       = "email"
 	ProjectSlug = "project_slug"
 
+	Projects = "projects"
+
 	ProxyTargetSchema = "proxy_target_schema"
 	ProxyTargetHost   = "proxy_target_host"
 	ProxyTargetPort   = "proxy_target_port"
@@ -99,6 +101,14 @@ func GetString(key string) string {
 
 func MaybeGetString(key string) string {
 	return getString(key)
+}
+
+func MaybeGetMap(key string) map[string]interface{} {
+	if projectConfig.IsSet(key) {
+		return projectConfig.GetStringMap(key)
+	}
+
+	return globalConfig.GetStringMap(key)
 }
 
 func GetToken() string {

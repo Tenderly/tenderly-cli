@@ -21,7 +21,7 @@ type ProjectRoutes interface {
 }
 
 type ContractRoutes interface {
-	UploadContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error)
+	UploadContracts(request payloads.UploadContractsRequest, projectSlug string) (*payloads.UploadContractsResponse, error)
 	VerifyContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error)
 }
 
