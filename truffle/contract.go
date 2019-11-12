@@ -120,15 +120,11 @@ func GetTruffleContracts(buildDir string, networkIDs ...string) ([]Contract, int
 			}
 		}
 
-		if len(contract.Networks) > 0 && hasNetworkFilters {
+		if hasNetworkFilters {
 			for networkID := range contract.Networks {
 				if !networkIDFilterMap[networkID] {
 					delete(contract.Networks, networkID)
 				}
-			}
-
-			if len(contract.Networks) == 0 {
-				continue
 			}
 		}
 
