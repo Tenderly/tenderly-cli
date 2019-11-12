@@ -116,7 +116,6 @@ tenderly push
 It is possible to push to multiple projects by editing the `tenderly.yaml` file and providing a map of projects and their networks. To do this remove the already provided `project_slug` property and replace it with the `projects` property like the example below;
 
 ```yaml
-account_id: 46e0edc4-ab78-4cb0-b019-666d3cb3651e # This will be prepopulated by the init command 
 projects: # running tenderly push will push the smart contracts to all of the provided projects
   my-cool-project:
     networks:
@@ -124,6 +123,9 @@ projects: # running tenderly push will push the smart contracts to all of the pr
     - "42" # kovan
   my-other-project:
     # if the networks property is not provided or is empty the project will be pushed to all of the migrated networks
+  company-account/my-other-project:
+    # if you want to push to a shared project provide the full project identifier
+    # the identifier can be found in you Tenderly dashboard under the projects name
 ```
 
 ### Verify
