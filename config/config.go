@@ -99,6 +99,15 @@ func GetString(key string) string {
 	return getString(key)
 }
 
+func GetGlobalString(key string) string {
+	if !globalConfig.IsSet(key) {
+		fmt.Printf("Could not find value for config: %s\n", key)
+		os.Exit(1)
+	}
+
+	return globalConfig.GetString(key)
+}
+
 func MaybeGetString(key string) string {
 	return getString(key)
 }
@@ -120,7 +129,7 @@ func IsLoggedIn() bool {
 }
 
 func IsProjectInit() bool {
-	return getString(ProjectSlug) != "" || len(MaybeGetMap(Projects)) >= 0
+	return getString(ProjectSlug) != "" || len(MaybeGetMap(Projects)) > 0
 }
 
 func SetProjectConfig(key string, value interface{}) {

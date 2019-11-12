@@ -2,6 +2,7 @@ package commands
 
 import (
 	"errors"
+	"fmt"
 	"github.com/manifoldco/promptui"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -79,7 +80,7 @@ var initCmd = &cobra.Command{
 		}
 
 		config.SetProjectConfig(config.ProjectSlug, project.Slug)
-		config.SetProjectConfig(config.AccountID, config.GetString(config.AccountID))
+		config.SetProjectConfig(config.AccountID, project.Owner)
 		WriteProjectConfig()
 
 		logrus.Info(colorizer.Sprintf("Project successfully initialized. "+
@@ -132,7 +133,17 @@ func promptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Proj
 	var projectNames []string
 	projectNames = append(projectNames, "Create new project")
 	for _, project := range projects {
-		projectNames = append(projectNames, project.Name)
+		var label string
+		if !project.IsShared {
+			label = project.Name
+		} else {
+			if project.Permissions == nil || !project.Permissions.AddContract {
+				continue
+			}
+			label = fmt.Sprintf("%s (shared project)", project.Name)
+		}
+
+		projectNames = append(projectNames, label)
 	}
 
 	promptProjects := promptui.Select{

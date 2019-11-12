@@ -55,7 +55,7 @@ func (rest *ProjectCalls) GetProjects(accountId string) (*payloads.GetProjectsRe
 	var getProjectsResponse payloads.GetProjectsResponse
 	response := client.Request(
 		"GET",
-		"api/v1/account/"+accountId+"/projects",
+		"api/v1/account/"+accountId+"/projects?withShared=true",
 		nil,
 	)
 
@@ -68,6 +68,12 @@ func (rest *ProjectCalls) GetProjects(accountId string) (*payloads.GetProjectsRe
 
 	if err != nil {
 		return nil, fmt.Errorf("failed parsing get projects respose: %s", err)
+	}
+
+	for _, project := range getProjectsResponse.Projects {
+		if string(project.Owner) != accountId {
+			project.IsShared = true
+		}
 	}
 
 	return &getProjectsResponse, nil

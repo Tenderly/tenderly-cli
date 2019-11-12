@@ -6,6 +6,7 @@ import (
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/client"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
+	"strings"
 )
 
 type ContractCalls struct {
@@ -21,11 +22,18 @@ func (rest *ContractCalls) UploadContracts(request payloads.UploadContractsReque
 		return nil, err
 	}
 
+	accountID := config.GetGlobalString(config.AccountID)
+	if strings.Contains(projectSlug, "/") {
+		projectInfo := strings.Split(projectSlug, "/")
+		accountID = projectInfo[0]
+		projectSlug = projectInfo[1]
+	}
+
 	var contracts *payloads.UploadContractsResponse
 
 	response := client.Request(
 		"POST",
-		"api/v1/account/"+config.GetString(config.AccountID)+"/project/"+projectSlug+"/contracts",
+		"api/v1/account/"+accountID+"/project/"+projectSlug+"/contracts",
 		uploadJson,
 	)
 

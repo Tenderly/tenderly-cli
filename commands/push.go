@@ -185,10 +185,17 @@ func uploadContracts(rest *rest.Rest) error {
 			)
 		}
 
+		username := config.GetString(config.Username)
+		if strings.Contains(projectSlug, "/") {
+			projectInfo := strings.Split(projectSlug, "/")
+			username = projectInfo[0]
+			projectSlug = projectInfo[1]
+		}
+
 		logrus.Info(colorizer.Sprintf(
 			"Successfully pushed Smart Contracts for project %s. You can view your contracts at %s\n",
 			colorizer.Bold(colorizer.Green(projectSlug)),
-			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.dev/%s/%s/contracts", config.GetString(config.Username), projectSlug))),
+			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.dev/%s/%s/contracts", username, projectSlug))),
 		))
 	}
 
@@ -212,7 +219,7 @@ func getProjectConfiguration() (ProjectConfigurationMap, error) {
 		singleConfigMap, ok := projectConfig.(map[string]interface{})
 		if !ok {
 			projectConfigurationMap[projectSlug] = &ProjectConfiguration{}
-			logrus.Debugf("Invalid configuration provided for project: %s", projectSlug)
+			logrus.Debugf("No configuration provided for project: %s", projectSlug)
 			continue
 		}
 
@@ -221,6 +228,7 @@ func getProjectConfiguration() (ProjectConfigurationMap, error) {
 			logrus.Debugf("failed extracting networks for project: %s", projectSlug)
 			continue
 		}
+
 		projectConfig := &ProjectConfiguration{}
 
 		for _, network := range networks {
