@@ -92,6 +92,7 @@ tenderly init
 | Flag | Default | Description |
 | --- | --- | --- |
 | --project | / | The project name used for generating the configuration file |
+| --create-project | false | Creates the project provided by the --project flag if it doesn't exist |
 | --re-init | false | Force initializes the project if it was already initialized |
 | --help | / | Help for init command |
 

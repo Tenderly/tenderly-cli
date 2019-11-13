@@ -16,11 +16,13 @@ import (
 )
 
 var projectName string
+var createProject bool
 var reInit bool
 var forceInit bool
 
 func init() {
 	initCmd.PersistentFlags().StringVar(&projectName, "project", "", "The project used for generating the configuration file.")
+	initCmd.PersistentFlags().BoolVar(&createProject, "create-project", false, "Creates the project provided by the --project flag if it doesn't exist.")
 	initCmd.PersistentFlags().BoolVar(&reInit, "re-init", false, "Force initializes the project if it was already initialized.")
 	initCmd.PersistentFlags().BoolVar(&forceInit, "force", false, "Don't check if the project directory contains the Truffle directory structure. "+
 		"If not provided assumes the current working directory.")
@@ -73,7 +75,7 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		project := getProjectFromFlag(projectsResponse.Projects)
+		project := getProjectFromFlag(projectsResponse.Projects, rest)
 
 		if project == nil {
 			project = promptProjectSelect(projectsResponse.Projects, rest)
@@ -115,7 +117,7 @@ func promptDefault(attribute string) (string, error) {
 	return result, nil
 }
 
-func getProjectFromFlag(projects []*model.Project) *model.Project {
+func getProjectFromFlag(projects []*model.Project, rest *rest.Rest) *model.Project {
 	if projectName == "" {
 		return nil
 	}
@@ -126,7 +128,32 @@ func getProjectFromFlag(projects []*model.Project) *model.Project {
 		}
 	}
 
-	return nil
+	if !createProject {
+		return nil
+	}
+
+	projectResponse, err := rest.Project.CreateProject(
+		payloads.ProjectRequest{
+			Name: projectName,
+		})
+	if err != nil {
+		userError.LogErrorf("failed creating project: %s",
+			userError.NewUserError(
+				err,
+				"Creating the new project failed. This can happen if you are running an older version of the Tenderly CLI.",
+			),
+		)
+
+		CheckVersion(true, true)
+
+		os.Exit(1)
+	}
+	if projectResponse.Error != nil {
+		userError.LogErrorf("create project call: %s", projectResponse.Error)
+		os.Exit(1)
+	}
+
+	return projectResponse.Project
 }
 
 func promptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Project {
