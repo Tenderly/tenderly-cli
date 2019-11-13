@@ -80,7 +80,22 @@ func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
 		var config = require("%s");
 
-		console.log("%s" + JSON.stringify(config) + "%s");
+		var cache = [];
+
+		var jsonConfig = JSON.stringify(config, (key, value) => {
+			if (typeof value === 'object' && value !== null) {
+				if (cache.indexOf(value) !== -1) {
+					// Circular reference found, discard key
+					return;
+				}
+				// Store value in our collection
+				cache.push(value);
+			}
+			return value;
+		}, '');
+
+		console.log("%s" + jsonConfig + "%s");
+		process.exit(0);
 	`, trufflePath, divider, divider)).CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("cannot evaluate %s, tried path: %s, error: %s, output: %s", configName, trufflePath, err, string(data))
