@@ -25,6 +25,7 @@ func (t TenderlyStandardFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 func init() {
 	flag.Usage = printHelp
 	cobra.OnInitialize(initConfig)
+	initLog()
 
 	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Turn on debug level logging.")
 	rootCmd.PersistentFlags().StringVar(&config.GlobalConfigName, "global-config", "config", "Global configuration file name (without the extension)")
@@ -67,8 +68,6 @@ var rootCmd = &cobra.Command{
 }
 
 func initConfig() {
-	initLog()
-
 	config.Init()
 }
 
