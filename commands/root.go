@@ -68,6 +68,8 @@ var rootCmd = &cobra.Command{
 }
 
 func initConfig() {
+	initLog()
+
 	config.Init()
 }
 
