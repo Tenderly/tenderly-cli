@@ -192,6 +192,10 @@ Error: 0x0 Error: REVERT, execution stopped
 
 Now when your transactions fail you can see the exact line of code in which the error occurred and the whole stacktrace by using our proxy command.
 
+#### Note
+
+You must run `truffle migrate --network proxy` first, so the contract information (address to source mapping) can be picked up by the `proxy` command from the `build` folder.
+
 #### Command Flags
 
 | Flag | Default | Description |
