@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -115,8 +116,19 @@ func GetTruffleContracts(buildDir string, networkIDs ...string) ([]Contract, int
 
 		sources[contract.SourcePath] = true
 		for _, node := range contract.Ast.Nodes {
-			if node.NodeType == "ImportDirective" && !sources[node.AbsolutePath] {
-				sources[node.AbsolutePath] = false
+			if node.NodeType != "ImportDirective" {
+				continue
+			}
+
+			absPath := node.AbsolutePath
+			if runtime.GOOS == "windows" && strings.HasPrefix(absPath, "/") {
+				absPath = strings.ReplaceAll(absPath, "/", "\\")
+				absPath = strings.TrimPrefix(absPath, "\\")
+				absPath = strings.Replace(absPath, "\\", ":\\", 1)
+			}
+
+			if !sources[absPath] {
+				sources[absPath] = false
 			}
 		}
 
