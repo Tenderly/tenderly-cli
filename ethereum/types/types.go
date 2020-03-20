@@ -1,9 +1,11 @@
-package ethereum
+package types
 
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"strconv"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -13,8 +15,12 @@ import (
 
 type Number int64
 
-func (n *Number) Value() int64 {
-	return int64(*n)
+func (n Number) Value() int64 {
+	return int64(n)
+}
+
+func (n Number) Big() *big.Int {
+	return big.NewInt(int64(n))
 }
 
 func (n *Number) Hex() string {
@@ -46,19 +52,49 @@ type Header interface {
 }
 
 type Block interface {
+	Number() Number
+	Hash() common.Hash
 	Transactions() []Transaction
+	ParentHash() common.Hash
+	Time() *hexutil.Big
+	Timestamp() time.Time
+	Difficulty() *hexutil.Big
+	GasLimit() *hexutil.Big
+}
+
+type BlockHeader interface {
+	Number() Number
+	Hash() common.Hash
+	StateRoot() common.Hash
+	ParentHash() common.Hash
+	UncleHash() common.Hash
+	TxHash() common.Hash
+	ReceiptHash() common.Hash
+	Bloom() [256]byte
+	Difficulty() *hexutil.Big
+	GasLimit() *hexutil.Big
+	GasUsed() *hexutil.Big
+	Coinbase() common.Address
+	Time() *hexutil.Big
+	Timestamp() time.Time
+	ExtraData() hexutil.Bytes
+	MixDigest() common.Hash
+	Nonce() [8]byte
 }
 
 type Transaction interface {
-	Hash() *common.Hash
+	Hash() common.Hash
+	BlockNumber() *hexutil.Big
+	BlockHash() *common.Hash
 
-	From() *common.Address
+	From() common.Address
 	To() *common.Address
 
 	Input() hexutil.Bytes
 	Value() *hexutil.Big
 	Gas() *hexutil.Big
 	GasPrice() *hexutil.Big
+	Nonce() *hexutil.Big
 }
 
 type Log interface {
@@ -68,10 +104,10 @@ type Log interface {
 
 type TransactionReceipt interface {
 	Hash() string
-	TransactionIndex() hexutil.Big
+	TransactionIndex() Number
 
 	BlockHash() common.Hash
-	BlockNumber() hexutil.Big
+	BlockNumber() Number
 
 	From() common.Address
 	To() *common.Address

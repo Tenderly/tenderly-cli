@@ -25,22 +25,30 @@ type ContractRoutes interface {
 	VerifyContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error)
 }
 
+type ExportRoutes interface {
+	ExportTransaction(request payloads.ExportTransactionRequest, projectSlug string) (*payloads.ExportTransactionResponse, error)
+}
+
 type Rest struct {
 	Auth     AuthRoutes
 	User     UserRoutes
 	Project  ProjectRoutes
 	Contract ContractRoutes
+	Export   ExportRoutes
 }
 
 func NewRest(
 	auth AuthRoutes,
 	user UserRoutes,
 	project ProjectRoutes,
-	contract ContractRoutes) *Rest {
+	contract ContractRoutes,
+	export ExportRoutes,
+) *Rest {
 	return &Rest{
 		Auth:     auth,
 		User:     user,
 		Project:  project,
 		Contract: contract,
+		Export:   export,
 	}
 }

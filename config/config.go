@@ -3,10 +3,14 @@ package config
 import (
 	"flag"
 	"fmt"
-	"github.com/tenderly/tenderly-cli/userError"
+	"math/big"
 	"os"
 	"os/user"
 	"path/filepath"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
+	"github.com/tenderly/tenderly-cli/userError"
 
 	"github.com/spf13/viper"
 )
@@ -18,6 +22,7 @@ const (
 	Username    = "username"
 	Email       = "email"
 	ProjectSlug = "project_slug"
+	Exports     = "exports"
 
 	Projects = "projects"
 
@@ -30,6 +35,166 @@ const (
 
 var defaultsGlobal = map[string]interface{}{
 	Token: "",
+}
+
+type EthashConfig struct{}
+
+type CliqueConfig struct {
+	Period uint64 `mapstructure:"period"`
+	Epoch  uint64 `mapstructure:"epoch"`
+}
+
+type BigInt interface{}
+
+func toInt(x BigInt) (*big.Int, error) {
+	if x == nil {
+		return nil, nil
+	}
+
+	if stringVal, ok := x.(string); ok {
+		i := &big.Int{}
+		_, ok := i.SetString(stringVal, 10)
+		if !ok {
+			return nil, fmt.Errorf("failed parsing big int: %s", stringVal)
+		}
+
+		return i, nil
+	}
+
+	if numberVal, ok := x.(int64); ok {
+		return big.NewInt(numberVal), nil
+	}
+
+	if numberVal, ok := x.(int); ok {
+		return big.NewInt(int64(numberVal)), nil
+	}
+
+	return nil, fmt.Errorf("unrecognized value: %s", x)
+}
+
+type ChainConfig struct {
+	ChainID BigInt `mapstructure:"chain_id"`
+
+	HomesteadBlock BigInt `mapstructure:"homestead_block,omitempty"`
+
+	DAOForkBlock   BigInt `mapstructure:"dao_fork_block,omitempty"`
+	DAOForkSupport bool   `mapstructure:"dao_fork_support,omitempty"`
+
+	EIP150Block BigInt      `mapstructure:"eip150_block,omitempty"`
+	EIP150Hash  common.Hash `mapstructure:"eip150_hash,omitempty"`
+
+	EIP155Block BigInt `mapstructure:"eip155_block,omitempty"`
+	EIP158Block BigInt `mapstructure:"eip158_block,omitempty"`
+
+	ByzantiumBlock      BigInt `mapstructure:"byzantium_block,omitempty"`
+	ConstantinopleBlock BigInt `mapstructure:"constantinople_block,omitempty"`
+	PetersburgBlock     BigInt `mapstructure:"petersburg_block,omitempty"`
+	IstanbulBlock       BigInt `mapstructure:"istanbul_block,omitempty"`
+	EWASMBlock          BigInt `mapstructure:"ewasm_block,omitempty"`
+
+	Ethash *EthashConfig `mapstructure:"ethash,omitempty"`
+	Clique *CliqueConfig `mapstructure:"clique,omitempty"`
+}
+
+func (c *ChainConfig) Config() (*params.ChainConfig, error) {
+	chainId, err := toInt(c.ChainID)
+	if err != nil {
+		return nil, err
+	}
+
+	homesteadBlock, err := toInt(c.HomesteadBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	daoForkBlock, err := toInt(c.DAOForkBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	eip150Block, err := toInt(c.EIP150Block)
+	if err != nil {
+		return nil, err
+	}
+
+	eip155Block, err := toInt(c.EIP155Block)
+	if err != nil {
+		return nil, err
+	}
+
+	eip158Block, err := toInt(c.EIP158Block)
+	if err != nil {
+		return nil, err
+	}
+
+	byzantiumBlock, err := toInt(c.ByzantiumBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	constantinopleBlock, err := toInt(c.ConstantinopleBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	petersburgBlock, err := toInt(c.PetersburgBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	istanbulBlock, err := toInt(c.IstanbulBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	ewasmBlock, err := toInt(c.EWASMBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	var ethash *params.EthashConfig
+	if c.Ethash != nil {
+		ethash = &params.EthashConfig{}
+	}
+
+	var clique *params.CliqueConfig
+	if c.Clique != nil {
+		clique = &params.CliqueConfig{
+			Period: c.Clique.Period,
+			Epoch:  c.Clique.Epoch,
+		}
+	}
+
+	return &params.ChainConfig{
+		ChainID:             chainId,
+		HomesteadBlock:      homesteadBlock,
+		DAOForkBlock:        daoForkBlock,
+		DAOForkSupport:      c.DAOForkSupport,
+		EIP150Block:         eip150Block,
+		EIP150Hash:          c.EIP150Hash,
+		EIP155Block:         eip155Block,
+		EIP158Block:         eip158Block,
+		ByzantiumBlock:      byzantiumBlock,
+		ConstantinopleBlock: constantinopleBlock,
+		PetersburgBlock:     petersburgBlock,
+		IstanbulBlock:       istanbulBlock,
+		EWASMBlock:          ewasmBlock,
+		Ethash:              ethash,
+		Clique:              clique,
+	}, nil
+}
+
+func (c *ChainConfig) CliqueConfig() *params.CliqueConfig {
+	return &params.CliqueConfig{
+		Period: c.Clique.Period,
+		Epoch:  c.Clique.Epoch,
+	}
+}
+
+type ExportNetwork struct {
+	ProjectSlug string              `mapstructure:"project_slug"`
+	RpcAddress  string              `mapstructure:"rpc_address"`
+	ChainConfig *params.ChainConfig `mapstructure:"chain_config"`
 }
 
 var defaultsProject = map[string]interface{}{
@@ -132,6 +297,62 @@ func IsProjectInit() bool {
 	return getString(ProjectSlug) != "" || len(MaybeGetMap(Projects)) > 0
 }
 
+func IsNetworkConfigured(network string) bool {
+	if _, ok := getStringMapString(Exports)[network]; ok {
+		return true
+	}
+
+	return false
+}
+
+func GetNetwork(network string) (*ExportNetwork, error) {
+	var networks map[string]*struct {
+		ProjectSlug string       `mapstructure:"project_slug"`
+		NetworkId   string       `mapstructure:"network_id"`
+		RpcAddress  string       `mapstructure:"rpc_address"`
+		ChainConfig *ChainConfig `mapstructure:"chain_config"`
+	}
+
+	err := unmarshalKey(Exports, &networks)
+	if err != nil {
+		return nil, err
+	}
+
+	net := networks[network]
+	if net == nil {
+		return nil, userError.NewUserError(fmt.Errorf("unable to find network"),
+			fmt.Sprintf("Unable to find configuration for network: %s", network),
+		)
+	}
+
+	if net.ChainConfig == nil {
+		net.ChainConfig = &ChainConfig{
+			HomesteadBlock:      0,
+			EIP150Block:         0,
+			EIP150Hash:          common.Hash{},
+			EIP155Block:         0,
+			EIP158Block:         0,
+			ByzantiumBlock:      0,
+			ConstantinopleBlock: 0,
+			PetersburgBlock:     0,
+			IstanbulBlock:       0,
+		}
+	}
+
+	chainConfig, err := net.ChainConfig.Config()
+	if err != nil {
+		return nil, userError.NewUserError(fmt.Errorf("unable to read config"),
+			fmt.Sprintf("Unable to read configuration for network: %s, error: %s", network, err),
+		)
+	}
+
+	return &ExportNetwork{
+		ProjectSlug: net.ProjectSlug,
+		RpcAddress:  net.RpcAddress,
+		ChainConfig: chainConfig,
+	}, nil
+}
+
 func SetProjectConfig(key string, value interface{}) {
 	projectConfig.Set(key, value)
 }
@@ -198,6 +419,22 @@ func getBool(key string) bool {
 	}
 
 	return globalConfig.GetBool(key)
+}
+
+func getStringMapString(key string) map[string]interface{} {
+	if projectConfig.IsSet(key) {
+		return projectConfig.GetStringMap(key)
+	}
+
+	return globalConfig.GetStringMap(key)
+}
+
+func unmarshalKey(key string, val interface{}) error {
+	if projectConfig.IsSet(key) {
+		return projectConfig.UnmarshalKey(key, val)
+	}
+
+	return globalConfig.UnmarshalKey(key, val)
 }
 
 func check(key string) {

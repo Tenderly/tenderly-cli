@@ -3,7 +3,7 @@ package stacktrace
 import (
 	"fmt"
 
-	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/tenderly/tenderly-cli/ethereum/types"
 )
 
 type Frame struct {
@@ -18,7 +18,7 @@ type Frame struct {
 
 	Op string `json:"op"`
 
-	State   *ethereum.EvmState
+	State   *types.EvmState
 	Mapping *InstructionMapping
 }
 

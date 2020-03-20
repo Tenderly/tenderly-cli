@@ -1,14 +1,17 @@
-package client
+package ethereum
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/big"
 	"time"
 
-	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/tenderly/tenderly-cli/ethereum/geth"
 	"github.com/tenderly/tenderly-cli/ethereum/parity"
+	"github.com/tenderly/tenderly-cli/ethereum/schema"
+	"github.com/tenderly/tenderly-cli/ethereum/types"
 
 	"github.com/tenderly/tenderly-cli/jsonrpc2"
 )
@@ -17,7 +20,7 @@ import (
 // It is able connect to both different protocols (http, ws) and implementations (geth, parity).
 type Client struct {
 	rpc    *jsonrpc2.Client
-	schema ethereum.Schema
+	schema schema.Schema
 
 	openChannels []chan int64
 }
@@ -35,7 +38,7 @@ func Dial(target string) (*Client, error) {
 		nodeType = "parity"
 	}
 
-	var schema ethereum.Schema
+	var schema schema.Schema
 	switch nodeType {
 	case "geth":
 		schema = &geth.DefaultSchema
@@ -86,8 +89,8 @@ func (c *Client) CurrentBlockNumber() (int64, error) {
 	return resp.Value(), nil
 }
 
-func (c *Client) GetBlock(number int64) (ethereum.Block, error) {
-	req, resp := c.schema.Eth().GetBlockByNumber(ethereum.Number(number))
+func (c *Client) GetBlock(number int64) (types.Block, error) {
+	req, resp := c.schema.Eth().GetBlockByNumber(types.Number(number))
 
 	if err := c.rpc.CallRequest(resp, req); err != nil {
 		return nil, fmt.Errorf("get block by number [%d]: %s", number, err)
@@ -96,7 +99,17 @@ func (c *Client) GetBlock(number int64) (ethereum.Block, error) {
 	return resp, nil
 }
 
-func (c *Client) GetTransaction(hash string) (ethereum.Transaction, error) {
+func (c *Client) GetBlockByHash(hash string) (types.BlockHeader, error) {
+	req, resp := c.schema.Eth().GetBlockByHash(hash)
+
+	if err := c.rpc.CallRequest(resp, req); err != nil {
+		return nil, fmt.Errorf("get block by hash [%s]: %s", hash, err)
+	}
+
+	return resp, nil
+}
+
+func (c *Client) GetTransaction(hash string) (types.Transaction, error) {
 	req, resp := c.schema.Eth().GetTransaction(hash)
 
 	if err := c.rpc.CallRequest(resp, req); err != nil {
@@ -106,7 +119,7 @@ func (c *Client) GetTransaction(hash string) (ethereum.Transaction, error) {
 	return resp, nil
 }
 
-func (c *Client) GetTransactionReceipt(hash string) (ethereum.TransactionReceipt, error) {
+func (c *Client) GetTransactionReceipt(hash string) (types.TransactionReceipt, error) {
 	req, resp := c.schema.Eth().GetTransactionReceipt(hash)
 
 	if err := c.rpc.CallRequest(resp, req); err != nil {
@@ -126,7 +139,7 @@ func (c *Client) GetNetworkID() (string, error) {
 	return *resp, nil
 }
 
-func (c *Client) GetTransactionVMTrace(hash string) (ethereum.TransactionStates, error) {
+func (c *Client) GetTransactionVMTrace(hash string) (types.TransactionStates, error) {
 	req, resp := c.schema.Trace().VMTrace(hash)
 
 	if err := c.rpc.CallRequest(resp, req); err != nil {
@@ -138,7 +151,7 @@ func (c *Client) GetTransactionVMTrace(hash string) (ethereum.TransactionStates,
 	return resp, nil
 }
 
-func (c *Client) GetTransactionCallTrace(hash string) (ethereum.CallTraces, error) {
+func (c *Client) GetTransactionCallTrace(hash string) (types.CallTraces, error) {
 	req, resp := c.schema.Trace().CallTrace(hash)
 
 	if err := c.rpc.CallRequest(resp, req); err != nil {
@@ -148,14 +161,45 @@ func (c *Client) GetTransactionCallTrace(hash string) (ethereum.CallTraces, erro
 	return resp, nil
 }
 
-func (c *Client) GetCode(address string) (*string, error) {
-	req, resp := c.schema.Code().GetCode(address)
+func (c *Client) GetBalance(address string, block *types.Number) (*big.Int, error) {
+	req, resp := c.schema.Eth().GetBalance(address, block)
 
 	if err := c.rpc.CallRequest(resp, req); err != nil {
-		return nil, fmt.Errorf("get code [%s]: %s", address, err)
+		return nil, fmt.Errorf("get balance [%s]: %s", address, err)
 	}
 
-	return resp, nil
+	return resp.ToInt(), nil
+}
+
+func (c *Client) GetCode(address string, block *types.Number) (string, error) {
+	req, resp := c.schema.Eth().GetCode(address, block)
+
+	if err := c.rpc.CallRequest(resp, req); err != nil {
+		return "", fmt.Errorf("get code [%s]: %s", address, err)
+	}
+
+	return *resp, nil
+}
+
+func (c *Client) GetNonce(address string, block *types.Number) (uint64, error) {
+	req, resp := c.schema.Eth().GetNonce(address, block)
+
+	if err := c.rpc.CallRequest(resp, req); err != nil {
+		return 0, fmt.Errorf("get nonce [%s]: %s", address, err)
+	}
+
+	return uint64(*resp), nil
+}
+
+func (c *Client) GetStorageAt(hash string, offset common.Hash, block *types.Number) (*common.Hash, error) {
+	req, resp := c.schema.Eth().GetStorage(hash, offset, block)
+
+	if err := c.rpc.CallRequest(resp, req); err != nil {
+		return nil, fmt.Errorf("get storage at [%s]: %s", hash, err)
+	}
+
+	respHash := common.HexToHash(*resp)
+	return &respHash, nil
 }
 
 func (c *Client) Subscribe(forcePoll bool) (chan int64, error) {
@@ -208,7 +252,7 @@ func (c *Client) subscribeViaPoll() (chan int64, error) {
 	return outCh, nil
 }
 
-func (c *Client) subscribe(id *ethereum.SubscriptionID) (chan int64, error) {
+func (c *Client) subscribe(id *types.SubscriptionID) (chan int64, error) {
 	outCh := make(chan int64)
 
 	inCh, err := c.rpc.Subscribe(id.String())

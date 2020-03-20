@@ -1,7 +1,12 @@
 package geth
 
 import (
-	"github.com/tenderly/tenderly-cli/ethereum"
+	"fmt"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/tenderly/tenderly-cli/ethereum/schema"
+	"github.com/tenderly/tenderly-cli/ethereum/types"
 	"github.com/tenderly/tenderly-cli/jsonrpc2"
 )
 
@@ -9,35 +14,29 @@ var DefaultSchema = Schema{
 	ValueEth:    ethSchema{},
 	ValueNet:    netSchema{},
 	ValueTrace:  traceSchema{},
-	ValueCode:   codeSchema{},
 	ValuePubSub: pubSubSchema{},
 }
 
 type Schema struct {
-	ValueEth    ethereum.EthSchema
-	ValueNet    ethereum.NetSchema
-	ValueTrace  ethereum.TraceSchema
-	ValueCode   ethereum.CodeSchema
-	ValuePubSub ethereum.PubSubSchema
+	ValueEth    schema.EthSchema
+	ValueNet    schema.NetSchema
+	ValueTrace  schema.TraceSchema
+	ValuePubSub schema.PubSubSchema
 }
 
-func (s *Schema) Eth() ethereum.EthSchema {
+func (s *Schema) Eth() schema.EthSchema {
 	return s.ValueEth
 }
 
-func (s *Schema) Net() ethereum.NetSchema {
+func (s *Schema) Net() schema.NetSchema {
 	return s.ValueNet
 }
 
-func (s *Schema) Trace() ethereum.TraceSchema {
+func (s *Schema) Trace() schema.TraceSchema {
 	return s.ValueTrace
 }
 
-func (s *Schema) Code() ethereum.CodeSchema {
-	return s.ValueCode
-}
-
-func (s *Schema) PubSub() ethereum.PubSubSchema {
+func (s *Schema) PubSub() schema.PubSubSchema {
 	return s.ValuePubSub
 }
 
@@ -46,28 +45,78 @@ func (s *Schema) PubSub() ethereum.PubSubSchema {
 type ethSchema struct {
 }
 
-func (ethSchema) BlockNumber() (*jsonrpc2.Request, *ethereum.Number) {
-	var num ethereum.Number
+func (ethSchema) BlockNumber() (*jsonrpc2.Request, *types.Number) {
+	var num types.Number
 
 	return jsonrpc2.NewRequest("eth_blockNumber"), &num
 }
 
-func (ethSchema) GetBlockByNumber(num ethereum.Number) (*jsonrpc2.Request, ethereum.Block) {
+func (ethSchema) GetBlockByNumber(num types.Number) (*jsonrpc2.Request, types.Block) {
 	var block Block
 
 	return jsonrpc2.NewRequest("eth_getBlockByNumber", num.Hex(), true), &block
 }
 
-func (ethSchema) GetTransaction(hash string) (*jsonrpc2.Request, ethereum.Transaction) {
+func (ethSchema) GetBlockByHash(hash string) (*jsonrpc2.Request, types.BlockHeader) {
+	var block BlockHeader
+
+	return jsonrpc2.NewRequest("eth_getBlockByHash", hash, false), &block
+}
+
+func (ethSchema) GetTransaction(hash string) (*jsonrpc2.Request, types.Transaction) {
 	var t Transaction
 
 	return jsonrpc2.NewRequest("eth_getTransactionByHash", hash), &t
 }
 
-func (ethSchema) GetTransactionReceipt(hash string) (*jsonrpc2.Request, ethereum.TransactionReceipt) {
+func (ethSchema) GetTransactionReceipt(hash string) (*jsonrpc2.Request, types.TransactionReceipt) {
 	var receipt TransactionReceipt
 
 	return jsonrpc2.NewRequest("eth_getTransactionReceipt", hash), &receipt
+}
+
+func (ethSchema) GetBalance(address string, block *types.Number) (*jsonrpc2.Request, *hexutil.Big) {
+	var balance hexutil.Big
+
+	param := "latest"
+	if block != nil {
+		param = fmt.Sprintf("0x%x", *block)
+	}
+
+	return jsonrpc2.NewRequest("eth_getBalance", address, param), &balance // "latest"
+}
+
+func (ethSchema) GetCode(address string, block *types.Number) (*jsonrpc2.Request, *string) {
+	var code string
+
+	param := "latest"
+	if block != nil {
+		param = fmt.Sprintf("0x%x", *block)
+	}
+
+	return jsonrpc2.NewRequest("eth_getCode", address, param), &code
+}
+
+func (ethSchema) GetNonce(address string, block *types.Number) (*jsonrpc2.Request, *hexutil.Uint64) {
+	var nonce hexutil.Uint64
+
+	param := "latest"
+	if block != nil {
+		param = fmt.Sprintf("0x%x", *block)
+	}
+
+	return jsonrpc2.NewRequest("eth_getTransactionCount", address, param), &nonce
+}
+
+func (ethSchema) GetStorage(address string, offset common.Hash, block *types.Number) (*jsonrpc2.Request, *string) {
+	var data string
+
+	param := "latest"
+	if block != nil {
+		param = fmt.Sprintf("0x%x", *block)
+	}
+
+	return jsonrpc2.NewRequest("eth_getStorageAt", address, offset, param), &data
 }
 
 // Net
@@ -86,46 +135,35 @@ func (netSchema) Version() (*jsonrpc2.Request, *string) {
 type traceSchema struct {
 }
 
-func (traceSchema) VMTrace(hash string) (*jsonrpc2.Request, ethereum.TransactionStates) {
+func (traceSchema) VMTrace(hash string) (*jsonrpc2.Request, types.TransactionStates) {
 	var trace TraceResult
 
 	return jsonrpc2.NewRequest("debug_traceTransaction", hash, struct{}{}), &trace
 }
-func (traceSchema) CallTrace(hash string) (*jsonrpc2.Request, ethereum.CallTraces) {
+func (traceSchema) CallTrace(hash string) (*jsonrpc2.Request, types.CallTraces) {
 	var trace CallTrace
 
 	return jsonrpc2.NewRequest("debug_traceTransaction", hash, map[string]string{"tracer": "callTracer"}), &trace
 }
 
-// Code
-
-type codeSchema struct {
-}
-
-func (codeSchema) GetCode(address string) (*jsonrpc2.Request, *string) {
-	var code string
-
-	return jsonrpc2.NewRequest("eth_getCode", address, "latest"), &code
-}
-
 // PubSub
 
 type PubSubSchema interface {
-	Subscribe() (*jsonrpc2.Request, *ethereum.SubscriptionID)
-	Unsubscribe(id ethereum.SubscriptionID) (*jsonrpc2.Request, *ethereum.UnsubscribeSuccess)
+	Subscribe() (*jsonrpc2.Request, *types.SubscriptionID)
+	Unsubscribe(id types.SubscriptionID) (*jsonrpc2.Request, *types.UnsubscribeSuccess)
 }
 
 type pubSubSchema struct {
 }
 
-func (pubSubSchema) Subscribe() (*jsonrpc2.Request, *ethereum.SubscriptionID) {
-	id := ethereum.NewNilSubscriptionID()
+func (pubSubSchema) Subscribe() (*jsonrpc2.Request, *types.SubscriptionID) {
+	id := types.NewNilSubscriptionID()
 
 	return jsonrpc2.NewRequest("eth_subscribe", "newHeads"), &id
 }
 
-func (pubSubSchema) Unsubscribe(id ethereum.SubscriptionID) (*jsonrpc2.Request, *ethereum.UnsubscribeSuccess) {
-	var success ethereum.UnsubscribeSuccess
+func (pubSubSchema) Unsubscribe(id types.SubscriptionID) (*jsonrpc2.Request, *types.UnsubscribeSuccess) {
+	var success types.UnsubscribeSuccess
 
 	return jsonrpc2.NewRequest("eth_unsubscribe", id.String()), &success
 }

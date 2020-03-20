@@ -2,28 +2,63 @@ package geth
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/tenderly/tenderly-cli/ethereum/types"
 )
 
 // Core Types
 
 type Header struct {
-	HNumber *ethereum.Number `json:"number"`
+	HNumber *types.Number `json:"number"`
 }
 
-func (h *Header) Number() *ethereum.Number {
+func (h *Header) Number() *types.Number {
 	return h.HNumber
 }
 
 type Block struct {
+	ValuesNumber       types.Number   `json:"number"`
+	ValuesHash         common.Hash    `json:"hash"`
+	ValueParentHash    common.Hash    `json:"parentHash"`
+	ValueTimestamp     *hexutil.Big   `json:"timestamp"`
+	ValueDifficulty    *hexutil.Big   `json:"difficulty"`
+	ValueGasLimit      *hexutil.Big   `json:"gasLimit"`
 	ValuesTransactions []*Transaction `json:"transactions"`
 }
 
-func (b Block) Transactions() []ethereum.Transaction {
-	transactions := make([]ethereum.Transaction, len(b.ValuesTransactions))
+func (b Block) Number() types.Number {
+	return b.ValuesNumber
+}
+
+func (b Block) Hash() common.Hash {
+	return b.ValuesHash
+}
+
+func (b *Block) ParentHash() common.Hash {
+	return b.ValueParentHash
+}
+
+func (b *Block) Time() *hexutil.Big {
+	return b.ValueTimestamp
+}
+
+func (b *Block) Timestamp() time.Time {
+	return time.Unix(b.ValueTimestamp.ToInt().Int64(), 0)
+}
+
+func (b *Block) Difficulty() *hexutil.Big {
+	return b.ValueDifficulty
+}
+
+func (b *Block) GasLimit() *hexutil.Big {
+	return b.ValueGasLimit
+}
+
+func (b Block) Transactions() []types.Transaction {
+	transactions := make([]types.Transaction, len(b.ValuesTransactions))
 	for k, v := range b.ValuesTransactions {
 		transactions[k] = v
 	}
@@ -31,22 +66,119 @@ func (b Block) Transactions() []ethereum.Transaction {
 	return transactions
 }
 
-type Transaction struct {
-	ValueHash *common.Hash    `json:"hash"`
-	ValueFrom *common.Address `json:"from"`
-	ValueTo   *common.Address `json:"to"`
-	//ValueInput       hexutil.Bytes   `json:"input"`
-	//ValueValue       *hexutil.Big    `json:"value"`
-	//ValueGas         *hexutil.Big    `json:"gas"`
-	//ValueGasPrice    *hexutil.Big    `json:"gasPrice"`
-	ValueBlockNumber string `json:"blockNumber"`
+type BlockHeader struct {
+	ValueNumber      types.Number   `json:"number"`
+	ValueBlockHash   common.Hash    `json:"hash"`
+	ValueStateRoot   common.Hash    `json:"stateRoot"`
+	ValueParentHash  common.Hash    `json:"parentHash"`
+	ValueUncleHash   common.Hash    `json:"sha3Uncles"`
+	ValueTxHash      common.Hash    `json:"transactionsRoot"`
+	ValueReceiptHash common.Hash    `json:"receiptsRoot"`
+	ValueBloom       hexutil.Bytes  `json:"logsBloom"`
+	ValueTimestamp   *hexutil.Big   `json:"timestamp"`
+	ValueDifficulty  *hexutil.Big   `json:"difficulty"`
+	ValueGasLimit    *hexutil.Big   `json:"gasLimit"`
+	ValueGasUsed     *hexutil.Big   `json:"gasUsed"`
+	ValueCoinbase    common.Address `json:"miner"`
+	ValueExtraData   hexutil.Bytes  `json:"extraData"`
+	ValueMixDigest   common.Hash    `json:"mixDigest"`
+	ValueNonce       hexutil.Bytes  `json:"nonce"`
 }
 
-func (t *Transaction) Hash() *common.Hash {
+func (b *BlockHeader) Number() types.Number {
+	return b.ValueNumber
+}
+
+func (b *BlockHeader) Hash() common.Hash {
+	return b.ValueBlockHash
+}
+
+func (b *BlockHeader) StateRoot() common.Hash {
+	return b.ValueStateRoot
+}
+
+func (b *BlockHeader) ParentHash() common.Hash {
+	return b.ValueParentHash
+}
+
+func (b *BlockHeader) UncleHash() common.Hash {
+	return b.ValueUncleHash
+}
+
+func (b *BlockHeader) TxHash() common.Hash {
+	return b.ValueTxHash
+}
+
+func (b *BlockHeader) ReceiptHash() common.Hash {
+	return b.ValueReceiptHash
+}
+
+func (b *BlockHeader) Bloom() [256]byte {
+	var arr [256]byte
+	copy(arr[:], b.ValueBloom[:256])
+	return arr
+}
+
+func (b *BlockHeader) Time() *hexutil.Big {
+	return b.ValueTimestamp
+}
+
+func (b *BlockHeader) Timestamp() time.Time {
+	return time.Unix(b.ValueTimestamp.ToInt().Int64(), 0)
+}
+
+func (b *BlockHeader) Difficulty() *hexutil.Big {
+	return b.ValueDifficulty
+}
+
+func (b *BlockHeader) GasLimit() *hexutil.Big {
+	return b.ValueGasLimit
+}
+
+func (b *BlockHeader) GasUsed() *hexutil.Big {
+	return b.ValueGasUsed
+}
+
+func (b *BlockHeader) Coinbase() common.Address {
+	return b.ValueCoinbase
+}
+
+func (b *BlockHeader) ExtraData() hexutil.Bytes {
+	return b.ValueExtraData
+}
+
+func (b *BlockHeader) MixDigest() common.Hash {
+	return b.ValueMixDigest
+}
+
+func (b *BlockHeader) Nonce() [8]byte {
+	var arr [8]byte
+	copy(arr[:], b.ValueNonce[:8])
+	return arr
+}
+
+type Transaction struct {
+	ValueHash        common.Hash     `json:"hash"`
+	ValueFrom        common.Address  `json:"from"`
+	ValueTo          *common.Address `json:"to"`
+	ValueInput       hexutil.Bytes   `json:"input"`
+	ValueValue       *hexutil.Big    `json:"value"`
+	ValueGas         *hexutil.Big    `json:"gas"`
+	ValueGasPrice    *hexutil.Big    `json:"gasPrice"`
+	ValueBlockNumber *hexutil.Big    `json:"blockNumber"`
+	ValueBlockHash   *common.Hash    `json:"blockHash"`
+	ValueNonce       *hexutil.Big    `json:"nonce"`
+
+	V *hexutil.Big `json:"v"`
+	R *hexutil.Big `json:"r"`
+	S *hexutil.Big `json:"s"`
+}
+
+func (t *Transaction) Hash() common.Hash {
 	return t.ValueHash
 }
 
-func (t *Transaction) From() *common.Address {
+func (t *Transaction) From() common.Address {
 	return t.ValueFrom
 }
 
@@ -55,19 +187,31 @@ func (t *Transaction) To() *common.Address {
 }
 
 func (t *Transaction) Input() hexutil.Bytes {
-	return nil
+	return t.ValueInput
 }
 
 func (t *Transaction) Value() *hexutil.Big {
-	return nil
+	return t.ValueValue
 }
 
 func (t *Transaction) Gas() *hexutil.Big {
-	return nil
+	return t.ValueGas
 }
 
 func (t *Transaction) GasPrice() *hexutil.Big {
-	return nil
+	return t.ValueGasPrice
+}
+
+func (t *Transaction) BlockNumber() *hexutil.Big {
+	return t.ValueBlockNumber
+}
+
+func (t *Transaction) BlockHash() *common.Hash {
+	return t.ValueBlockHash
+}
+
+func (t *Transaction) Nonce() *hexutil.Big {
+	return t.ValueNonce
 }
 
 type Log struct {
@@ -93,10 +237,10 @@ func (l *Log) Topics() []string {
 }
 
 type TransactionReceipt struct {
-	TTransactionHash  string      `json:"transactionHash"`
-	TTransactionIndex hexutil.Big `json:"transactionIndex"`
-	TBlockHash        common.Hash `json:"blockHash"`
-	TBlockNumber      hexutil.Big `json:"blockNumber"`
+	TTransactionHash  string       `json:"transactionHash"`
+	TTransactionIndex types.Number `json:"transactionIndex"`
+	TBlockHash        common.Hash  `json:"blockHash"`
+	TBlockNumber      types.Number `json:"blockNumber"`
 
 	TFrom common.Address  `json:"from"`
 	TTo   *common.Address `json:"to"`
@@ -119,7 +263,7 @@ func (t *TransactionReceipt) Hash() string {
 	return t.TTransactionHash
 }
 
-func (t *TransactionReceipt) TransactionIndex() hexutil.Big {
+func (t *TransactionReceipt) TransactionIndex() types.Number {
 	return t.TTransactionIndex
 }
 
@@ -127,7 +271,7 @@ func (t *TransactionReceipt) BlockHash() common.Hash {
 	return t.TBlockHash
 }
 
-func (t *TransactionReceipt) BlockNumber() hexutil.Big {
+func (t *TransactionReceipt) BlockNumber() types.Number {
 	return t.TBlockNumber
 }
 
@@ -155,8 +299,8 @@ func (t *TransactionReceipt) Status() string {
 	return t.TStatus
 }
 
-func (t *TransactionReceipt) Logs() []ethereum.Log {
-	var logs []ethereum.Log
+func (t *TransactionReceipt) Logs() []types.Log {
+	var logs []types.Log
 
 	for _, log := range t.TLogs {
 		logs = append(logs, log)
@@ -270,11 +414,11 @@ func (c *CallTrace) Error() string {
 	return c.ValueError
 }
 
-func (c *CallTrace) Traces() []ethereum.Trace {
+func (c *CallTrace) Traces() []types.Trace {
 	ch := make(chan *CallTrace)
 	Walk(c, ch)
 
-	var traces []ethereum.Trace
+	var traces []types.Trace
 	for callTrace := range ch {
 		traces = append(traces, callTrace)
 	}
@@ -292,8 +436,8 @@ func Walk(c *CallTrace, ch chan *CallTrace) {
 	}
 }
 
-func (gtr *TraceResult) States() []ethereum.EvmState {
-	traces := make([]ethereum.EvmState, len(gtr.StructLogs))
+func (gtr *TraceResult) States() []types.EvmState {
+	traces := make([]types.EvmState, len(gtr.StructLogs))
 	for k, v := range gtr.StructLogs {
 		traces[k] = v
 	}
@@ -305,6 +449,6 @@ func (gtr *TraceResult) ProcessTrace() {
 }
 
 type SubscriptionResult struct {
-	Subscription ethereum.SubscriptionID `json:"subscription"`
-	Result       Header                  `json:"result"`
+	Subscription types.SubscriptionID `json:"subscription"`
+	Result       Header               `json:"result"`
 }

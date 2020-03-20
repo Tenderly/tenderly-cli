@@ -8,14 +8,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/tenderly/tenderly-cli/ethereum/types"
 	"github.com/tenderly/tenderly-cli/stacktrace"
 	"github.com/tenderly/tenderly-cli/truffle"
 )
 
 var contracts map[string]*truffle.Contract
 
-func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath, buildDir string) error {
+func (p *Proxy) Trace(receipt types.TransactionReceipt, projectPath, buildDir string) error {
 	networkId, err := p.client.GetNetworkID()
 	if err != nil {
 		return err
@@ -42,13 +42,13 @@ func (p *Proxy) Trace(receipt ethereum.TransactionReceipt, projectPath, buildDir
 
 		contract, ok := contracts[strings.ToLower(t.To().String())]
 		if !ok {
-			code, err := p.client.GetCode(t.To().String())
+			code, err := p.client.GetCode(t.To().String(), nil)
 			if err != nil {
 				return fmt.Errorf("failed fetching code on address %s\n", t.To().String())
 			}
 
 			for _, c := range contracts {
-				if c.DeployedBytecode == *code {
+				if c.DeployedBytecode == code {
 					contract = c
 				}
 			}

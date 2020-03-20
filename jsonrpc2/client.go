@@ -134,6 +134,10 @@ func (c *Client) CallRequest(res interface{}, req *Request) error {
 		return nil
 	}
 
+	if string(resMsg.Result) == "null" {
+		return fmt.Errorf("resource not found")
+	}
+
 	err = json.Unmarshal(resMsg.Result, res)
 	if err != nil {
 		return fmt.Errorf("read result: %s", err)

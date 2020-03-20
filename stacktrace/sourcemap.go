@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/ethereum/go-ethereum/core/vm"
 )
 
 //@TODO: Use a more memory efficient method of representing source maps. How costly are InstructionMapping refs?
@@ -118,11 +118,11 @@ func convertToMemoryMap(sourceMap SourceMap, binData string) (SourceMap, error) 
 	instruction := 0
 	for i := 0; i < len(bin); i++ {
 
-		op := ethereum.OpCode(bin[i])
+		op := vm.OpCode(bin[i])
 		extraPush := 0
 		if op.IsPush() {
 			// Skip more here
-			extraPush = int(op - ethereum.PUSH1 + 1)
+			extraPush = int(op - vm.PUSH1 + 1)
 		}
 
 		memSrcMap[i] = sourceMap[instruction]

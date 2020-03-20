@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/logrusorgru/aurora"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -15,17 +14,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/logrusorgru/aurora"
+	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/tenderly/tenderly-cli/ethereum/types"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/userError"
 
-	"github.com/tenderly/tenderly-cli/ethereum"
-	"github.com/tenderly/tenderly-cli/ethereum/client"
 	"github.com/tenderly/tenderly-cli/jsonrpc2"
 )
 
 type Proxy struct {
-	client *client.Client
+	client *ethereum.Client
 
 	target *url.URL
 	proxy  *httputil.ReverseProxy
@@ -37,7 +38,7 @@ var buildDirectory string
 func NewProxy(target string) (*Proxy, error) {
 	targetUrl, _ := url.Parse(target)
 
-	c, err := client.Dial(target)
+	c, err := ethereum.Dial(target)
 	if err != nil {
 		return nil, userError.NewUserError(
 			fmt.Errorf("failed calling target ethereum blockchain on %s", target),
@@ -180,7 +181,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	logrus.Infof("%s", respData)
 }
 
-func (p *Proxy) GetTraceReceipt(tx string, wait bool) (ethereum.TransactionReceipt, error) {
+func (p *Proxy) GetTraceReceipt(tx string, wait bool) (types.TransactionReceipt, error) {
 	receipt, err := p.waitForReceipt(tx, wait)
 	if err != nil {
 		return nil, err
@@ -201,11 +202,11 @@ func (p *Proxy) GetTraceReceipt(tx string, wait bool) (ethereum.TransactionRecei
 	return receipt, nil
 }
 
-func (p *Proxy) waitForReceipt(tx string, wait bool) (ethereum.TransactionReceipt, error) {
+func (p *Proxy) waitForReceipt(tx string, wait bool) (types.TransactionReceipt, error) {
 	attempts := 200
 	waitFor := 500 * time.Millisecond
 
-	var receipt ethereum.TransactionReceipt
+	var receipt types.TransactionReceipt
 	var err error
 
 	for {
@@ -226,7 +227,7 @@ func (p *Proxy) waitForReceipt(tx string, wait bool) (ethereum.TransactionReceip
 	return receipt, err
 }
 
-func (p *Proxy) getReceipt(tx string) (ethereum.TransactionReceipt, error) {
+func (p *Proxy) getReceipt(tx string) (types.TransactionReceipt, error) {
 	receipt, err := p.client.GetTransactionReceipt(tx)
 	if err != nil {
 		return nil, userError.NewUserError(

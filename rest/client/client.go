@@ -14,7 +14,7 @@ import (
 )
 
 func Request(method, path string, body []byte) io.Reader {
-	apiBase := "https://api.tenderly.dev"
+	apiBase := "http://127.0.0.1:8080"
 	if alternativeApiBase := config.MaybeGetString("api_base"); len(alternativeApiBase) != 0 {
 		apiBase = alternativeApiBase
 	}

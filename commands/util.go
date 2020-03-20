@@ -19,6 +19,7 @@ func newRest() *rest.Rest {
 		call.NewUserCalls(),
 		call.NewProjectCalls(),
 		call.NewContractCalls(),
+		call.NewExportCalls(),
 	)
 }
 
