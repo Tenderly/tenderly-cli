@@ -134,15 +134,22 @@ projects: # running tenderly push will push the smart contracts to all of the pr
 
 The `export` command is used for local transaction debugging.
 
+```
+tenderly export {{transaction_hash}} {{export_network}}
+```
+
+#### Arguments
+
+| Name | Description |
+| --- | --- |
+| transaction hash | Hash of local transaction to debug |
+| export network | This is a property located under exports property in tenderly yaml. |
+
 ```yaml
 exports: # running tenderly export will export local transaction to the provided project
   my-network:
     project_slug: my-cool-project
     rpc_address: 127.0.0.1:8545
-```
-
-```
-tenderly export {{transaction_hash}} {{tenderly_yaml_network}}
 ```
 
 #### Advanced usage
