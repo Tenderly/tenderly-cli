@@ -11,6 +11,7 @@ Tenderly CLI is a suite of development tools that allows you to debug, monitor a
     * [Login](#login)
     * [Init](#init)
     * [Push](#push)
+    * [Export](#export)
     * [Local Proxy Debugging](#proxy-debugging)
     * [Check for updates](#check-for-updates)
     * [Version](#version)
@@ -126,6 +127,47 @@ projects: # running tenderly push will push the smart contracts to all of the pr
     # if the networks property is not provided or is empty the project will be pushed to all of the migrated networks
   company-account/my-other-project:
     # if you want to push to a shared project provide the full project identifier
+    # the identifier can be found in you Tenderly dashboard under the projects name
+```
+
+The `export` command is used for local transaction debugging.
+
+#### Usage
+
+```yaml
+exports: # running tenderly export will export local transaction to the provided project
+  my-network:
+    project_slug: my-cool-project
+    rpc_address: 127.0.0.1:8545
+```
+
+### Export
+```
+tenderly export {{transaction_hash}} {{tenderly_yaml_network}}
+```
+
+#### Advanced usage
+
+```yaml
+exports: # running tenderly export will push the smart contracts to all of the provided projects
+  my-network:
+    project_slug: my-cool-project
+    rpc_address: 127.0.0.1:8545
+    chain_config:
+      homestead_block: 0 # (default 0)
+      eip150_block: 0 # (default 0)
+      eip150_hash: 0x0 # (default 0x0)
+      eip155_block: 0 # (default 0)
+      eip158_block: 0 # (default 0)
+      byzantium_block: 0 # (default 0)
+      constantinople_block: 0 # (default 0)
+      petersburg_block: 0 # (default 0)
+      istanbul_block: 0 # (default 0)
+
+  my-company-network:
+    project_slug: company-account/my-other-project
+    rpc_address: rpc.ethereum.company:8545
+    # if you want to export to a shared project provide the full project identifier
     # the identifier can be found in you Tenderly dashboard under the projects name
 ```
 

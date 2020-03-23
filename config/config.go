@@ -308,7 +308,6 @@ func IsNetworkConfigured(network string) bool {
 func GetNetwork(network string) (*ExportNetwork, error) {
 	var networks map[string]*struct {
 		ProjectSlug string       `mapstructure:"project_slug"`
-		NetworkId   string       `mapstructure:"network_id"`
 		RpcAddress  string       `mapstructure:"rpc_address"`
 		ChainConfig *ChainConfig `mapstructure:"chain_config"`
 	}

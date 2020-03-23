@@ -24,34 +24,35 @@ import (
 
 var providedHash string
 var providedNetwork string
-var providedTag string
 
 func init() {
-	exportCmd.PersistentFlags().StringVar(&providedHash, "hash", "", "The transaction hash to debug.")
-	exportCmd.PersistentFlags().StringVar(&providedNetwork, "network", "", "The network name.")
-	exportCmd.PersistentFlags().StringVar(&providedTag, "tag", "", "Optional tag used for filtering and referencing export transactions")
 	rootCmd.AddCommand(exportCmd)
 }
 
 var exportCmd = &cobra.Command{
 	Use:   "export",
 	Short: "Exports local transaction to Tenderly for debugging purposes.",
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return errors.New("Missing export transaction hash argument")
+		}
+		_, err := hexutil.Decode(args[0])
+		if err != nil {
+			return errors.New(fmt.Sprintf("Unable to decode transaction hash: %s", args[0]))
+		}
+		providedHash = args[0]
+
+		if len(args) == 1 {
+			return errors.New("Missing export network argument")
+		}
+		providedNetwork = args[1]
+
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
 
 		CheckLogin()
-
-		if _, err := hexutil.Decode(providedHash); err != nil {
-			logrus.Error("Invalid hash provided.")
-			os.Exit(1)
-		}
-
-		if providedNetwork == "" {
-			if !config.IsNetworkConfigured(providedNetwork) {
-				logrus.Error("Missing network name.")
-				os.Exit(1)
-			}
-		}
 
 		if !config.IsNetworkConfigured(providedNetwork) {
 			logrus.Errorf("Missing network configuration for network name %s", providedNetwork)
@@ -100,7 +101,6 @@ var exportCmd = &cobra.Command{
 			ContractsData: payloads.UploadContractsRequest{
 				Contracts: contracts,
 				Config:    truffleConfig,
-				Tag:       providedTag,
 			},
 		}, network.ProjectSlug)
 
