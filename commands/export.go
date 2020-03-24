@@ -89,9 +89,10 @@ var exportCmd = &cobra.Command{
 
 		resp, err := rest.Export.ExportTransaction(payloads.ExportTransactionRequest{
 			NetworkData: payloads.NetworkData{
-				Name:        providedNetwork,
-				NetworkId:   networkId,
-				ChainConfig: network.ChainConfig,
+				Name:          providedNetwork,
+				NetworkId:     networkId,
+				ForkedNetwork: network.ForkedNetwork,
+				ChainConfig:   network.ChainConfig,
 			},
 			TransactionData: payloads.TransactionData{
 				Transaction: tx,

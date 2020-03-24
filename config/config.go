@@ -192,9 +192,10 @@ func (c *ChainConfig) CliqueConfig() *params.CliqueConfig {
 }
 
 type ExportNetwork struct {
-	ProjectSlug string              `mapstructure:"project_slug"`
-	RpcAddress  string              `mapstructure:"rpc_address"`
-	ChainConfig *params.ChainConfig `mapstructure:"chain_config"`
+	ProjectSlug   string              `mapstructure:"project_slug"`
+	RpcAddress    string              `mapstructure:"rpc_address"`
+	ForkedNetwork string              `mapstructure:"forked_network"`
+	ChainConfig   *params.ChainConfig `mapstructure:"chain_config"`
 }
 
 var defaultsProject = map[string]interface{}{
@@ -305,11 +306,12 @@ func IsNetworkConfigured(network string) bool {
 	return false
 }
 
-func GetNetwork(network string) (*ExportNetwork, error) {
+func GetNetwork(networkId string) (*ExportNetwork, error) {
 	var networks map[string]*struct {
-		ProjectSlug string       `mapstructure:"project_slug"`
-		RpcAddress  string       `mapstructure:"rpc_address"`
-		ChainConfig *ChainConfig `mapstructure:"chain_config"`
+		ProjectSlug   string       `mapstructure:"project_slug"`
+		RpcAddress    string       `mapstructure:"rpc_address"`
+		ForkedNetwork string       `mapstructure:"forked_network"`
+		ChainConfig   *ChainConfig `mapstructure:"chain_config"`
 	}
 
 	err := unmarshalKey(Exports, &networks)
@@ -317,15 +319,15 @@ func GetNetwork(network string) (*ExportNetwork, error) {
 		return nil, err
 	}
 
-	net := networks[network]
-	if net == nil {
+	network := networks[networkId]
+	if network == nil {
 		return nil, userError.NewUserError(fmt.Errorf("unable to find network"),
-			fmt.Sprintf("Unable to find configuration for network: %s", network),
+			fmt.Sprintf("Unable to find configuration for network: %s", networkId),
 		)
 	}
 
-	if net.ChainConfig == nil {
-		net.ChainConfig = &ChainConfig{
+	if network.ChainConfig == nil {
+		network.ChainConfig = &ChainConfig{
 			HomesteadBlock:      0,
 			EIP150Block:         0,
 			EIP150Hash:          common.Hash{},
@@ -338,7 +340,7 @@ func GetNetwork(network string) (*ExportNetwork, error) {
 		}
 	}
 
-	chainConfig, err := net.ChainConfig.Config()
+	chainConfig, err := network.ChainConfig.Config()
 	if err != nil {
 		return nil, userError.NewUserError(fmt.Errorf("unable to read config"),
 			fmt.Sprintf("Unable to read configuration for network: %s, error: %s", network, err),
@@ -346,9 +348,10 @@ func GetNetwork(network string) (*ExportNetwork, error) {
 	}
 
 	return &ExportNetwork{
-		ProjectSlug: net.ProjectSlug,
-		RpcAddress:  net.RpcAddress,
-		ChainConfig: chainConfig,
+		ProjectSlug:   network.ProjectSlug,
+		RpcAddress:    network.RpcAddress,
+		ForkedNetwork: network.ForkedNetwork,
+		ChainConfig:   chainConfig,
 	}, nil
 }
 

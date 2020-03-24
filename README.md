@@ -159,6 +159,7 @@ exports: # running tenderly export will push the smart contracts to all of the p
   my-network:
     project_slug: my-cool-project
     rpc_address: 127.0.0.1:8545
+    forked_network: mainnet
     chain_config:
       homestead_block: 0 # (default 0)
       eip150_block: 0 # (default 0)

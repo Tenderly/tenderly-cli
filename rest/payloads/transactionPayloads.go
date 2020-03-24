@@ -14,9 +14,10 @@ type ExportTransactionRequest struct {
 }
 
 type NetworkData struct {
-	Name        string              `json:"name"`
-	NetworkId   string              `json:"network_id"`
-	ChainConfig *params.ChainConfig `json:"chain_config"`
+	Name          string              `json:"name"`
+	NetworkId     string              `json:"network_id"`
+	ForkedNetwork string              `json:"forked_network"`
+	ChainConfig   *params.ChainConfig `json:"chain_config"`
 }
 
 type TransactionData struct {
