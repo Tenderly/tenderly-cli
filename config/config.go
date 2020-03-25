@@ -73,41 +73,34 @@ func toInt(x BigInt) (*big.Int, error) {
 }
 
 type ChainConfig struct {
-	ChainID BigInt `mapstructure:"chain_id"`
+	HomesteadBlock BigInt `mapstructure:"homestead_block,omitempty" yaml:"homestead_block,omitempty"`
 
-	HomesteadBlock BigInt `mapstructure:"homestead_block,omitempty"`
+	EIP150Block BigInt      `mapstructure:"eip150_block,omitempty",yaml:"eip150_block,omitempty"`
+	EIP150Hash  common.Hash `mapstructure:"eip150_hash,omitempty" yaml:"eip150_hash,omitempty"`
 
-	DAOForkBlock   BigInt `mapstructure:"dao_fork_block,omitempty"`
-	DAOForkSupport bool   `mapstructure:"dao_fork_support,omitempty"`
+	EIP155Block BigInt `mapstructure:"eip155_block,omitempty" yaml:"eip155_block,omitempty"`
+	EIP158Block BigInt `mapstructure:"eip158_block,omitempty" yaml:"eip158_block,omitempty"`
 
-	EIP150Block BigInt      `mapstructure:"eip150_block,omitempty"`
-	EIP150Hash  common.Hash `mapstructure:"eip150_hash,omitempty"`
+	ByzantiumBlock      BigInt `mapstructure:"byzantium_block,omitempty" yaml:"byzantium_block,omitempty"`
+	ConstantinopleBlock BigInt `mapstructure:"constantinople_block,omitempty" yaml:"constantinople_block,omitempty"`
+	PetersburgBlock     BigInt `mapstructure:"petersburg_block,omitempty" yaml:"petersburg_block,omitempty"`
+	IstanbulBlock       BigInt `mapstructure:"istanbul_block,omitempty" yaml:"istanbul_block,omitempty"`
+}
 
-	EIP155Block BigInt `mapstructure:"eip155_block,omitempty"`
-	EIP158Block BigInt `mapstructure:"eip158_block,omitempty"`
-
-	ByzantiumBlock      BigInt `mapstructure:"byzantium_block,omitempty"`
-	ConstantinopleBlock BigInt `mapstructure:"constantinople_block,omitempty"`
-	PetersburgBlock     BigInt `mapstructure:"petersburg_block,omitempty"`
-	IstanbulBlock       BigInt `mapstructure:"istanbul_block,omitempty"`
-	EWASMBlock          BigInt `mapstructure:"ewasm_block,omitempty"`
-
-	Ethash *EthashConfig `mapstructure:"ethash,omitempty"`
-	Clique *CliqueConfig `mapstructure:"clique,omitempty"`
+var DefaultChainConfig = &ChainConfig{
+	HomesteadBlock:      0,
+	EIP150Block:         0,
+	EIP150Hash:          common.Hash{},
+	EIP155Block:         0,
+	EIP158Block:         0,
+	ByzantiumBlock:      0,
+	ConstantinopleBlock: 0,
+	PetersburgBlock:     0,
+	IstanbulBlock:       0,
 }
 
 func (c *ChainConfig) Config() (*params.ChainConfig, error) {
-	chainId, err := toInt(c.ChainID)
-	if err != nil {
-		return nil, err
-	}
-
 	homesteadBlock, err := toInt(c.HomesteadBlock)
-	if err != nil {
-		return nil, err
-	}
-
-	daoForkBlock, err := toInt(c.DAOForkBlock)
 	if err != nil {
 		return nil, err
 	}
@@ -147,29 +140,8 @@ func (c *ChainConfig) Config() (*params.ChainConfig, error) {
 		return nil, err
 	}
 
-	ewasmBlock, err := toInt(c.EWASMBlock)
-	if err != nil {
-		return nil, err
-	}
-
-	var ethash *params.EthashConfig
-	if c.Ethash != nil {
-		ethash = &params.EthashConfig{}
-	}
-
-	var clique *params.CliqueConfig
-	if c.Clique != nil {
-		clique = &params.CliqueConfig{
-			Period: c.Clique.Period,
-			Epoch:  c.Clique.Epoch,
-		}
-	}
-
 	return &params.ChainConfig{
-		ChainID:             chainId,
 		HomesteadBlock:      homesteadBlock,
-		DAOForkBlock:        daoForkBlock,
-		DAOForkSupport:      c.DAOForkSupport,
 		EIP150Block:         eip150Block,
 		EIP150Hash:          c.EIP150Hash,
 		EIP155Block:         eip155Block,
@@ -178,17 +150,7 @@ func (c *ChainConfig) Config() (*params.ChainConfig, error) {
 		ConstantinopleBlock: constantinopleBlock,
 		PetersburgBlock:     petersburgBlock,
 		IstanbulBlock:       istanbulBlock,
-		EWASMBlock:          ewasmBlock,
-		Ethash:              ethash,
-		Clique:              clique,
 	}, nil
-}
-
-func (c *ChainConfig) CliqueConfig() *params.CliqueConfig {
-	return &params.CliqueConfig{
-		Period: c.Clique.Period,
-		Epoch:  c.Clique.Epoch,
-	}
 }
 
 type ExportNetwork struct {
@@ -306,7 +268,7 @@ func IsNetworkConfigured(network string) bool {
 	return false
 }
 
-func GetNetwork(networkId string) (*ExportNetwork, error) {
+func GetNetwork(networkId ...string) (*ExportNetwork, error) {
 	var networks map[string]*struct {
 		ProjectSlug   string       `mapstructure:"project_slug"`
 		RpcAddress    string       `mapstructure:"rpc_address"`
@@ -319,7 +281,32 @@ func GetNetwork(networkId string) (*ExportNetwork, error) {
 		return nil, err
 	}
 
-	network := networks[networkId]
+	var network *struct {
+		ProjectSlug   string       `mapstructure:"project_slug"`
+		RpcAddress    string       `mapstructure:"rpc_address"`
+		ForkedNetwork string       `mapstructure:"forked_network"`
+		ChainConfig   *ChainConfig `mapstructure:"chain_config"`
+	}
+
+	if len(networkId) == 0 {
+		if len(networks) == 0 {
+			return nil, userError.NewUserError(fmt.Errorf("no network configured"),
+				"No network configured",
+			)
+		} else {
+			if len(networks) == 1 {
+				for _, network = range networks {
+				}
+			} else {
+				return nil, userError.NewUserError(fmt.Errorf("Multiple networks configures"),
+					fmt.Sprintf("Multiple networks configures, use flag to specify"),
+				)
+			}
+		}
+	} else {
+		network = networks[networkId[0]]
+	}
+
 	if network == nil {
 		return nil, userError.NewUserError(fmt.Errorf("unable to find network"),
 			fmt.Sprintf("Unable to find configuration for network: %s", networkId),
@@ -353,6 +340,40 @@ func GetNetwork(networkId string) (*ExportNetwork, error) {
 		ForkedNetwork: network.ForkedNetwork,
 		ChainConfig:   chainConfig,
 	}, nil
+}
+
+func WriteExportNetwork(networkId string, network *ExportNetwork) error {
+	exports := projectConfig.GetStringMap(Exports)
+
+	chainConfig := DefaultChainConfig
+	if network.ChainConfig != nil {
+		chainConfig = &ChainConfig{
+			HomesteadBlock:      network.ChainConfig.HomesteadBlock,
+			EIP150Block:         network.ChainConfig.EIP150Block,
+			EIP150Hash:          network.ChainConfig.EIP150Hash,
+			EIP155Block:         network.ChainConfig.EIP158Block,
+			EIP158Block:         network.ChainConfig.EIP158Block,
+			ByzantiumBlock:      network.ChainConfig.ByzantiumBlock,
+			ConstantinopleBlock: network.ChainConfig.ConstantinopleBlock,
+			PetersburgBlock:     network.ChainConfig.PetersburgBlock,
+			IstanbulBlock:       network.ChainConfig.IstanbulBlock,
+		}
+	}
+
+	exports[networkId] = struct {
+		ProjectSlug   string       `mapstructure:"project_slug" yaml:"project_slug"`
+		RpcAddress    string       `mapstructure:"rpc_address" yaml:"rpc_address"`
+		ForkedNetwork string       `mapstructure:"forked_network" yaml:"forked_network"`
+		ChainConfig   *ChainConfig `mapstructure:"chain_config" yaml:"chain_config"`
+	}{
+		ProjectSlug:   network.ProjectSlug,
+		RpcAddress:    network.RpcAddress,
+		ForkedNetwork: network.ForkedNetwork,
+		ChainConfig:   chainConfig,
+	}
+
+	projectConfig.Set(Exports, exports)
+	return projectConfig.WriteConfig()
 }
 
 func SetProjectConfig(key string, value interface{}) {

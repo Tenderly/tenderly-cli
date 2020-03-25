@@ -22,10 +22,20 @@ import (
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
-var providedHash string
-var providedNetwork string
+var isInit bool
+var hash string
+var exportNetwork string
+var forkedNetwork string
+var rpcAddress string
+
+var network *config.ExportNetwork
 
 func init() {
+	exportCmd.PersistentFlags().StringVar(&exportNetwork, "export-network", "", "")
+	exportCmd.PersistentFlags().StringVar(&projectName, "project", "", "")
+	exportCmd.PersistentFlags().StringVar(&forkedNetwork, "forked-network", "", "")
+	exportCmd.PersistentFlags().StringVar(&rpcAddress, "rpc", "", "")
+	exportCmd.PersistentFlags().BoolVar(&reInit, "re-init", false, "Force initializes the project if it was already initialized.")
 	rootCmd.AddCommand(exportCmd)
 }
 
@@ -36,33 +46,41 @@ var exportCmd = &cobra.Command{
 		if len(args) == 0 {
 			return errors.New("Missing export transaction hash argument")
 		}
+
+		if args[0] == "init" {
+			isInit = true
+			return nil
+		}
+
 		_, err := hexutil.Decode(args[0])
 		if err != nil {
 			return errors.New(fmt.Sprintf("Unable to decode transaction hash: %s", args[0]))
 		}
-		providedHash = args[0]
-
-		if len(args) == 1 {
-			return errors.New("Missing export network argument")
-		}
-		providedNetwork = args[1]
 
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		CheckLogin()
+
+		if isInit {
+			err := initExport()
+			if err != nil {
+				userError.LogErrorf("error configuring export", err)
+				os.Exit(1)
+			}
+
+			return
+		}
+
+		hash = args[0]
 		rest := newRest()
 
 		CheckLogin()
 
-		if !config.IsNetworkConfigured(providedNetwork) {
-			logrus.Errorf("Missing network configuration for network name %s", providedNetwork)
-			os.Exit(1)
-		}
-
 		logrus.Info("Collecting network information...")
-		network := getNetworkConfiguration(providedNetwork)
+		network := getNetworkConfiguration(exportNetwork)
 		if network == nil {
-			logrus.Error("Missing network configuration for network %s", providedNetwork)
+			logrus.Error("Missing network configuration for network %s", exportNetwork)
 			os.Exit(1)
 		}
 
@@ -71,7 +89,7 @@ var exportCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		tx, state, networkId, err := transactionWithState(providedHash, network)
+		tx, state, networkId, err := transactionWithState(hash, network)
 		if err != nil {
 			userError.LogErrorf("Unable to get transaction rerunning information: %s", err)
 			os.Exit(1)
@@ -89,7 +107,7 @@ var exportCmd = &cobra.Command{
 
 		resp, err := rest.Export.ExportTransaction(payloads.ExportTransactionRequest{
 			NetworkData: payloads.NetworkData{
-				Name:          providedNetwork,
+				Name:          exportNetwork,
 				NetworkId:     networkId,
 				ForkedNetwork: network.ForkedNetwork,
 				ChainConfig:   network.ChainConfig,
@@ -109,7 +127,7 @@ var exportCmd = &cobra.Command{
 
 		if err != nil {
 			userError.LogErrorf(
-				"Couldn't export transaction and contracts to the Tenderly servers",
+				"Couldn't export transaction to the Tenderly platform",
 				fmt.Errorf("failed uploading contracts: %s", err),
 			)
 			os.Exit(1)
@@ -118,7 +136,7 @@ var exportCmd = &cobra.Command{
 		if resp.Error != nil {
 			userError.LogErrorf(
 				resp.Error.Message,
-				fmt.Errorf("api error uploading contracts: %s", resp.Error.Slug),
+				fmt.Errorf("api error exporting transaction: %s", resp.Error.Slug),
 			)
 		}
 
@@ -131,7 +149,7 @@ var exportCmd = &cobra.Command{
 			))
 		}
 
-		logrus.Infof("Successfully exported transaction with hash %s", colorizer.Bold(colorizer.Green(providedHash)))
+		logrus.Infof("Successfully exported transaction with hash %s", colorizer.Bold(colorizer.Green(hash)))
 
 		if len(exportedContracts) != 0 {
 			logrus.Infof("Using contracts: \n%s",
@@ -150,6 +168,80 @@ var exportCmd = &cobra.Command{
 			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.dev/%s/%s/export/%s", username, network.ProjectSlug, resp.Export.ID))),
 		)
 	},
+}
+
+func initExport() error {
+	if exportNetwork == "" {
+		exportNetwork = promptExportNetwork()
+	}
+
+	if config.IsNetworkConfigured(exportNetwork) && !reInit {
+		logrus.Info(colorizer.Sprintf("Network %s already configured. If you want to override, use %s flag.",
+			colorizer.Bold(colorizer.Green(exportNetwork)),
+			colorizer.Bold(colorizer.Green("--re-init")),
+		))
+		return nil
+	}
+
+	if config.IsNetworkConfigured(exportNetwork) {
+		var err error
+		network, err = config.GetNetwork(exportNetwork)
+		if err != nil {
+			logrus.Error(colorizer.Sprintf("Error getting export network %s",
+				colorizer.Red(err),
+			))
+			os.Exit(1)
+		}
+	} else {
+		network = &config.ExportNetwork{}
+	}
+
+	rest := newRest()
+
+	accountID := config.GetString(config.AccountID)
+
+	projectsResponse, err := rest.Project.GetProjects(accountID)
+	if err != nil {
+		userError.LogErrorf("failed fetching projects: %s",
+			userError.NewUserError(
+				err,
+				"Fetching projects for account failed. This can happen if you are running an older version of the Tenderly CLI.",
+			),
+		)
+
+		CheckVersion(true, true)
+
+		os.Exit(1)
+	}
+	if projectsResponse.Error != nil {
+		userError.LogErrorf("get projects call: %s", projectsResponse.Error)
+		os.Exit(1)
+	}
+
+	project := getProjectFromFlag(projectName, projectsResponse.Projects, rest)
+
+	if project == nil {
+		project = promptProjectSelect(projectsResponse.Projects, rest)
+	}
+	if project != nil {
+		network.ProjectSlug = project.Slug
+	}
+
+	if rpcAddress == "" {
+		rpcAddress = promptRpcAddress()
+	}
+	if network.RpcAddress == "" {
+		network.RpcAddress = rpcAddress
+	}
+
+	if forkedNetwork == "" {
+		forkedNetwork = promptForkedNetwork()
+	}
+	if network.ForkedNetwork == "" {
+		network.ForkedNetwork = forkedNetwork
+	}
+
+	return config.WriteExportNetwork(exportNetwork, network)
 }
 
 func transactionWithState(hash string, network *config.ExportNetwork) (types.Transaction, *model.TransactionState, string, error) {
