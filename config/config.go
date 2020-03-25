@@ -268,7 +268,7 @@ func IsNetworkConfigured(network string) bool {
 	return false
 }
 
-func GetNetwork(networkId ...string) (*ExportNetwork, error) {
+func GetNetwork(networkId string) (*ExportNetwork, error) {
 	var networks map[string]*struct {
 		ProjectSlug   string       `mapstructure:"project_slug"`
 		RpcAddress    string       `mapstructure:"rpc_address"`
@@ -288,7 +288,7 @@ func GetNetwork(networkId ...string) (*ExportNetwork, error) {
 		ChainConfig   *ChainConfig `mapstructure:"chain_config"`
 	}
 
-	if len(networkId) == 0 {
+	if networkId == "" {
 		if len(networks) == 0 {
 			return nil, userError.NewUserError(fmt.Errorf("no network configured"),
 				"No network configured",
@@ -304,7 +304,7 @@ func GetNetwork(networkId ...string) (*ExportNetwork, error) {
 			}
 		}
 	} else {
-		network = networks[networkId[0]]
+		network = networks[networkId]
 	}
 
 	if network == nil {

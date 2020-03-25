@@ -22,21 +22,37 @@ import (
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
-var isInit bool
 var hash string
 var exportNetwork string
+var exportProjectName string
 var forkedNetwork string
 var rpcAddress string
+var reExport bool
 
 var network *config.ExportNetwork
 
 func init() {
 	exportCmd.PersistentFlags().StringVar(&exportNetwork, "export-network", "", "")
-	exportCmd.PersistentFlags().StringVar(&projectName, "project", "", "")
+	exportCmd.PersistentFlags().StringVar(&exportProjectName, "project", "", "")
 	exportCmd.PersistentFlags().StringVar(&forkedNetwork, "forked-network", "", "")
 	exportCmd.PersistentFlags().StringVar(&rpcAddress, "rpc", "", "")
-	exportCmd.PersistentFlags().BoolVar(&reInit, "re-init", false, "Force initializes the project if it was already initialized.")
+	exportCmd.PersistentFlags().BoolVar(&reExport, "re-init", false, "Force initializes the project if it was already initialized.")
+	exportCmd.AddCommand(exportInitCmd)
 	rootCmd.AddCommand(exportCmd)
+}
+
+var exportInitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Export init is a helper subcommand for creating export network.",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := initExport()
+		if err != nil {
+			userError.LogErrorf("error configuring export", err)
+			os.Exit(1)
+		}
+
+		return
+	},
 }
 
 var exportCmd = &cobra.Command{
@@ -45,11 +61,6 @@ var exportCmd = &cobra.Command{
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return errors.New("Missing export transaction hash argument")
-		}
-
-		if args[0] == "init" {
-			isInit = true
-			return nil
 		}
 
 		_, err := hexutil.Decode(args[0])
@@ -62,27 +73,10 @@ var exportCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		CheckLogin()
 
-		if isInit {
-			err := initExport()
-			if err != nil {
-				userError.LogErrorf("error configuring export", err)
-				os.Exit(1)
-			}
-
-			return
-		}
+		network = getExportNetwork()
 
 		hash = args[0]
 		rest := newRest()
-
-		CheckLogin()
-
-		logrus.Info("Collecting network information...")
-		network := getNetworkConfiguration(exportNetwork)
-		if network == nil {
-			logrus.Error("Missing network configuration for network %s", exportNetwork)
-			os.Exit(1)
-		}
 
 		if network.ProjectSlug == "" {
 			logrus.Error("Missing project slug in network configuration")
@@ -175,7 +169,7 @@ func initExport() error {
 		exportNetwork = promptExportNetwork()
 	}
 
-	if config.IsNetworkConfigured(exportNetwork) && !reInit {
+	if config.IsNetworkConfigured(exportNetwork) && !reExport {
 		logrus.Info(colorizer.Sprintf("Network %s already configured. If you want to override, use %s flag.",
 			colorizer.Bold(colorizer.Green(exportNetwork)),
 			colorizer.Bold(colorizer.Green("--re-init")),
@@ -218,7 +212,7 @@ func initExport() error {
 		os.Exit(1)
 	}
 
-	project := getProjectFromFlag(projectName, projectsResponse.Projects, rest)
+	project := getProjectFromFlag(exportProjectName, projectsResponse.Projects, rest)
 
 	if project == nil {
 		project = promptProjectSelect(projectsResponse.Projects, rest)
@@ -242,6 +236,56 @@ func initExport() error {
 	}
 
 	return config.WriteExportNetwork(exportNetwork, network)
+}
+
+func getExportNetwork() *config.ExportNetwork {
+	logrus.Info("Collecting network information...")
+	network := getNetworkConfiguration(exportNetwork)
+	if network == nil {
+		logrus.Error("Missing network configuration for network %s", exportNetwork)
+		os.Exit(1)
+	}
+
+	if exportProjectName != "" {
+		rest := newRest()
+
+		accountID := config.GetString(config.AccountID)
+
+		projectsResponse, err := rest.Project.GetProjects(accountID)
+		if err != nil {
+			userError.LogErrorf("failed fetching projects: %s",
+				userError.NewUserError(
+					err,
+					"Fetching projects for account failed. This can happen if you are running an older version of the Tenderly CLI.",
+				),
+			)
+
+			CheckVersion(true, true)
+
+			os.Exit(1)
+		}
+		if projectsResponse.Error != nil {
+			userError.LogErrorf("get projects call: %s", projectsResponse.Error)
+			os.Exit(1)
+		}
+
+		project := getProjectFromFlag(exportProjectName, projectsResponse.Projects, rest)
+
+		if project == nil {
+			userError.LogErrorf("get projects call: %s", projectsResponse.Error)
+			os.Exit(1)
+		}
+	}
+
+	if rpcAddress != "" {
+		network.RpcAddress = rpcAddress
+	}
+
+	if forkedNetwork != "" {
+		network.ForkedNetwork = forkedNetwork
+	}
+
+	return network
 }
 
 func transactionWithState(hash string, network *config.ExportNetwork) (types.Transaction, *model.TransactionState, string, error) {
