@@ -237,9 +237,9 @@ var exportCmd = &cobra.Command{
 
 func getExportNetwork() *config.ExportNetwork {
 	logrus.Info("Collecting network information...")
-	network := getNetworkConfiguration(exportNetwork)
-	if network == nil {
-		logrus.Error("Missing network configuration for network %s", exportNetwork)
+	network, err := config.GetNetwork(exportNetwork)
+	if err != nil {
+		userError.LogError(err)
 		os.Exit(1)
 	}
 
@@ -354,13 +354,4 @@ func contractsWithConfig(networkId string) ([]truffle.Contract, *payloads.Config
 	}
 
 	return contracts, configPayload, nil
-}
-
-func getNetworkConfiguration(networkId string) *config.ExportNetwork {
-	network, err := config.GetNetwork(networkId)
-	if err != nil {
-		return nil
-	}
-
-	return network
 }

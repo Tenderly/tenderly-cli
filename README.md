@@ -130,32 +130,51 @@ projects: # running tenderly push will push the smart contracts to all of the pr
     # the identifier can be found in you Tenderly dashboard under the projects name
 ```
 
+#### Export init
+
+The `export init` subcommand helps define network in interactive mode.
+
+#### Command Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| --project | / | The project name used for network configuration |
+| --rpc-address | / | Rpc server address (example: 127.0.0.1:8545) |
+| --forked-network | / | In case you forked a public network (example: mainnet) |
+| --help | / | Help for export init command |
+
+```
+tenderly export init
+```
+
 ### Export
 
 The `export` command is used for local transaction debugging.
 
 ```
-tenderly export {{transaction_hash}} {{export_network}}
+tenderly export {{transaction_hash}}
 ```
 
-#### Arguments
+#### Command Arguments
 
 | Name | Description |
 | --- | --- |
 | transaction hash | Hash of local transaction to debug |
-| export network | This is a property located under exports property in tenderly yaml. |
 
-```yaml
-exports: # running tenderly export will export local transaction to the provided project
-  my-network:
-    project_slug: my-cool-project
-    rpc_address: 127.0.0.1:8545
-```
+#### Command Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| --export-network | / | Export network name located in tenderly yaml |
+| --project | / | The project name |
+| --rpc-address | / | Json rpc server address (example: 127.0.0.1:8545) |
+| --forked-network | / | In case you forked a public network (example: mainnet) |
+| --help | / | Help for export command |
 
 #### Advanced usage
 
 ```yaml
-exports: # running tenderly export will push the smart contracts to all of the provided projects
+exports: # running tenderly export will export local transaction to the provided project
   my-network:
     project_slug: my-cool-project
     rpc_address: 127.0.0.1:8545

@@ -10,7 +10,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/logrusorgru/aurora"
 	"github.com/tenderly/tenderly-cli/userError"
 
 	"github.com/spf13/viper"
@@ -34,7 +33,6 @@ const (
 	ProxyPort         = "proxy_port"
 )
 
-var colorizer aurora.Aurora
 var defaultsGlobal = map[string]interface{}{
 	Token: "",
 }
@@ -294,7 +292,7 @@ func GetNetwork(networkId string) (*ExportNetwork, error) {
 		if len(networks) == 0 {
 			return nil, userError.NewUserError(fmt.Errorf("no network configured"),
 				fmt.Sprintf("No network configured, run %s command to configure network",
-					colorizer.Bold("export init"),
+					"export init",
 				),
 			)
 		} else {
@@ -304,7 +302,7 @@ func GetNetwork(networkId string) (*ExportNetwork, error) {
 			} else {
 				return nil, userError.NewUserError(fmt.Errorf("multiple networks configures"),
 					fmt.Sprintf("Multiple networks configures, use %s flag to specify which one to use",
-						colorizer.Bold("--export-network"),
+						"--export-network",
 					),
 				)
 			}
