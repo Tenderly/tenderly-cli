@@ -134,6 +134,10 @@ projects: # running tenderly push will push the smart contracts to all of the pr
 
 The `export init` subcommand helps define network in interactive mode.
 
+```
+tenderly export init
+```
+
 #### Command Flags
 
 | Flag | Default | Description |
@@ -142,10 +146,6 @@ The `export init` subcommand helps define network in interactive mode.
 | --rpc-address | / | Rpc server address (example: 127.0.0.1:8545) |
 | --forked-network | / | In case you forked a public network (example: mainnet) |
 | --help | / | Help for export init command |
-
-```
-tenderly export init
-```
 
 ### Export
 
