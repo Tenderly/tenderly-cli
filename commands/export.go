@@ -172,7 +172,7 @@ var exportCmd = &cobra.Command{
 
 		resp, err := rest.Export.ExportTransaction(payloads.ExportTransactionRequest{
 			NetworkData: payloads.NetworkData{
-				Name:          exportNetwork,
+				Name:          network.Name,
 				NetworkId:     networkId,
 				ForkedNetwork: network.ForkedNetwork,
 				ChainConfig:   network.ChainConfig,
@@ -232,7 +232,7 @@ var exportCmd = &cobra.Command{
 			network.ProjectSlug = projectInfo[1]
 		}
 
-		logrus.Infof("You can view your transaction on %s",
+		logrus.Infof("You can view your transaction at %s",
 			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.dev/%s/%s/local-transactions/%s", username, network.ProjectSlug, resp.Export.ID))),
 		)
 	},

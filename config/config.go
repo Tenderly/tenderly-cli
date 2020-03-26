@@ -154,6 +154,7 @@ func (c *ChainConfig) Config() (*params.ChainConfig, error) {
 }
 
 type ExportNetwork struct {
+	Name          string              `mapstructure:"-"`
 	ProjectSlug   string              `mapstructure:"project_slug"`
 	RpcAddress    string              `mapstructure:"rpc_address"`
 	ForkedNetwork string              `mapstructure:"forked_network"`
@@ -270,6 +271,7 @@ func IsNetworkConfigured(network string) bool {
 
 func GetNetwork(networkId string) (*ExportNetwork, error) {
 	var networks map[string]*struct {
+		Name          string       `mapstructure:"-"`
 		ProjectSlug   string       `mapstructure:"project_slug"`
 		RpcAddress    string       `mapstructure:"rpc_address"`
 		ForkedNetwork string       `mapstructure:"forked_network"`
@@ -282,6 +284,7 @@ func GetNetwork(networkId string) (*ExportNetwork, error) {
 	}
 
 	var network *struct {
+		Name          string       `mapstructure:"-"`
 		ProjectSlug   string       `mapstructure:"project_slug"`
 		RpcAddress    string       `mapstructure:"rpc_address"`
 		ForkedNetwork string       `mapstructure:"forked_network"`
@@ -297,11 +300,12 @@ func GetNetwork(networkId string) (*ExportNetwork, error) {
 			)
 		} else {
 			if len(networks) == 1 {
-				for _, network = range networks {
+				for networkId, network = range networks {
+					network.Name = networkId
 				}
 			} else {
 				return nil, userError.NewUserError(fmt.Errorf("multiple networks configures"),
-					fmt.Sprintf("Multiple networks configures, use %s flag to specify which one to use",
+					fmt.Sprintf("Multiple networks configured, use %s flag to specify which one to use",
 						"--export-network",
 					),
 				)
@@ -309,6 +313,7 @@ func GetNetwork(networkId string) (*ExportNetwork, error) {
 		}
 	} else {
 		network = networks[networkId]
+		network.Name = networkId
 	}
 
 	if network == nil {
@@ -339,6 +344,7 @@ func GetNetwork(networkId string) (*ExportNetwork, error) {
 	}
 
 	return &ExportNetwork{
+		Name:          network.Name,
 		ProjectSlug:   network.ProjectSlug,
 		RpcAddress:    network.RpcAddress,
 		ForkedNetwork: network.ForkedNetwork,
