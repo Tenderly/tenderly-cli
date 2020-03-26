@@ -130,7 +130,7 @@ projects: # running tenderly push will push the smart contracts to all of the pr
     # the identifier can be found in you Tenderly dashboard under the projects name
 ```
 
-#### Export init
+### Export init
 
 The `export init` subcommand helps define network in interactive mode.
 
