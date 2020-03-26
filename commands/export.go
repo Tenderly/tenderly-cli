@@ -199,10 +199,13 @@ var exportCmd = &cobra.Command{
 		}
 
 		if resp.Error != nil {
-			userError.LogErrorf(
-				resp.Error.Message,
-				fmt.Errorf("api error exporting transaction: %s", resp.Error.Slug),
+			userError.LogError(
+				userError.NewUserError(
+					fmt.Errorf("api error exporting transaction: %s", resp.Error.Slug),
+					resp.Error.Message,
+				),
 			)
+			os.Exit(1)
 		}
 
 		var exportedContracts []string
@@ -286,7 +289,7 @@ func getExportNetwork() *config.ExportNetwork {
 }
 
 func transactionWithState(hash string, network *config.ExportNetwork) (types.Transaction, *model.TransactionState, string, error) {
-	logrus.Info("Collecting information for transaction rerunning purposes...")
+	logrus.Info("Collecting transaction information...")
 
 	client, err := ethereum.Dial(network.RpcAddress)
 	if err != nil {
