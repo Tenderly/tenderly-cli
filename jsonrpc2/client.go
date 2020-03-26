@@ -78,12 +78,20 @@ type Client struct {
 }
 
 func DiscoverAndDial(target string) (client *Client, err error) {
-	client, err = Dial(target)
-	if err != nil {
-		return nil, fmt.Errorf("could not determine protocol")
+	protocols := []string{"wss", "https", "ws", "http"}
+
+	for _, protocol := range protocols {
+		addr := fmt.Sprintf("%s://%s", protocol, target)
+
+		client, err = Dial(addr)
+		if err != nil {
+			continue
+		}
+
+		return client, nil
 	}
 
-	return client, nil
+	return nil, fmt.Errorf("could not determine protocol")
 }
 
 func Dial(addr string) (*Client, error) {
@@ -132,6 +140,10 @@ func (c *Client) CallRequest(res interface{}, req *Request) error {
 	if _, ok := res.(*Message); ok {
 		res.(*Message).Result = resMsg.Result
 		return nil
+	}
+
+	if string(resMsg.Result) == "null" {
+		return fmt.Errorf("resource not found")
 	}
 
 	err = json.Unmarshal(resMsg.Result, res)

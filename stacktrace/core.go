@@ -6,8 +6,13 @@ import (
 	"log"
 	"strings"
 
-	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/tenderly/tenderly-cli/ethereum/parity"
+	"github.com/tenderly/tenderly-cli/ethereum/types"
+)
+
+const (
+	INVALID_OPCODE vm.OpCode = 0xfe
 )
 
 var (
@@ -89,7 +94,7 @@ func (c *Core) Listen() {
 
 // Process a single transaction
 // @TODO: remove client!
-func (c *Core) GenerateStackTrace(contractHash string, txTrace ethereum.TransactionStates) ([]*StackFrame, error) {
+func (c *Core) GenerateStackTrace(contractHash string, txTrace types.TransactionStates) ([]*StackFrame, error) {
 	if err := c.initStack(contractHash); err != nil {
 		return nil, fmt.Errorf("process trace: %s", err)
 	}
@@ -101,10 +106,10 @@ func (c *Core) GenerateStackTrace(contractHash string, txTrace ethereum.Transact
 	for _, state := range txTrace.States() {
 		contract := c.stack.Get()
 
-		op := ethereum.OpCode(contract.Bytecode[state.Pc()])
+		op := vm.OpCode(contract.Bytecode[state.Pc()])
 
 		switch op {
-		case ethereum.CALL:
+		case vm.CALL:
 			stack := state.Stack()
 			if stack == nil {
 				log.Println("didn't find stack but expected one: ", contractHash)
@@ -120,21 +125,21 @@ func (c *Core) GenerateStackTrace(contractHash string, txTrace ethereum.Transact
 			}
 
 			c.stack.Push(newContract)
-		case ethereum.RETURN, ethereum.INVALID_OPCODE, ethereum.REVERT, ethereum.STOP:
+		case vm.RETURN, INVALID_OPCODE, vm.REVERT, vm.STOP:
 			c.stack.Pop()
 		}
 
 		// If last in calling block && not a terminating op, it's an invalid opcode situation.
 		if parityState, ok := state.(*parity.VmState); ok && parityState.Terminating {
 			switch op {
-			case ethereum.RETURN, ethereum.REVERT, ethereum.STOP:
+			case vm.RETURN, vm.REVERT, vm.STOP:
 			default:
 				log.Printf("Previous opcode: %s, changing to INVALID OPCODE", op.String())
-				op = ethereum.INVALID_OPCODE
+				op = INVALID_OPCODE
 			}
 		}
 
-		if op == ethereum.REVERT || op == ethereum.INVALID_OPCODE {
+		if op == vm.REVERT || op == INVALID_OPCODE {
 			recordStackFrames = true
 		}
 

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/tenderly/tenderly-cli/stacktrace"
 )
 
@@ -175,11 +175,11 @@ func convertToMemoryMap(sourceMap stacktrace.SourceMap, binData string) (stacktr
 	instruction := 0
 	for i := 0; i < len(bin); i++ {
 
-		op := ethereum.OpCode(bin[i])
+		op := vm.OpCode(bin[i])
 		extraPush := 0
 		if op.IsPush() {
 			// Skip more here
-			extraPush = int(op - ethereum.PUSH1 + 1)
+			extraPush = int(op - vm.PUSH1 + 1)
 		}
 
 		memSrcMap[i] = sourceMap[instruction]
