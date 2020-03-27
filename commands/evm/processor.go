@@ -128,9 +128,10 @@ func (p Processor) applyTransactions(blockHash common.Hash, txs []tenderlyTypes.
 
 		if txState.GasUsed != receipt.GasUsed().ToInt().Uint64() {
 			return nil, userError.NewUserError(
-				errors.Wrap(err, "unable to find transaction receipt"),
-				fmt.Sprintf("Rerun gas mismatch for transaction %s, make sure chain config is correct.",
-					tx.Hash(),
+				errors.New("gas mismatch between receipt and actual gas used"),
+				fmt.Sprintf("Rerun gas mismatch for transaction %s. This can happen when the chain config is incorrect or the local node is not running the latest version.\n\n"+
+					"Please check which hardfork is active on your local node. If you are not running the newest fork, comment out the forks block in tenderly.yaml.\n",
+					tx.Hash().String(),
 				),
 			)
 		}

@@ -132,7 +132,7 @@ projects: # running tenderly push will push the smart contracts to all of the pr
 
 ### Export init
 
-The `export init` subcommand helps define network in interactive mode.
+The `export init` sub-command helps define network in interactive mode.
 
 ```
 tenderly export init
@@ -149,8 +149,7 @@ tenderly export init
 
 ### Export
 
-The `export` command is used for local transaction debugging.
-
+The `export` command can be used to access all of the tooling available at https://dashboard.tenderly.dev/ but for local transactions.
 ```
 tenderly export {{transaction_hash}}
 ```
@@ -312,6 +311,7 @@ In addition to command specific flags, the following flags can be passed to any 
 | Flag | Default | Description |
 | --- | --- | --- |
 | --debug | false | Turn on debug level logging |
+| --output | text | Which output mode to use: text or json. If not provided. text output will be used. |
 | --global-config | config | Global configuration file name (without the extension) |
 | --project-config | tenderly | Project configuration file name (without the extension) |
 | --project-dir | "./" | The directory in which your Truffle project resides |

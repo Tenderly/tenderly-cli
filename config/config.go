@@ -269,89 +269,6 @@ func IsNetworkConfigured(network string) bool {
 	return false
 }
 
-func GetNetwork(networkId string) (*ExportNetwork, error) {
-	var networks map[string]*struct {
-		Name          string       `mapstructure:"-"`
-		ProjectSlug   string       `mapstructure:"project_slug"`
-		RpcAddress    string       `mapstructure:"rpc_address"`
-		ForkedNetwork string       `mapstructure:"forked_network"`
-		ChainConfig   *ChainConfig `mapstructure:"chain_config"`
-	}
-
-	err := unmarshalKey(Exports, &networks)
-	if err != nil {
-		return nil, err
-	}
-
-	var network *struct {
-		Name          string       `mapstructure:"-"`
-		ProjectSlug   string       `mapstructure:"project_slug"`
-		RpcAddress    string       `mapstructure:"rpc_address"`
-		ForkedNetwork string       `mapstructure:"forked_network"`
-		ChainConfig   *ChainConfig `mapstructure:"chain_config"`
-	}
-
-	if networkId == "" {
-		if len(networks) == 0 {
-			return nil, userError.NewUserError(fmt.Errorf("no network configured"),
-				fmt.Sprintf("No network configured, run %s command to configure network",
-					"export init",
-				),
-			)
-		} else {
-			if len(networks) == 1 {
-				for networkId, network = range networks {
-					network.Name = networkId
-				}
-			} else {
-				return nil, userError.NewUserError(fmt.Errorf("multiple networks configures"),
-					fmt.Sprintf("Multiple networks configured, use %s flag to specify which one to use",
-						"--export-network",
-					),
-				)
-			}
-		}
-	} else {
-		network = networks[networkId]
-		network.Name = networkId
-	}
-
-	if network == nil {
-		return nil, userError.NewUserError(fmt.Errorf("unable to find network"),
-			fmt.Sprintf("Unable to find configuration for network: %s", networkId),
-		)
-	}
-
-	if network.ChainConfig == nil {
-		network.ChainConfig = &ChainConfig{
-			HomesteadBlock:      0,
-			EIP150Block:         0,
-			EIP150Hash:          common.Hash{},
-			EIP155Block:         0,
-			EIP158Block:         0,
-			ByzantiumBlock:      0,
-			ConstantinopleBlock: 0,
-			PetersburgBlock:     0,
-			IstanbulBlock:       0,
-		}
-	}
-
-	chainConfig, err := network.ChainConfig.Config()
-	if err != nil {
-		return nil, userError.NewUserError(fmt.Errorf("unable to read config"),
-			fmt.Sprintf("Unable to read configuration for network: %s, error: %s", network, err),
-		)
-	}
-
-	return &ExportNetwork{
-		Name:          network.Name,
-		ProjectSlug:   network.ProjectSlug,
-		RpcAddress:    network.RpcAddress,
-		ForkedNetwork: network.ForkedNetwork,
-		ChainConfig:   chainConfig,
-	}, nil
-}
-
 func WriteExportNetwork(networkId string, network *ExportNetwork) error {
 	exports := projectConfig.GetStringMap(Exports)
 
@@ -383,7 +300,7 @@ func WriteExportNetwork(networkId string, network *ExportNetwork) error {
 	}
 
 	projectConfig.Set(Exports, exports)
-	return projectConfig.WriteConfig()
+	return WriteProjectConfig()
 }
 
 func SetProjectConfig(key string, value interface{}) {
@@ -462,7 +379,7 @@ func getStringMapString(key string) map[string]interface{} {
 	return globalConfig.GetStringMap(key)
 }
 
-func unmarshalKey(key string, val interface{}) error {
+func UnmarshalKey(key string, val interface{}) error {
 	if projectConfig.IsSet(key) {
 		return projectConfig.UnmarshalKey(key, val)
 	}

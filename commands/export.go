@@ -2,8 +2,10 @@ package commands
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -32,8 +34,8 @@ var reExport bool
 var network *config.ExportNetwork
 
 func init() {
-	exportCmd.PersistentFlags().StringVar(&exportNetwork, "export-network", "", "")
-	exportCmd.PersistentFlags().StringVar(&exportProjectName, "project", "", "")
+	exportCmd.PersistentFlags().StringVar(&exportNetwork, "export-network", "", "The name of the exported network.")
+	exportCmd.PersistentFlags().StringVar(&exportProjectName, "project", "", "The project used for generating the configuration file.")
 	exportCmd.PersistentFlags().StringVar(&forkedNetwork, "forked-network", "", "")
 	exportCmd.PersistentFlags().StringVar(&rpcAddress, "rpc", "", "")
 	exportCmd.PersistentFlags().BoolVar(&reExport, "re-init", false, "Force initializes the project if it was already initialized.")
@@ -50,7 +52,7 @@ var exportInitCmd = &cobra.Command{
 		}
 
 		if config.IsNetworkConfigured(exportNetwork) && !reExport {
-			logrus.Info(colorizer.Sprintf("Network %s already configured. If you want to override, use %s flag.",
+			logrus.Info(colorizer.Sprintf("The network %s is already configured. If you want to set up the network again, rerun this command with the %s flag.",
 				colorizer.Bold(colorizer.Green(exportNetwork)),
 				colorizer.Bold(colorizer.Green("--re-init")),
 			))
@@ -58,14 +60,7 @@ var exportInitCmd = &cobra.Command{
 		}
 
 		if config.IsNetworkConfigured(exportNetwork) {
-			var err error
-			network, err = config.GetNetwork(exportNetwork)
-			if err != nil {
-				logrus.Error(colorizer.Sprintf("Error getting export network %s",
-					colorizer.Red(err),
-				))
-				os.Exit(1)
-			}
+			network = GetNetwork(exportNetwork)
 		} else {
 			network = &config.ExportNetwork{}
 		}
@@ -130,19 +125,24 @@ var exportCmd = &cobra.Command{
 	Use:   "export",
 	Short: "Exports local transaction to Tenderly for debugging purposes.",
 	Args: func(cmd *cobra.Command, args []string) error {
+		CheckLogin()
+
 		if len(args) == 0 {
-			return errors.New("Missing export transaction hash argument")
+			logrus.Error(colorizer.Red("Please provide the hash of the transaction you want to export to Tenderly."))
+			os.Exit(1)
 		}
 
+		txRegexp := regexp.MustCompile(`\b0x([A-Fa-f0-9]{64})\b`)
+
 		_, err := hexutil.Decode(args[0])
-		if err != nil {
-			return errors.New(fmt.Sprintf("Unable to decode transaction hash: %s", args[0]))
+		if err != nil || !txRegexp.MatchString(args[0]) {
+			logrus.Error(colorizer.Red("Invalid transaction hash provided."))
+			os.Exit(1)
 		}
 
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckLogin()
 
 		network = getExportNetwork()
 
@@ -239,12 +239,9 @@ var exportCmd = &cobra.Command{
 }
 
 func getExportNetwork() *config.ExportNetwork {
-	logrus.Info("Collecting network information...")
-	network, err := config.GetNetwork(exportNetwork)
-	if err != nil {
-		userError.LogError(err)
-		os.Exit(1)
-	}
+	network := GetNetwork(exportNetwork)
+
+	logrus.Info("Collecting network information...\n")
 
 	if exportProjectName != "" {
 		rest := newRest()
@@ -289,14 +286,14 @@ func getExportNetwork() *config.ExportNetwork {
 }
 
 func transactionWithState(hash string, network *config.ExportNetwork) (types.Transaction, *model.TransactionState, string, error) {
-	logrus.Info("Collecting transaction information...")
+	logrus.Info("Collecting transaction information...\n")
 
 	client, err := ethereum.Dial(network.RpcAddress)
 	if err != nil {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "unable to dial rpc server"),
-			colorizer.Sprintf("Make sure that rpc server on %s is running.",
-				colorizer.Bold(network.RpcAddress),
+			colorizer.Sprintf("Make sure that rpc server is running at: %s.",
+				colorizer.Bold(colorizer.Red(network.RpcAddress)),
 			),
 		)
 	}
@@ -305,7 +302,7 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 	if err != nil {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "unable to get network id"),
-			colorizer.Sprintf("Unable to get network id."),
+			colorizer.Sprintf("Unable to get network id from rpc node."),
 		)
 	}
 
@@ -314,7 +311,7 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 	if !ok {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "unable to decode network id"),
-			colorizer.Sprintf("Unable to decode network id."),
+			colorizer.Sprintf("Unable to decode network id from rpc node."),
 		)
 	}
 
@@ -323,7 +320,7 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "unable to find transaction"),
 			colorizer.Sprintf("Transaction with hash %s not found.",
-				colorizer.Bold(hash),
+				colorizer.Bold(colorizer.Red(hash)),
 			),
 		)
 	}
@@ -332,7 +329,10 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 	if err != nil {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "error processing transaction"),
-			colorizer.Sprintf("Transaction processing failed."),
+			colorizer.Sprintf(
+				"Transaction processing failed. To see more info about this error, please run this command with the %s flag.",
+				colorizer.Bold(colorizer.Red("--debug")),
+			),
 		)
 	}
 
@@ -357,4 +357,102 @@ func contractsWithConfig(networkId string) ([]truffle.Contract, *payloads.Config
 	}
 
 	return contracts, configPayload, nil
+}
+
+func GetNetwork(networkId string) *config.ExportNetwork {
+	var networks map[string]*struct {
+		Name          string              `mapstructure:"-"`
+		ProjectSlug   string              `mapstructure:"project_slug"`
+		RpcAddress    string              `mapstructure:"rpc_address"`
+		ForkedNetwork string              `mapstructure:"forked_network"`
+		ChainConfig   *config.ChainConfig `mapstructure:"chain_config"`
+	}
+
+	err := config.UnmarshalKey(config.Exports, &networks)
+	if err != nil {
+		userError.LogErrorf("failed unmarshaling export network config: %s",
+			userError.NewUserError(
+				err,
+				"Failed parsing exported networks configuration. This can happen if you are running an older version of the Tenderly CLI.",
+			),
+		)
+
+		os.Exit(1)
+	}
+
+	var network *struct {
+		Name          string              `mapstructure:"-"`
+		ProjectSlug   string              `mapstructure:"project_slug"`
+		RpcAddress    string              `mapstructure:"rpc_address"`
+		ForkedNetwork string              `mapstructure:"forked_network"`
+		ChainConfig   *config.ChainConfig `mapstructure:"chain_config"`
+	}
+
+	if networkId == "" {
+		if len(networks) == 0 {
+			logrus.Error("You need to set up at least one exported network first.\n\n",
+				"You can do this by using the ", colorizer.Bold(colorizer.Green("tenderly export init")), " command.")
+			os.Exit(1)
+		} else {
+			if len(networks) == 1 {
+				for networkId, network = range networks {
+					network.Name = networkId
+				}
+			} else {
+				logrus.Error(colorizer.Sprintf(
+					"You have multiple exported network configured. Please use the %s flag to specify on which network was the transaction mined.",
+					colorizer.Bold(colorizer.Green("--export-network")),
+				))
+				os.Exit(1)
+			}
+		}
+	} else {
+		network = networks[networkId]
+	}
+
+	if network == nil {
+		logrus.Error(colorizer.Sprintf("Couldn't find network %s in the configuration file. Please use the % command to set up a new network.",
+			colorizer.Bold(colorizer.Red(networkId)),
+			colorizer.Bold(colorizer.Green("tenderly export init")),
+		))
+		os.Exit(1)
+	}
+
+	network.Name = networkId
+
+	if network.ChainConfig == nil {
+		network.ChainConfig = &config.ChainConfig{
+			HomesteadBlock:      0,
+			EIP150Block:         0,
+			EIP150Hash:          common.Hash{},
+			EIP155Block:         0,
+			EIP158Block:         0,
+			ByzantiumBlock:      0,
+			ConstantinopleBlock: 0,
+			PetersburgBlock:     0,
+			IstanbulBlock:       0,
+		}
+	}
+
+	chainConfig, err := network.ChainConfig.Config()
+	if err != nil {
+		userError.LogErrorf("unable to read chain_config",
+			userError.NewUserError(
+				err,
+				colorizer.Sprintf(
+					"Failed parsing exported networks chain configuration. To see more info about this error, please run this command with the %s flag.",
+					colorizer.Bold(colorizer.Red("--debug")),
+				),
+			),
+		)
+		os.Exit(1)
+	}
+
+	return &config.ExportNetwork{
+		Name:          network.Name,
+		ProjectSlug:   network.ProjectSlug,
+		RpcAddress:    network.RpcAddress,
+		ForkedNetwork: network.ForkedNetwork,
+		ChainConfig:   chainConfig,
+	}
 }

@@ -36,7 +36,7 @@ var initCmd = &cobra.Command{
 		CheckLogin()
 
 		if config.IsProjectInit() && !reInit {
-			logrus.Info(colorizer.Sprintf("The project is already initialized. If you want to set up the project again rerun this command with the %s flag.",
+			logrus.Info(colorizer.Sprintf("The project is already initialized. If you want to set up the project again, rerun this command with the %s flag.",
 				colorizer.Bold(colorizer.Green("--re-init")),
 			))
 			os.Exit(1)

@@ -87,10 +87,10 @@ func extractNetworkIDs(networkIDs string) []string {
 
 func promptExportNetwork() string {
 	prompt := promptui.Prompt{
-		Label: "Choose export network name",
+		Label: "Choose the name for the exported network",
 		Validate: func(input string) error {
 			if len(input) == 0 {
-				return errors.New("please enter export network name")
+				return errors.New("please enter the exported network name")
 			}
 
 			return nil
@@ -100,7 +100,7 @@ func promptExportNetwork() string {
 	result, err := prompt.Run()
 
 	if err != nil {
-		userError.LogErrorf("prompt forked network failed: %s", err)
+		userError.LogErrorf("prompt export network failed: %s", err)
 		os.Exit(1)
 	}
 
@@ -210,8 +210,7 @@ func promptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Proj
 
 func promptRpcAddress() string {
 	prompt := promptui.Prompt{
-		Label:   "Enter rpc address",
-		Default: "127.0.0.1:8545",
+		Label: "Enter rpc address (default: 127.0.0.1:8545)",
 	}
 
 	result, err := prompt.Run()
@@ -221,20 +220,39 @@ func promptRpcAddress() string {
 		os.Exit(1)
 	}
 
+	if result == "" {
+		result = "127.0.0.1:8545"
+	}
+
 	return result
 }
 
 func promptForkedNetwork() string {
-	prompt := promptui.Prompt{
-		Label: "Enter forked network, empty if none",
+	forkedNetworks := []string{
+		"None",
+		"Mainnet",
+		"Goerli",
+		"xDai",
+		"Kovan",
+		"Ropsten",
+		"Rinkeby",
 	}
 
-	result, err := prompt.Run()
+	promptNetworks := promptui.Select{
+		Label: "If you are forking a public network, please define which one",
+		Items: forkedNetworks,
+	}
+
+	index, _, err := promptNetworks.Run()
 
 	if err != nil {
 		userError.LogErrorf("prompt forked network failed: %s", err)
 		os.Exit(1)
 	}
 
-	return result
+	if index == 0 {
+		return ""
+	}
+
+	return forkedNetworks[index]
 }
