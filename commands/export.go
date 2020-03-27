@@ -34,11 +34,11 @@ var reExport bool
 var network *config.ExportNetwork
 
 func init() {
-	exportCmd.PersistentFlags().StringVar(&exportNetwork, "export-network", "", "The name of the exported network.")
-	exportCmd.PersistentFlags().StringVar(&exportProjectName, "project", "", "The project used for generating the configuration file.")
-	exportCmd.PersistentFlags().StringVar(&forkedNetwork, "forked-network", "", "")
-	exportCmd.PersistentFlags().StringVar(&rpcAddress, "rpc", "", "")
-	exportCmd.PersistentFlags().BoolVar(&reExport, "re-init", false, "Force initializes the project if it was already initialized.")
+	exportCmd.PersistentFlags().StringVar(&exportNetwork, "export-network", "", "The name of the exported network in the configuration file.")
+	exportCmd.PersistentFlags().StringVar(&exportProjectName, "project", "", "The project in which the exported transactions will be stored.")
+	exportCmd.PersistentFlags().StringVar(&forkedNetwork, "forked-network", "", "The name of the network which you are forking locally.")
+	exportCmd.PersistentFlags().StringVar(&rpcAddress, "rpc", "", "The address and port of the local rpc node.")
+	exportCmd.PersistentFlags().BoolVar(&reExport, "re-init", false, "Force initializes an exported network if it was already initialized.")
 	exportCmd.AddCommand(exportInitCmd)
 	rootCmd.AddCommand(exportCmd)
 }
@@ -93,7 +93,11 @@ var exportInitCmd = &cobra.Command{
 			project = promptProjectSelect(projectsResponse.Projects, rest)
 		}
 		if project != nil {
-			network.ProjectSlug = project.Slug
+			slug := project.Slug
+			if project.OwnerInfo != nil {
+				slug = fmt.Sprintf("%s/%s", project.OwnerInfo.Username, slug)
+			}
+			network.ProjectSlug = slug
 		}
 
 		if rpcAddress == "" {

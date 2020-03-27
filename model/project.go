@@ -17,12 +17,21 @@ type ProjectPermissions struct {
 	AddContract bool `json:"add_contract"`
 }
 
-type Project struct {
+type OwnerInfo struct {
 	ID        AccountID `json:"id"`
-	Name      string    `json:"name"`
-	Slug      string    `json:"slug"`
-	Owner     AccountID `json:"owner_id"`
-	CreatedAt time.Time `json:"created_at"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+}
+
+type Project struct {
+	ID        AccountID  `json:"id"`
+	Name      string     `json:"name"`
+	Slug      string     `json:"slug"`
+	Owner     AccountID  `json:"owner_id"`
+	OwnerInfo *OwnerInfo `json:"owner"`
+	CreatedAt time.Time  `json:"created_at"`
 
 	Permissions *ProjectPermissions `json:"permissions,omitempty"`
 

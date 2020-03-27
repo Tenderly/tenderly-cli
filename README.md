@@ -11,7 +11,8 @@ Tenderly CLI is a suite of development tools that allows you to debug, monitor a
     * [Login](#login)
     * [Init](#init)
     * [Push](#push)
-    * [Export](#export)
+    * [Export setup](#export-init)
+    * [Export local transactions to Tenderly](#export)
     * [Local Proxy Debugging](#proxy-debugging)
     * [Check for updates](#check-for-updates)
     * [Version](#version)
@@ -132,7 +133,8 @@ projects: # running tenderly push will push the smart contracts to all of the pr
 
 ### Export init
 
-The `export init` sub-command helps define network in interactive mode.
+In order to use the [tenderly export](#export) command you need to define a configuration file
+(which is described in more detail in the [export command](#export) advanced usage section).
 
 ```
 tenderly export init
@@ -150,6 +152,15 @@ tenderly export init
 ### Export
 
 The `export` command can be used to access all of the tooling available at https://dashboard.tenderly.dev/ but for local transactions.
+
+
+Use the
+[Transaction Overview](https://dashboard.tenderly.dev/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1),
+[Human-Readable Stack-Traces](https://dashboard.tenderly.dev/tx/main/0x30bc65375b2e2b56f97706bccba9b21bc8763cc81a0262351b3373ce49f60ea7),
+[Debugger](https://dashboard.tenderly.dev/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/debugger),
+[Gas Profiler](https://dashboard.tenderly.dev/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/gas-usage),
+[Decoded Events](https://dashboard.tenderly.dev/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/logs) and [State](https://dashboard.tenderly.dev/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/state-diff)
+to boost your local development productivity.
 ```
 tenderly export {{transaction_hash}}
 ```
@@ -158,19 +169,22 @@ tenderly export {{transaction_hash}}
 
 | Name | Description |
 | --- | --- |
-| transaction hash | Hash of local transaction to debug |
+| transaction hash | Hash of the local transaction to debug |
 
 #### Command Flags
 
 | Flag | Default | Description |
 | --- | --- | --- |
-| --export-network | / | Export network name located in tenderly yaml |
-| --project | / | The project name |
-| --rpc-address | / | Json rpc server address (example: 127.0.0.1:8545) |
-| --forked-network | / | In case you forked a public network (example: mainnet) |
+| --export-network | / | The name of the exported network in the configuration file |
+| --project | / | The project in which the exported transactions will be stored |
+| --rpc-address | 127.0.0.1:8545 | The address and port of the local rpc node |
+| --forked-network | / | Optional name of the network which you are forking locally. Can be one of Mainnet, Goerli, Kovan, Ropsten, Rinkeby, xDai |
 | --help | / | Help for export command |
 
 #### Advanced usage
+
+If your local node has different blocks defined for hardforks or you want to generate the configuration file yourself,
+you can find the example bellow:
 
 ```yaml
 exports: # running tenderly export will export local transaction to the provided project

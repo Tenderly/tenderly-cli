@@ -232,10 +232,10 @@ func promptForkedNetwork() string {
 		"None",
 		"Mainnet",
 		"Goerli",
-		"xDai",
 		"Kovan",
 		"Ropsten",
 		"Rinkeby",
+		"xDai",
 	}
 
 	promptNetworks := promptui.Select{
