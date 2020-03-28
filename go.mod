@@ -2,6 +2,8 @@ module github.com/tenderly/tenderly-cli
 
 go 1.13
 
+replace github.com/ethereum/go-ethereum => github.com/tenderly/go-ethereum v0.0.0-20200328093035-5bd80cba0927
+
 require (
 	github.com/VictoriaMetrics/fastcache v1.5.7 // indirect
 	github.com/allegro/bigcache v1.2.1 // indirect
