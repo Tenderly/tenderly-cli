@@ -75,7 +75,7 @@ func toInt(x BigInt) (*big.Int, error) {
 type ChainConfig struct {
 	HomesteadBlock BigInt `mapstructure:"homestead_block,omitempty" yaml:"homestead_block,omitempty"`
 
-	EIP150Block BigInt      `mapstructure:"eip150_block,omitempty",yaml:"eip150_block,omitempty"`
+	EIP150Block BigInt      `mapstructure:"eip150_block,omitempty" yaml:"eip150_block,omitempty"`
 	EIP150Hash  common.Hash `mapstructure:"eip150_hash,omitempty" yaml:"eip150_hash,omitempty"`
 
 	EIP155Block BigInt `mapstructure:"eip155_block,omitempty" yaml:"eip155_block,omitempty"`
