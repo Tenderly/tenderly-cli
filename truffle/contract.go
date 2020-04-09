@@ -8,7 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/model"
 )
 
 type Contract struct {
@@ -80,7 +82,7 @@ type ApiDeploymentInformation struct {
 	Address   string `json:"address"`
 }
 
-func GetTruffleContracts(buildDir string, networkIDs ...string) ([]Contract, int, error) {
+func GetTruffleContracts(buildDir string, networkIDs []string, objects ...*model.StateObject) ([]Contract, int, error) {
 	files, err := ioutil.ReadDir(buildDir)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "failed listing truffle build files")
@@ -89,6 +91,13 @@ func GetTruffleContracts(buildDir string, networkIDs ...string) ([]Contract, int
 	networkIDFilterMap := make(map[string]bool)
 	for _, networkID := range networkIDs {
 		networkIDFilterMap[networkID] = true
+	}
+	objectMap := make(map[string]*model.StateObject)
+	for _, object := range objects {
+		if object.Code == nil || len(object.Code) == 0 {
+			continue
+		}
+		objectMap[hexutil.Encode(object.Code)] = object
 	}
 
 	hasNetworkFilters := len(networkIDFilterMap) > 0
@@ -129,6 +138,15 @@ func GetTruffleContracts(buildDir string, networkIDs ...string) ([]Contract, int
 
 			if !sources[absPath] {
 				sources[absPath] = false
+			}
+		}
+
+		if object := objectMap[contract.DeployedBytecode]; object != nil && len(networkIDs) == 1 {
+			if _, ok := contract.Networks[networkIDs[0]]; !ok {
+				contract.Networks[networkIDs[0]] = ContractNetwork{
+					Links:   nil, // @TODO: Libraries
+					Address: object.Address,
+				}
 			}
 		}
 

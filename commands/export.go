@@ -164,7 +164,7 @@ var exportCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		contracts, truffleConfig, err := contractsWithConfig(networkId)
+		contracts, truffleConfig, err := contractsWithConfig(networkId, state.StateObjects)
 		if err != nil {
 			userError.LogErrorf("Unable to get contract: %s", err)
 			os.Exit(1)
@@ -343,7 +343,7 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 	return tx, state, networkId, nil
 }
 
-func contractsWithConfig(networkId string) ([]truffle.Contract, *payloads.Config, error) {
+func contractsWithConfig(networkId string, objects []*model.StateObject) ([]truffle.Contract, *payloads.Config, error) {
 	logrus.Info("Collecting contracts...")
 
 	truffleConfig, err := MustGetTruffleConfig()
@@ -351,7 +351,7 @@ func contractsWithConfig(networkId string) ([]truffle.Contract, *payloads.Config
 		return nil, nil, err
 	}
 
-	contracts, _, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), networkId)
+	contracts, _, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
 
 	var configPayload *payloads.Config
 	if truffleConfig.ConfigType == truffle.NewTruffleConfigFile && truffleConfig.Compilers != nil {
