@@ -65,7 +65,7 @@ func verifyContracts(rest *rest.Rest) error {
 
 	networkIDs := extractNetworkIDs(verifyNetworks)
 
-	contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), networkIDs...)
+	contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), networkIDs)
 	if err != nil {
 		return userError.NewUserError(
 			errors.Wrap(err, "unable to get truffle contracts"),

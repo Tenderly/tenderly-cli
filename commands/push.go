@@ -81,7 +81,7 @@ func uploadContracts(rest *rest.Rest) error {
 		))
 
 		providedNetworksIDs := append(networkIDs, projectConfiguration.Networks...)
-		contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs...)
+		contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
 		if err != nil {
 			return userError.NewUserError(
 				errors.Wrap(err, "unable to get truffle contracts"),
