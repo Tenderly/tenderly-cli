@@ -145,7 +145,7 @@ tenderly export init
 | Flag | Default | Description |
 | --- | --- | --- |
 | --project | / | The project name used for network configuration |
-| --rpc-address | / | Rpc server address (example: 127.0.0.1:8545) |
+| --rpc | / | Rpc server address (example: 127.0.0.1:8545) |
 | --forked-network | / | In case you forked a public network (example: mainnet) |
 | --help | / | Help for export init command |
 
@@ -177,7 +177,7 @@ tenderly export {{transaction_hash}}
 | --- | --- | --- |
 | --export-network | / | The name of the exported network in the configuration file |
 | --project | / | The project in which the exported transactions will be stored |
-| --rpc-address | 127.0.0.1:8545 | The address and port of the local rpc node |
+| --rpc | 127.0.0.1:8545 | The address and port of the local rpc node |
 | --forked-network | / | Optional name of the network which you are forking locally. Can be one of Mainnet, Goerli, Kovan, Ropsten, Rinkeby, xDai |
 | --help | / | Help for export command |
 
@@ -191,6 +191,7 @@ exports: # running tenderly export will export local transaction to the provided
   my-network:
     project_slug: my-cool-project
     rpc_address: 127.0.0.1:8545
+    protocol: http
     forked_network: mainnet
     chain_config:
       homestead_block: 0 # (default 0)

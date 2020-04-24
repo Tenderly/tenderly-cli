@@ -25,8 +25,8 @@ type Client struct {
 	openChannels []chan int64
 }
 
-func Dial(target string) (*Client, error) {
-	rpcClient, err := jsonrpc2.DiscoverAndDial(target)
+func Dial(target string, protocol string) (*Client, error) {
+	rpcClient, err := jsonrpc2.DiscoverAndDial(target, protocol)
 	if err != nil {
 		return nil, fmt.Errorf("dial ethereum rpc: %s", err)
 	}

@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"os"
 	"regexp"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"github.com/briandowns/spinner"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -29,6 +29,7 @@ var exportNetwork string
 var exportProjectName string
 var forkedNetwork string
 var rpcAddress string
+var protocol string
 var reExport bool
 
 var network *config.ExportNetwork
@@ -38,6 +39,7 @@ func init() {
 	exportCmd.PersistentFlags().StringVar(&exportProjectName, "project", "", "The project in which the exported transactions will be stored.")
 	exportCmd.PersistentFlags().StringVar(&forkedNetwork, "forked-network", "", "The name of the network which you are forking locally.")
 	exportCmd.PersistentFlags().StringVar(&rpcAddress, "rpc", "", "The address and port of the local rpc node.")
+	exportCmd.PersistentFlags().StringVar(&protocol, "protocol", "", "Specify protocol for rpc node.")
 	exportCmd.PersistentFlags().BoolVar(&reExport, "re-init", false, "Force initializes an exported network if it was already initialized.")
 	exportCmd.AddCommand(exportInitCmd)
 	rootCmd.AddCommand(exportCmd)
@@ -282,6 +284,10 @@ func getExportNetwork() *config.ExportNetwork {
 		network.RpcAddress = rpcAddress
 	}
 
+	if protocol != "" {
+		network.Protocol = protocol
+	}
+
 	if forkedNetwork != "" {
 		network.ForkedNetwork = forkedNetwork
 	}
@@ -292,7 +298,7 @@ func getExportNetwork() *config.ExportNetwork {
 func transactionWithState(hash string, network *config.ExportNetwork) (types.Transaction, *model.TransactionState, string, error) {
 	logrus.Info("Collecting transaction information...\n")
 
-	client, err := ethereum.Dial(network.RpcAddress)
+	client, err := ethereum.Dial(network.RpcAddress, network.Protocol)
 	if err != nil {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "unable to dial rpc server"),
@@ -368,6 +374,7 @@ func GetNetwork(networkId string) *config.ExportNetwork {
 		Name          string              `mapstructure:"-"`
 		ProjectSlug   string              `mapstructure:"project_slug"`
 		RpcAddress    string              `mapstructure:"rpc_address"`
+		Protocol      string              `mapstructure:"protocol"`
 		ForkedNetwork string              `mapstructure:"forked_network"`
 		ChainConfig   *config.ChainConfig `mapstructure:"chain_config"`
 	}
@@ -388,6 +395,7 @@ func GetNetwork(networkId string) *config.ExportNetwork {
 		Name          string              `mapstructure:"-"`
 		ProjectSlug   string              `mapstructure:"project_slug"`
 		RpcAddress    string              `mapstructure:"rpc_address"`
+		Protocol      string              `mapstructure:"protocol"`
 		ForkedNetwork string              `mapstructure:"forked_network"`
 		ChainConfig   *config.ChainConfig `mapstructure:"chain_config"`
 	}
@@ -456,6 +464,7 @@ func GetNetwork(networkId string) *config.ExportNetwork {
 		Name:          network.Name,
 		ProjectSlug:   network.ProjectSlug,
 		RpcAddress:    network.RpcAddress,
+		Protocol:      network.Protocol,
 		ForkedNetwork: network.ForkedNetwork,
 		ChainConfig:   chainConfig,
 	}

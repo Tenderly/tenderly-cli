@@ -157,6 +157,7 @@ type ExportNetwork struct {
 	Name          string              `mapstructure:"-"`
 	ProjectSlug   string              `mapstructure:"project_slug"`
 	RpcAddress    string              `mapstructure:"rpc_address"`
+	Protocol      string              `mapstructure:"protocol"`
 	ForkedNetwork string              `mapstructure:"forked_network"`
 	ChainConfig   *params.ChainConfig `mapstructure:"chain_config"`
 }
@@ -290,11 +291,13 @@ func WriteExportNetwork(networkId string, network *ExportNetwork) error {
 	exports[networkId] = struct {
 		ProjectSlug   string       `mapstructure:"project_slug" yaml:"project_slug"`
 		RpcAddress    string       `mapstructure:"rpc_address" yaml:"rpc_address"`
+		Protocol      string       `mapstructure:"protocol" yaml:"protocol"`
 		ForkedNetwork string       `mapstructure:"forked_network" yaml:"forked_network"`
 		ChainConfig   *ChainConfig `mapstructure:"chain_config" yaml:"chain_config"`
 	}{
 		ProjectSlug:   network.ProjectSlug,
 		RpcAddress:    network.RpcAddress,
+		Protocol:      network.Protocol,
 		ForkedNetwork: network.ForkedNetwork,
 		ChainConfig:   chainConfig,
 	}

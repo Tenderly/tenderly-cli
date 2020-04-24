@@ -38,7 +38,7 @@ var buildDirectory string
 func NewProxy(target string) (*Proxy, error) {
 	targetUrl, _ := url.Parse(target)
 
-	c, err := ethereum.Dial(target)
+	c, err := ethereum.Dial(targetUrl.Host, targetUrl.Scheme)
 	if err != nil {
 		return nil, userError.NewUserError(
 			fmt.Errorf("failed calling target ethereum blockchain on %s", target),

@@ -77,8 +77,11 @@ type Client struct {
 	subscribers sync.Map
 }
 
-func DiscoverAndDial(target string) (client *Client, err error) {
-	protocols := []string{"wss", "https", "ws", "http"}
+func DiscoverAndDial(target, protocol string) (client *Client, err error) {
+	protocols := []string{protocol}
+	if protocol != "wss" && protocol != "https" && protocol != "ws" && protocol != "http" {
+		protocols = []string{"wss", "https", "ws", "http"}
+	}
 
 	for _, protocol := range protocols {
 		addr := fmt.Sprintf("%s://%s", protocol, target)
