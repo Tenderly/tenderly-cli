@@ -49,6 +49,8 @@ var exportInitCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Export init is a helper subcommand for creating export network.",
 	Run: func(cmd *cobra.Command, args []string) {
+		CheckLogin()
+
 		if exportNetwork == "" {
 			exportNetwork = promptExportNetwork()
 		}
