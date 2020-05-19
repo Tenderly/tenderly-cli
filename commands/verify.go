@@ -26,7 +26,7 @@ func init() {
 
 var verifyCmd = &cobra.Command{
 	Use:   "verify",
-	Short: "Verifies all the contracts on Tenderly. After the contacts are verified they are listed on the Tenderly public contract listing which can be found here: https://dashboard.tenderly.dev/public-contracts.",
+	Short: "Verifies all the contracts on Tenderly. After the contacts are verified they are listed on the Tenderly public contract listing which can be found here: https://dashboard.tenderly.co/public-contracts.",
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
 
@@ -49,7 +49,7 @@ var verifyCmd = &cobra.Command{
 		logrus.Infof("Smart Contracts successfully verified.")
 		logrus.Info(
 			"You can view your contracts at ",
-			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.dev/public-contracts"))),
+			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.co/public-contracts"))),
 		)
 	},
 }

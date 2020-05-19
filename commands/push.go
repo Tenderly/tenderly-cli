@@ -195,7 +195,7 @@ func uploadContracts(rest *rest.Rest) error {
 		logrus.Info(colorizer.Sprintf(
 			"Successfully pushed Smart Contracts for project %s. You can view your contracts at %s\n",
 			colorizer.Bold(colorizer.Green(projectSlug)),
-			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.dev/%s/%s/contracts", username, projectSlug))),
+			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.co/%s/%s/contracts", username, projectSlug))),
 		))
 	}
 

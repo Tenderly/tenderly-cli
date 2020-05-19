@@ -64,7 +64,7 @@ brew upgrade tenderly
 
 ### Login
 
-The `login` command is used to authenticate the Tenderly CLI with your [Tenderly Dashboard](https://dashboard.tenderly.dev).
+The `login` command is used to authenticate the Tenderly CLI with your [Tenderly Dashboard](https://dashboard.tenderly.co).
 
 ```
 tenderly login
@@ -83,7 +83,7 @@ tenderly login
 
 ### Init
 
-The `init` command is used to connect your local project directory with a project in the [Tenderly Dashboard](https://dashboard.tenderly.dev).
+The `init` command is used to connect your local project directory with a project in the [Tenderly Dashboard](https://dashboard.tenderly.co).
 
 ```
 tenderly init
@@ -100,7 +100,7 @@ tenderly init
 
 ### Push
 
-The `push` command is used to add your contracts to the [Tenderly Dashboard](https://dashboard.tenderly.dev).
+The `push` command is used to add your contracts to the [Tenderly Dashboard](https://dashboard.tenderly.co).
 
 ```
 tenderly push
@@ -151,15 +151,15 @@ tenderly export init
 
 ### Export
 
-The `export` command can be used to access all of the tooling available at https://dashboard.tenderly.dev/ but for local transactions.
+The `export` command can be used to access all of the tooling available at https://dashboard.tenderly.co/ but for local transactions.
 
 
 Use the
-[Transaction Overview](https://dashboard.tenderly.dev/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1),
-[Human-Readable Stack-Traces](https://dashboard.tenderly.dev/tx/main/0x30bc65375b2e2b56f97706bccba9b21bc8763cc81a0262351b3373ce49f60ea7),
-[Debugger](https://dashboard.tenderly.dev/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/debugger),
-[Gas Profiler](https://dashboard.tenderly.dev/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/gas-usage),
-[Decoded Events](https://dashboard.tenderly.dev/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/logs) and [State](https://dashboard.tenderly.dev/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/state-diff)
+[Transaction Overview](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1),
+[Human-Readable Stack-Traces](https://dashboard.tenderly.co/tx/main/0x30bc65375b2e2b56f97706bccba9b21bc8763cc81a0262351b3373ce49f60ea7),
+[Debugger](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/debugger),
+[Gas Profiler](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/gas-usage),
+[Decoded Events](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/logs) and [State](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/state-diff)
 to boost your local development productivity.
 ```
 tenderly export {{transaction_hash}}
@@ -213,7 +213,7 @@ exports: # running tenderly export will export local transaction to the provided
 
 ### Verify
 
-The `verify` command uploads your smart contracts and verifies them on [Tenderly](https://tenderly.dev).
+The `verify` command uploads your smart contracts and verifies them on [Tenderly](https://tenderly.co).
 
 ```
 tenderly verify
@@ -313,7 +313,7 @@ tenderly whoami
 
 ### Logout
 
-The `logout` command disconnects your local Tenderly CLI from your [Tenderly Dashboard](https://dashboard.tenderly.dev)
+The `logout` command disconnects your local Tenderly CLI from your [Tenderly Dashboard](https://dashboard.tenderly.co)
 
 ```
 tenderly logout
@@ -339,4 +339,4 @@ You can also join our [Discord server](https://discord.gg/fBvDJYR) or create an 
 
 -----
 
-Made with ♥ by [Tenderly](https://tenderly.dev)
+Made with ♥ by [Tenderly](https://tenderly.co)

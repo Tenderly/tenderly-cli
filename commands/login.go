@@ -126,7 +126,7 @@ func promptAuthenticationMethod() {
 			"Email",
 			colorizer.Sprintf(
 				"Authentication token (can be found under %s)",
-				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.dev/account/authorization")),
+				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
 			),
 		},
 	}

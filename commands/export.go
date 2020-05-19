@@ -241,7 +241,7 @@ var exportCmd = &cobra.Command{
 		}
 
 		logrus.Infof("You can view your transaction at %s",
-			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.dev/%s/%s/local-transactions/%s", username, network.ProjectSlug, resp.Export.ID))),
+			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.co/%s/%s/local-transactions/%s", username, network.ProjectSlug, resp.Export.ID))),
 		)
 	},
 }
