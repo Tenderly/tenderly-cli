@@ -15,16 +15,19 @@ if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
 
   cd /tmp/ > /dev/null
 
+  tarball="tenderly-binary.tar.gz"
+
   curl -s https://api.github.com/repos/Tenderly/tenderly-cli/releases/latest \
   | grep "browser_download_url.*Darwin_amd64\.tar\.gz" \
   | cut -d ":" -f 2,3 \
   | tr -d \" \
-  | xargs curl -sLOJ
+  | xargs curl -sLo $tarball
 
-  tarball="$(find . -name "*Darwin_amd64.tar.gz" 2>/dev/null)"
   tar -xzf $tarball
 
   chmod +x tenderly
+
+  unlink $tarball
 
   printf "Moving CLI to /usr/local/bin/\n"
 
