@@ -123,6 +123,10 @@ func GetTruffleContracts(buildDir string, networkIDs []string, objects ...*model
 			return nil, 0, errors.Wrap(err, "failed parsing truffle build file")
 		}
 
+		if contract.Networks == nil {
+			contract.Networks = make(map[string]ContractNetwork)
+		}
+
 		sources[contract.SourcePath] = true
 		for _, node := range contract.Ast.Nodes {
 			if node.NodeType != "ImportDirective" {
