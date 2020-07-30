@@ -15,7 +15,6 @@ type DeploymentProvider interface {
 	FindDirectories() []string
 	CheckIfProviderStructure(directory string) bool
 	NewContractSource(path string, networkId string, client ethereum.Client) (stacktrace.ContractSource, error)
-	ParseContract(contract *Contract) (stacktrace.SourceMap, error)
 }
 
 type Config struct {

@@ -1,9 +1,8 @@
-package truffle
+package providers
 
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/tenderly/tenderly-cli/providers"
 	"strconv"
 	"strings"
 
@@ -11,9 +10,7 @@ import (
 	"github.com/tenderly/tenderly-cli/stacktrace"
 )
 
-//@TODO: Move this to use standard contracts.
-
-func (dp *DeploymentProvider) ParseContract(contract *providers.Contract) (stacktrace.SourceMap, error) {
+func ParseContract(contract *Contract) (stacktrace.SourceMap, error) {
 	rawSrcMap := contract.DeployedSourceMap
 	instructionSrcMap, err := parseInstructionSourceMap(rawSrcMap)
 	if err != nil {
@@ -60,7 +57,7 @@ func (dp *DeploymentProvider) ParseContract(contract *providers.Contract) (stack
 	return memSrcMap, nil
 }
 
-func Parse(contracts map[string]*providers.Contract) (map[string]stacktrace.SourceMap, map[string][]byte, error) {
+func Parse(contracts map[string]*Contract) (map[string]stacktrace.SourceMap, map[string][]byte, error) {
 	sourceMaps := make(map[string]stacktrace.SourceMap)
 	binaries := make(map[string][]byte)
 	for key, contract := range contracts {

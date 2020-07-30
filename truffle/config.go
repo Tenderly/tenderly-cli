@@ -61,7 +61,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 		return nil, fmt.Errorf("cannot evaluate %s, tried path: %s, error: %s, output: %s", configName, trufflePath, err, string(data))
 	}
 
-	configString, err := extractConfigWithDivider(string(data), divider)
+	configString, err := providers.ExtractConfigWithDivider(string(data), divider)
 	if err != nil {
 		logrus.Debugf("failed extracting config with divider: %s", err)
 		return nil, fmt.Errorf("cannot read %s", configName)
@@ -80,7 +80,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 }
 
 func getDivider() string {
-	return fmt.Sprintf("======%s======", randSeq(10))
+	return fmt.Sprintf("======%s======", providers.RandSeq(10))
 }
 
 func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {

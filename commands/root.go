@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/logrusorgru/aurora"
+	"github.com/tenderly/tenderly-cli/openzeppelin"
 	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
@@ -134,6 +135,23 @@ func initProvider() {
 		)
 		os.Exit(1)
 	}
+
+	openZeppelinPath := filepath.Join(config.ProjectDirectory, openzeppelin.OpenzeppelinConfigFile)
+
+	logrus.Debugf("Trying OpenZeppelin config path: %s", openZeppelinPath)
+
+	_, err = os.Stat(openZeppelinPath)
+
+	if err == nil {
+		deploymentProvider = openzeppelin.NewDeploymentProvider()
+		return
+	}
+
+	logrus.Print(
+		fmt.Errorf("unable to fetch config: %s", err),
+		"Couldn't read OpenZeppelin config file",
+	)
+	os.Exit(1)
 }
 
 func printHelp() {
