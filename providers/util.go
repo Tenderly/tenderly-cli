@@ -7,6 +7,15 @@ import (
 	"regexp"
 )
 
+type DeploymentProviderName string
+
+const (
+	TruffleDeploymentProvider      DeploymentProviderName = "Truffle"
+	OpenZeppelinDeploymentProvider DeploymentProviderName = "OpenZeppelin"
+)
+
+var AllProviders = []DeploymentProviderName{TruffleDeploymentProvider, OpenZeppelinDeploymentProvider}
+
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func RandSeq(n int) string {

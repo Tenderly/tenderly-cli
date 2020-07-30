@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"github.com/tenderly/tenderly-cli/providers"
 	"os"
 	"strings"
 
@@ -209,4 +210,19 @@ func promptForkedNetwork() string {
 	}
 
 	return forkedNetworks[index]
+}
+
+func promptProviderSelect() providers.DeploymentProviderName {
+	promptProviders := promptui.Select{
+		Label: "Select Provider",
+		Items: providers.AllProviders,
+	}
+
+	index, _, err := promptProviders.Run()
+	if err != nil {
+		userError.LogErrorf("prompt provider failed: %s", err)
+		os.Exit(1)
+	}
+
+	return providers.AllProviders[index]
 }

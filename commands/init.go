@@ -41,7 +41,8 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if !deploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !forceInit {
+		if !forceInit &&
+			(deploymentProvider == nil || !deploymentProvider.CheckIfProviderStructure(config.ProjectDirectory)) {
 			WrongFolderMessage("initialize", "cd %s; tenderly init")
 			os.Exit(1)
 		}
@@ -49,6 +50,7 @@ var initCmd = &cobra.Command{
 		if config.IsProjectInit() && reInit {
 			config.SetProjectConfig(config.ProjectSlug, "")
 			config.SetProjectConfig(config.AccountID, "")
+			config.SetProjectConfig(config.Provider, "")
 		}
 
 		accountID := config.GetString(config.AccountID)
@@ -79,6 +81,7 @@ var initCmd = &cobra.Command{
 
 		config.SetProjectConfig(config.ProjectSlug, project.Slug)
 		config.SetProjectConfig(config.AccountID, project.Owner)
+		config.SetProjectConfig(config.Provider, "")
 		WriteProjectConfig()
 
 		logrus.Info(colorizer.Sprintf("Project successfully initialized. "+

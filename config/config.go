@@ -22,7 +22,9 @@ const (
 	Username    = "username"
 	Email       = "email"
 	ProjectSlug = "project_slug"
-	Exports     = "exports"
+	Provider    = "provider"
+
+	Exports = "exports"
 
 	Projects = "projects"
 
