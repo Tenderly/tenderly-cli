@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
@@ -42,7 +41,7 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if !truffle.CheckIfTruffleStructure(config.ProjectDirectory) && !forceInit {
+		if !deploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !forceInit {
 			WrongFolderMessage("initialize", "cd %s; tenderly init")
 			os.Exit(1)
 		}

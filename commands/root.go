@@ -4,8 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/logrusorgru/aurora"
+	"github.com/tenderly/tenderly-cli/providers"
+	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
+	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -15,6 +18,7 @@ import (
 var debugMode bool
 var outputMode string
 var colorizer aurora.Aurora
+var deploymentProvider providers.DeploymentProvider
 
 type TenderlyStandardFormatter struct {
 }
@@ -71,6 +75,7 @@ var rootCmd = &cobra.Command{
 
 func initConfig() {
 	initLog()
+	initProvider()
 
 	config.Init()
 }
@@ -86,6 +91,48 @@ func initLog() {
 	if outputMode == "text" {
 		colorizer = aurora.NewAurora(true)
 		logrus.SetFormatter(&TenderlyStandardFormatter{})
+	}
+}
+
+func initProvider() {
+	trufflePath := filepath.Join(config.ProjectDirectory, truffle.NewTruffleConfigFile)
+
+	logrus.Debugf("Trying truffle config path: %s", trufflePath)
+
+	_, err := os.Stat(trufflePath)
+
+	if err == nil {
+		deploymentProvider = truffle.NewDeploymentProvider()
+		return
+	}
+
+	if !os.IsNotExist(err) {
+		logrus.Print(
+			fmt.Errorf("unable to fetch config: %s", err),
+			"Couldn't read Truffle config file",
+		)
+		os.Exit(1)
+	}
+
+	logrus.Debugf("couldn't read new truffle config file: %s", err)
+
+	logrus.Debugf("Trying truffle config path: %s", trufflePath)
+
+	trufflePath = filepath.Join(config.ProjectDirectory, truffle.OldTruffleConfigFile)
+
+	_, err = os.Stat(trufflePath)
+
+	if err == nil {
+		deploymentProvider = truffle.NewDeploymentProvider()
+		return
+	}
+
+	if !os.IsNotExist(err) {
+		logrus.Print(
+			fmt.Errorf("unable to fetch config: %s", err),
+			"Couldn't read Truffle config file",
+		)
+		os.Exit(1)
 	}
 }
 

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/tenderly/tenderly-cli/providers"
 	"math/big"
 	"os"
 	"regexp"
@@ -351,15 +352,18 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 	return tx, state, networkId, nil
 }
 
-func contractsWithConfig(networkId string, objects []*model.StateObject) ([]truffle.Contract, *payloads.Config, error) {
+func contractsWithConfig(
+	networkId string,
+	objects []*model.StateObject,
+) ([]providers.Contract, *payloads.Config, error) {
 	logrus.Info("Collecting contracts...")
 
-	truffleConfig, err := MustGetTruffleConfig()
+	truffleConfig, err := deploymentProvider.MustGetConfig()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	contracts, _, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
+	contracts, _, err := providers.GetContracts(truffleConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
 
 	var configPayload *payloads.Config
 	if truffleConfig.ConfigType == truffle.NewTruffleConfigFile && truffleConfig.Compilers != nil {

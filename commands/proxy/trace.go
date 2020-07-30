@@ -3,6 +3,7 @@ package proxy
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/tenderly/tenderly-cli/providers"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -10,10 +11,9 @@ import (
 
 	"github.com/tenderly/tenderly-cli/ethereum/types"
 	"github.com/tenderly/tenderly-cli/stacktrace"
-	"github.com/tenderly/tenderly-cli/truffle"
 )
 
-var contracts map[string]*truffle.Contract
+var contracts map[string]*providers.Contract
 
 func (p *Proxy) Trace(receipt types.TransactionReceipt, projectPath, buildDir string) error {
 	networkId, err := p.client.GetNetworkID()
@@ -26,7 +26,7 @@ func (p *Proxy) Trace(receipt types.TransactionReceipt, projectPath, buildDir st
 		return err
 	}
 
-	contracts = make(map[string]*truffle.Contract)
+	contracts = make(map[string]*providers.Contract)
 	for _, contract := range truffleContracts {
 		contracts[strings.ToLower(contract.Networks[networkId].Address)] = contract
 	}
@@ -63,7 +63,7 @@ func (p *Proxy) Trace(receipt types.TransactionReceipt, projectPath, buildDir st
 			nameToAddress[contract.Name] = key
 		}
 
-		contracts := make(map[string]*truffle.Contract)
+		contracts := make(map[string]*providers.Contract)
 		for key := range contract.Ast.ExportedSymbols {
 			contracts[nameToAddress[key]] = contracts[nameToAddress[key]]
 		}
@@ -74,7 +74,7 @@ func (p *Proxy) Trace(receipt types.TransactionReceipt, projectPath, buildDir st
 				networkId, t.Hash().String(), err)
 		}
 
-		source, err := truffle.NewContractSource(buildDir, networkId, *p.client)
+		source, err := p.deploymentProvider.NewContractSource(buildDir, networkId, *p.client)
 		if err != nil {
 			return fmt.Errorf("cannot load truffle contracts err: %s\n", err)
 		}
@@ -107,13 +107,13 @@ func (p *Proxy) Trace(receipt types.TransactionReceipt, projectPath, buildDir st
 	return nil
 }
 
-func getTruffleContracts(buildDir, networkID string) ([]*truffle.Contract, error) {
+func getTruffleContracts(buildDir, networkID string) ([]*providers.Contract, error) {
 	files, err := ioutil.ReadDir(buildDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed listing truffle build files: %s", err)
 	}
 
-	var contracts []*truffle.Contract
+	var contracts []*providers.Contract
 	for _, file := range files {
 		if file.IsDir() || !strings.HasSuffix(file.Name(), ".json") {
 			continue
@@ -124,14 +124,14 @@ func getTruffleContracts(buildDir, networkID string) ([]*truffle.Contract, error
 			return nil, fmt.Errorf("failed reading truffle build files: %s", err)
 		}
 
-		var contract truffle.Contract
+		var contract providers.Contract
 		err = json.Unmarshal(data, &contract)
 		if err != nil {
 			return nil, fmt.Errorf("failed parsing truffle build files: %s", err)
 		}
 
 		if contractNetwork, ok := contract.Networks[networkID]; ok {
-			contract.Networks = map[string]truffle.ContractNetwork{networkID: contractNetwork}
+			contract.Networks = map[string]providers.ContractNetwork{networkID: contractNetwork}
 			contracts = append(contracts, &contract)
 		}
 	}

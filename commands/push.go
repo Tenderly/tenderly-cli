@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/providers"
 	"os"
 	"strconv"
 	"strings"
@@ -57,7 +58,7 @@ var pushCmd = &cobra.Command{
 func uploadContracts(rest *rest.Rest) error {
 	logrus.Info("Analyzing Truffle configuration...")
 
-	truffleConfig, err := MustGetTruffleConfig()
+	truffleConfig, err := deploymentProvider.MustGetConfig()
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func uploadContracts(rest *rest.Rest) error {
 		))
 
 		providedNetworksIDs := append(networkIDs, projectConfiguration.Networks...)
-		contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
+		contracts, numberOfContractsWithANetwork, err := providers.GetContracts(truffleConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
 		if err != nil {
 			return userError.NewUserError(
 				errors.Wrap(err, "unable to get truffle contracts"),

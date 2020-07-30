@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/providers"
 	"os"
 	"strings"
 	"time"
@@ -32,7 +33,7 @@ var verifyCmd = &cobra.Command{
 
 		CheckLogin()
 
-		if !truffle.CheckIfTruffleStructure(config.ProjectDirectory) && !forceInit {
+		if !deploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !forceInit {
 			WrongFolderMessage("verify", "cd %s; tenderly verify")
 			os.Exit(1)
 		}
@@ -58,14 +59,14 @@ func verifyContracts(rest *rest.Rest) error {
 
 	logrus.Info("Analyzing Truffle configuration...")
 
-	truffleConfig, err := MustGetTruffleConfig()
+	truffleConfig, err := deploymentProvider.MustGetConfig()
 	if err != nil {
 		return err
 	}
 
 	networkIDs := extractNetworkIDs(verifyNetworks)
 
-	contracts, numberOfContractsWithANetwork, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), networkIDs)
+	contracts, numberOfContractsWithANetwork, err := providers.GetContracts(truffleConfig.AbsoluteBuildDirectoryPath(), networkIDs)
 	if err != nil {
 		return userError.NewUserError(
 			errors.Wrap(err, "unable to get truffle contracts"),

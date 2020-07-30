@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/providers"
+	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,50 +19,7 @@ const (
 	OldTruffleConfigFile = "truffle.js"
 )
 
-type NetworkConfig struct {
-	Host      string      `json:"host"`
-	Port      int         `json:"port"`
-	NetworkID interface{} `json:"network_id"`
-}
-
-type Compiler struct {
-	Version  string            `json:"version"`
-	Settings *CompilerSettings `json:"settings"`
-}
-
-type CompilerSettings struct {
-	Optimizer  *Optimizer `json:"optimizer"`
-	EvmVersion *string    `json:"evmVersion"`
-}
-
-type Optimizer struct {
-	Enabled *bool `json:"enabled"`
-	Runs    *int  `json:"runs"`
-}
-
-type Config struct {
-	ProjectDirectory string                   `json:"project_directory"`
-	BuildDirectory   string                   `json:"contracts_build_directory"`
-	Networks         map[string]NetworkConfig `json:"networks"`
-	Solc             map[string]Optimizer     `json:"solc"`
-	Compilers        map[string]Compiler      `json:"compilers"`
-	ConfigType       string                   `json:"-"`
-}
-
-func (c *Config) AbsoluteBuildDirectoryPath() string {
-	if c.BuildDirectory == "" {
-		c.BuildDirectory = filepath.Join(".", "build", "contracts")
-	}
-
-	switch c.BuildDirectory[0] {
-	case '.':
-		return filepath.Join(c.ProjectDirectory, c.BuildDirectory)
-	default:
-		return c.BuildDirectory
-	}
-}
-
-func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
+func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
 	trufflePath := filepath.Join(projectDir, configName)
 	divider := getDivider()
 
@@ -107,7 +67,7 @@ func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 
-	var truffleConfig Config
+	var truffleConfig providers.Config
 	err = json.Unmarshal([]byte(configString), &truffleConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read %s", configName)
@@ -121,4 +81,46 @@ func GetTruffleConfig(configName string, projectDir string) (*Config, error) {
 
 func getDivider() string {
 	return fmt.Sprintf("======%s======", randSeq(10))
+}
+
+func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
+	projectDir, err := filepath.Abs(config.ProjectDirectory)
+	truffleConfigFile := NewTruffleConfigFile
+
+	if err != nil {
+		return nil, userError.NewUserError(
+			fmt.Errorf("get absolute project dir: %s", err),
+			"Couldn't get absolute project path",
+		)
+	}
+
+	truffleConfig, err := dp.GetConfig(truffleConfigFile, projectDir)
+	if err != nil && !os.IsNotExist(err) {
+		return nil, userError.NewUserError(
+			fmt.Errorf("unable to fetch config: %s", err),
+			"Couldn't read Truffle config file",
+		)
+	}
+	if os.IsNotExist(err) {
+		logrus.Debugf("couldn't read new truffle config file: %s", err)
+		truffleConfigFile = OldTruffleConfigFile
+		truffleConfig, err = dp.GetConfig(truffleConfigFile, projectDir)
+	}
+
+	if os.IsNotExist(err) {
+		logrus.Debugf("couldn't read truffle config file: %s", err)
+		return nil, userError.NewUserError(
+			fmt.Errorf("unable to fetch config: %s", err),
+			"Couldn't find Truffle config file",
+		)
+	}
+
+	if err != nil {
+		return nil, userError.NewUserError(
+			fmt.Errorf("unable to fetch config: %s", err),
+			"Couldn't read Truffle config file",
+		)
+	}
+
+	return truffleConfig, nil
 }

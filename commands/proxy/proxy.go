@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/tenderly/tenderly-cli/providers"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -30,12 +31,14 @@ type Proxy struct {
 
 	target *url.URL
 	proxy  *httputil.ReverseProxy
+
+	deploymentProvider providers.DeploymentProvider
 }
 
 var projectPath string
 var buildDirectory string
 
-func NewProxy(target string) (*Proxy, error) {
+func NewProxy(target string, provider providers.DeploymentProvider) (*Proxy, error) {
 	targetUrl, _ := url.Parse(target)
 
 	c, err := ethereum.Dial(targetUrl.Host, targetUrl.Scheme)
@@ -49,8 +52,9 @@ func NewProxy(target string) (*Proxy, error) {
 	return &Proxy{
 		client: c,
 
-		target: targetUrl,
-		proxy:  httputil.NewSingleHostReverseProxy(targetUrl),
+		target:             targetUrl,
+		proxy:              httputil.NewSingleHostReverseProxy(targetUrl),
+		deploymentProvider: provider,
 	}, nil
 }
 
@@ -275,7 +279,17 @@ func isBatchRequest(data []byte) bool {
 	return false
 }
 
-func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, buildDir string, colorizer aurora.Aurora) error {
+func Start(
+	targetSchema,
+	targetHost,
+	targetPort,
+	proxyHost,
+	proxyPort,
+	path,
+	buildDir string,
+	colorizer aurora.Aurora,
+	provider providers.DeploymentProvider,
+) error {
 	logrus.Infof("Proxy starting on %s:%s", proxyHost, proxyPort)
 
 	projectPath = path
@@ -284,7 +298,7 @@ func Start(targetSchema, targetHost, targetPort, proxyHost, proxyPort, path, bui
 	host := getTargetHost(targetHost, targetSchema, targetPort, colorizer)
 	logrus.Infof("Redirecting calls to %s", host)
 
-	proxy, err := NewProxy(host)
+	proxy, err := NewProxy(host, provider)
 	if err != nil {
 		userError.LogErrorf("failed starting proxy: %s", err)
 		os.Exit(1)
