@@ -10,3 +10,7 @@ func NewDeploymentProvider() *DeploymentProvider {
 }
 
 var _ providers.DeploymentProvider = (*DeploymentProvider)(nil)
+
+func (*DeploymentProvider) GetProviderName() providers.DeploymentProviderName {
+	return providers.TruffleDeploymentProvider
+}

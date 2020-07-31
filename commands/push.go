@@ -58,7 +58,7 @@ var pushCmd = &cobra.Command{
 func uploadContracts(rest *rest.Rest) error {
 	logrus.Info("Analyzing Truffle configuration...")
 
-	truffleConfig, err := deploymentProvider.MustGetConfig()
+	providerConfig, err := deploymentProvider.MustGetConfig()
 	if err != nil {
 		return err
 	}
@@ -82,29 +82,43 @@ func uploadContracts(rest *rest.Rest) error {
 		))
 
 		providedNetworksIDs := append(networkIDs, projectConfiguration.Networks...)
-		contracts, numberOfContractsWithANetwork, err := providers.GetContracts(truffleConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
+		contracts, numberOfContractsWithANetwork, err := providers.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
 		if err != nil {
 			return userError.NewUserError(
 				errors.Wrap(err, "unable to get truffle contracts"),
-				fmt.Sprintf("Couldn't read Truffle build files at: %s", truffleConfig.AbsoluteBuildDirectoryPath()),
+				fmt.Sprintf("Couldn't read Truffle build files at: %s", providerConfig.AbsoluteBuildDirectoryPath()),
 			)
 		}
 
 		if len(contracts) == 0 {
 			return userError.NewUserError(
-				fmt.Errorf("no contracts found in build dir: %s", truffleConfig.AbsoluteBuildDirectoryPath()),
+				fmt.Errorf("no contracts found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
 				colorizer.Sprintf("No contracts detected in build directory: %s. "+
 					"This can happen when no contracts have been migrated yet or the %s hasn't been run yet.",
-					colorizer.Bold(colorizer.Red(truffleConfig.AbsoluteBuildDirectoryPath())),
+					colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
 					colorizer.Bold(colorizer.Green("truffle compile")),
 				),
 			)
 		}
 		if numberOfContractsWithANetwork == 0 {
+			if deploymentProvider.GetProviderName() == providers.OpenZeppelinDeploymentProvider {
+				return userError.NewUserError(
+					fmt.Errorf("no contracts with a netowrk found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
+					colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.\n"+
+						"There is currently an issue with exporting networks for regular contracts.\nThe OpenZeppelin team has come up with a workaround,"+
+						"so make sure you run %s before running %s\n"+
+						"For more information refer to: %s",
+						colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
+						colorizer.Bold(colorizer.Green("npx oz add ContractName")),
+						colorizer.Bold(colorizer.Green("npx oz deploy")),
+						colorizer.Bold(colorizer.Green("https://github.com/OpenZeppelin/openzeppelin-sdk/issues/1555#issuecomment-644536123")),
+					),
+				)
+			}
 			return userError.NewUserError(
-				fmt.Errorf("no contracts with a netowrk found in build dir: %s", truffleConfig.AbsoluteBuildDirectoryPath()),
+				fmt.Errorf("no contracts with a netowrk found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
 				colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
-					colorizer.Bold(colorizer.Red(truffleConfig.AbsoluteBuildDirectoryPath())),
+					colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
 				),
 			)
 		}
@@ -123,10 +137,10 @@ func uploadContracts(rest *rest.Rest) error {
 		s.Start()
 
 		var configPayload *payloads.Config
-		if truffleConfig.ConfigType == truffle.NewTruffleConfigFile && truffleConfig.Compilers != nil {
-			configPayload = payloads.ParseNewTruffleConfig(truffleConfig.Compilers)
-		} else if truffleConfig.ConfigType == truffle.OldTruffleConfigFile && truffleConfig.Solc != nil {
-			configPayload = payloads.ParseOldTruffleConfig(truffleConfig.Solc)
+		if providerConfig.ConfigType == truffle.NewTruffleConfigFile && providerConfig.Compilers != nil {
+			configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
+		} else if providerConfig.ConfigType == truffle.OldTruffleConfigFile && providerConfig.Solc != nil {
+			configPayload = payloads.ParseOldTruffleConfig(providerConfig.Solc)
 		}
 
 		response, err := rest.Contract.UploadContracts(payloads.UploadContractsRequest{
