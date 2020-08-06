@@ -51,7 +51,7 @@ var proxyCmd = &cobra.Command{
 
 		loadProxyConfigFromProject()
 
-		truffleConfig, err := deploymentProvider.MustGetConfig()
+		providerConfig, err := deploymentProvider.MustGetConfig()
 		if err != nil {
 			userError.LogErrorf("unable to upload contracts: %s", err)
 			os.Exit(1)
@@ -63,8 +63,8 @@ var proxyCmd = &cobra.Command{
 			targetPort,
 			proxyHost,
 			proxyPort,
-			truffleConfig.ProjectDirectory,
-			truffleConfig.AbsoluteBuildDirectoryPath(),
+			providerConfig.ProjectDirectory,
+			providerConfig.AbsoluteBuildDirectoryPath(),
 			colorizer,
 			deploymentProvider,
 		); err != nil {

@@ -47,8 +47,10 @@ type NetworkConfig struct {
 }
 
 type Compiler struct {
-	Version  string            `json:"version"`
-	Settings *CompilerSettings `json:"settings"`
+	Version    string            `json:"version"`
+	Settings   *CompilerSettings `json:"settings"`
+	Optimizer  *Optimizer        `json:"optimizer"`
+	EvmVersion *string           `json:"evmVersion"`
 }
 
 type CompilerSettings struct {
