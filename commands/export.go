@@ -71,6 +71,20 @@ var exportInitCmd = &cobra.Command{
 
 		rest := newRest()
 
+		networks, err := rest.Networks.GetPublicNetworks()
+		if err != nil {
+			userError.LogErrorf("failed fetching public networks: %s",
+				userError.NewUserError(
+					err,
+					"Fetching public networks failed. This can happen if you are running an older version of the Tenderly CLI.",
+				),
+			)
+
+			CheckVersion(true, true)
+
+			os.Exit(1)
+		}
+
 		accountID := config.GetString(config.AccountID)
 
 		projectsResponse, err := rest.Project.GetProjects(accountID)
@@ -112,7 +126,11 @@ var exportInitCmd = &cobra.Command{
 		}
 
 		if forkedNetwork == "" {
-			forkedNetwork = promptForkedNetwork()
+			var networkNames []string
+			for _, network := range *networks {
+				networkNames = append(networkNames, network.Name)
+			}
+			forkedNetwork = promptForkedNetwork(networkNames)
 		}
 		if network.ForkedNetwork == "" {
 			network.ForkedNetwork = forkedNetwork

@@ -29,12 +29,17 @@ type ExportRoutes interface {
 	ExportTransaction(request payloads.ExportTransactionRequest, projectSlug string) (*payloads.ExportTransactionResponse, error)
 }
 
+type NetworkRoutes interface {
+	GetPublicNetworks() (*payloads.NetworksResponse, error)
+}
+
 type Rest struct {
 	Auth     AuthRoutes
 	User     UserRoutes
 	Project  ProjectRoutes
 	Contract ContractRoutes
 	Export   ExportRoutes
+	Networks NetworkRoutes
 }
 
 func NewRest(
@@ -43,6 +48,7 @@ func NewRest(
 	project ProjectRoutes,
 	contract ContractRoutes,
 	export ExportRoutes,
+	networks NetworkRoutes,
 ) *Rest {
 	return &Rest{
 		Auth:     auth,
@@ -50,5 +56,6 @@ func NewRest(
 		Project:  project,
 		Contract: contract,
 		Export:   export,
+		Networks: networks,
 	}
 }
