@@ -67,8 +67,6 @@ var loginCmd = &cobra.Command{
 
 		if providedAuthenticationMethod == "email" {
 			token = emailLogin(rest)
-		} else if providedAuthenticationMethod == "token" {
-			token = tokenLogin()
 		} else if providedAuthenticationMethod == "access-key" {
 			key = accessKeyLogin()
 		} else {
@@ -101,7 +99,7 @@ var loginCmd = &cobra.Command{
 			if providedAuthenticationMethod == "access-key" {
 				userError.LogErrorf("cannot fetch user info: %s", userError.NewUserError(
 					err,
-					"Couldn't fetch user information. This can happen if your access key is not valid. Please try again.",
+					fmt.Sprintf("%s", colorizer.Red("Couldn't fetch user information. This can happen if your access key is not valid. Please try again.")),
 				))
 				os.Exit(1)
 			}
@@ -148,7 +146,7 @@ func promptAuthenticationMethod() {
 				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
 			),
 			colorizer.Sprintf(
-				"Access key (can be generated on %s)",
+				"Access key can be generated on %s",
 				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
 			),
 		},
@@ -226,19 +224,6 @@ func emailLogin(rest *rest.Rest) string {
 	return token
 }
 
-func tokenLogin() string {
-	if len(providedToken) != 0 {
-		return providedToken
-	}
-
-	result, err := promptToken()
-	if err != nil {
-		return ""
-	}
-
-	return result
-}
-
 func accessKeyLogin() string {
 	if len(providedAccessKey) != 0 {
 		return providedAccessKey
@@ -279,26 +264,6 @@ func promptPassword() (string, error) {
 		Validate: func(input string) error {
 			if len(input) == 0 {
 				return errors.New("Please enter your password")
-			}
-			return nil
-		},
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		return "", err
-	}
-
-	return result, nil
-}
-
-func promptToken() (string, error) {
-	prompt := promptui.Prompt{
-		Label: "Authentication token",
-		Validate: func(input string) error {
-			if len(input) == 0 {
-				return errors.New("Please enter your authenticaiton token")
 			}
 			return nil
 		},
