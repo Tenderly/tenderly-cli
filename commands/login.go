@@ -22,6 +22,7 @@ const (
 var providedEmail string
 var providedPassword string
 var providedToken string
+var providedAccessKey string
 var providedAuthenticationMethod string
 var forceLogin bool
 
@@ -29,6 +30,7 @@ func init() {
 	loginCmd.PersistentFlags().StringVar(&providedEmail, "email", "", "The email used for logging in.")
 	loginCmd.PersistentFlags().StringVar(&providedPassword, "password", "", "The password used for logging in.")
 	loginCmd.PersistentFlags().StringVar(&providedToken, "token", "", "The token used for logging in.")
+	loginCmd.PersistentFlags().StringVar(&providedAccessKey, "access-key", "", "The access key generated in UI")
 	loginCmd.PersistentFlags().StringVar(&providedAuthenticationMethod, "authentication-method", "", "Pick the authentication method. Possible values are email or token")
 	loginCmd.PersistentFlags().BoolVar(&forceLogin, "force", false, "Don't check if you are already logged in.")
 	rootCmd.AddCommand(loginCmd)
@@ -61,11 +63,14 @@ var loginCmd = &cobra.Command{
 
 		rest := newRest()
 		var token string
+		var key string
 
 		if providedAuthenticationMethod == "email" {
 			token = emailLogin(rest)
 		} else if providedAuthenticationMethod == "token" {
 			token = tokenLogin()
+		} else if providedAuthenticationMethod == "access-key" {
+			key = accessKeyLogin()
 		} else {
 			userError.LogErrorf("unsupported authentication method: %s", userError.NewUserError(
 				fmt.Errorf("non-supported authentication method: %s", providedAuthenticationMethod),
@@ -79,14 +84,28 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if token == "" {
+		if token == "" && key == "" {
 			os.Exit(1)
 		}
 
-		config.SetGlobalConfig(config.Token, token)
+		if token != "" {
+			config.SetGlobalConfig(config.Token, token)
+		}
+
+		if key != "" {
+			config.SetGlobalConfig(config.AccessKey, key)
+		}
 
 		user, err := rest.User.User()
 		if err != nil {
+			if providedAuthenticationMethod == "access-key" {
+				userError.LogErrorf("cannot fetch user info: %s", userError.NewUserError(
+					err,
+					"Couldn't fetch user information. This can happen if your access key is not valid. Please try again.",
+				))
+				os.Exit(1)
+			}
+
 			if providedAuthenticationMethod == "token" {
 				userError.LogErrorf("cannot fetch user info: %s", userError.NewUserError(
 					err,
@@ -128,6 +147,10 @@ func promptAuthenticationMethod() {
 				"Authentication token (can be found under %s)",
 				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
 			),
+			colorizer.Sprintf(
+				"Access key (can be generated on %s)",
+				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
+			),
 		},
 	}
 
@@ -141,6 +164,10 @@ func promptAuthenticationMethod() {
 
 	if index == 1 {
 		providedAuthenticationMethod = "token"
+	}
+
+	if index == 2 {
+		providedAuthenticationMethod = "access-key"
 	}
 }
 
@@ -212,6 +239,19 @@ func tokenLogin() string {
 	return result
 }
 
+func accessKeyLogin() string {
+	if len(providedAccessKey) != 0 {
+		return providedAccessKey
+	}
+
+	result, err := promptAccessKey()
+	if err != nil {
+		return ""
+	}
+
+	return result
+}
+
 func promptEmail() (string, error) {
 	promptEmail := promptui.Prompt{
 		Label: "Enter your email",
@@ -259,6 +299,26 @@ func promptToken() (string, error) {
 		Validate: func(input string) error {
 			if len(input) == 0 {
 				return errors.New("Please enter your authenticaiton token")
+			}
+			return nil
+		},
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
+}
+
+func promptAccessKey() (string, error) {
+	prompt := promptui.Prompt{
+		Label: "Access key",
+		Validate: func(input string) error {
+			if len(input) == 0 {
+				return errors.New("Please enter your access key.")
 			}
 			return nil
 		},

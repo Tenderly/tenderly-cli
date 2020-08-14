@@ -35,7 +35,10 @@ func Request(method, path string, body []byte) io.Reader {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: false}
 
-	if token := config.GetToken(); token != "" {
+	if key := config.GetAccessKey(); key != "" {
+		// set access key
+		req.Header.Add("x-access-key", key)
+	} else if token := config.GetToken(); token != "" {
 		// set auth token
 		req.Header.Add("Authorization", "Bearer "+token)
 	}

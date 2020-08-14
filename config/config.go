@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	Token = "token"
+	Token     = "token"
+	AccessKey = "access_key"
 
 	AccountID   = "account_id"
 	Username    = "username"
@@ -252,6 +253,10 @@ func MaybeGetMap(key string) map[string]interface{} {
 
 func GetToken() string {
 	return getString(Token)
+}
+
+func GetAccessKey() string {
+	return getString(AccessKey)
 }
 
 func IsLoggedIn() bool {
