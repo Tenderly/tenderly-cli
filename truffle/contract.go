@@ -1,8 +1,11 @@
 package truffle
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -134,6 +137,43 @@ func GetTruffleContracts(buildDir string, networkIDs []string, objects ...*model
 			}
 
 			absPath := node.AbsolutePath
+			if absPath[0] == '@' {
+				// local path
+				path, err := os.Getwd()
+				if err != nil {
+					return nil, 0, errors.Wrap(err, "failed getting working dir")
+				}
+
+				absPath = path + "/node_modules/" + absPath
+				doesNotExist := checkIfFileDoesNotExist(absPath)
+				if doesNotExist {
+					//global path - npm
+					cmd := exec.Command("npm", "root", "-g")
+					var out bytes.Buffer
+					cmd.Stdout = &out
+					err = cmd.Run()
+					if err != nil {
+						return nil, 0, errors.Wrap(err, "failed running npm")
+					}
+
+					globalNodeModule := strings.TrimSuffix(out.String(), "\n")
+					absPath = globalNodeModule + "/" + node.AbsolutePath
+					doesNotExist = checkIfFileDoesNotExist(absPath)
+					if doesNotExist {
+						//global path - yarn
+						cmd = exec.Command("yarn", "global", "dir")
+						cmd.Stdout = &out
+						err = cmd.Run()
+						if err != nil {
+							return nil, 0, errors.Wrap(err, "failed running npm")
+						}
+
+						globalYarnModule := strings.TrimSuffix(out.String(), "\n")
+						absPath = globalYarnModule + "/" + node.AbsolutePath
+					}
+				}
+			}
+
 			if runtime.GOOS == "windows" && strings.HasPrefix(absPath, "/") {
 				absPath = strings.ReplaceAll(absPath, "/", "\\")
 				absPath = strings.TrimPrefix(absPath, "\\")
@@ -181,4 +221,11 @@ func GetTruffleContracts(buildDir string, networkIDs []string, objects ...*model
 	}
 
 	return contracts, numberOfContractsWithANetwork, nil
+}
+
+func checkIfFileDoesNotExist(path string) bool {
+	_, err := os.Stat(path)
+	exist := os.IsNotExist(err)
+
+	return exist
 }
