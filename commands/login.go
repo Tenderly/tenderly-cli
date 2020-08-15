@@ -141,10 +141,10 @@ func promptAuthenticationMethod() {
 		Label: "Select authentication method",
 		Items: []string{
 			"Email",
-			colorizer.Sprintf(
-				"Authentication token (can be found under %s)",
-				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
-			),
+			//colorizer.Sprintf(
+			//	"Authentication token (can be found under %s)",
+			//	colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
+			//),
 			colorizer.Sprintf(
 				"Access key can be generated on %s",
 				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
@@ -161,10 +161,6 @@ func promptAuthenticationMethod() {
 	providedAuthenticationMethod = "email"
 
 	if index == 1 {
-		providedAuthenticationMethod = "token"
-	}
-
-	if index == 2 {
 		providedAuthenticationMethod = "access-key"
 	}
 }
