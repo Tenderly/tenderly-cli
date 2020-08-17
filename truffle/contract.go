@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	path2 "path"
-	"path/filepath"
+	"path"
 	"runtime"
 	"strings"
 	"time"
@@ -112,7 +111,7 @@ func GetTruffleContracts(buildDir string, networkIDs []string, objects ...*model
 			continue
 		}
 
-		filePath := filepath.Join(buildDir, file.Name())
+		filePath := path.Join(buildDir, file.Name())
 		data, err := ioutil.ReadFile(filePath)
 
 		if err != nil {
@@ -137,13 +136,12 @@ func GetTruffleContracts(buildDir string, networkIDs []string, objects ...*model
 
 			absPath := node.AbsolutePath
 			if absPath[0] == '@' {
-				// local path
-				path, err := os.Getwd()
+				localPath, err := os.Getwd()
 				if err != nil {
 					return nil, 0, errors.Wrap(err, "failed getting working dir")
 				}
 
-				absPath = path2.Join(path, "node_modules", absPath)
+				absPath = path.Join(localPath, "node_modules", absPath)
 				doesNotExist := checkIfFileDoesNotExist(absPath)
 				if doesNotExist {
 					absPath = getGlobalPathForModule(node.AbsolutePath)

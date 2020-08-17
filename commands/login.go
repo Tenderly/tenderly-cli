@@ -21,7 +21,6 @@ const (
 
 var providedEmail string
 var providedPassword string
-var providedToken string
 var providedAccessKey string
 var providedAuthenticationMethod string
 var forceLogin bool
@@ -29,7 +28,6 @@ var forceLogin bool
 func init() {
 	loginCmd.PersistentFlags().StringVar(&providedEmail, "email", "", "The email used for logging in.")
 	loginCmd.PersistentFlags().StringVar(&providedPassword, "password", "", "The password used for logging in.")
-	loginCmd.PersistentFlags().StringVar(&providedToken, "token", "", "The token used for logging in.")
 	loginCmd.PersistentFlags().StringVar(&providedAccessKey, "access-key", "", "The access key generated in UI")
 	loginCmd.PersistentFlags().StringVar(&providedAuthenticationMethod, "authentication-method", "", "Pick the authentication method. Possible values are email or token")
 	loginCmd.PersistentFlags().BoolVar(&forceLogin, "force", false, "Don't check if you are already logged in.")
@@ -62,11 +60,10 @@ var loginCmd = &cobra.Command{
 		}
 
 		rest := newRest()
-		var token string
 		var key string
 
 		if providedAuthenticationMethod == "email" {
-			token = emailLogin(rest)
+			key = emailLogin(rest)
 		} else if providedAuthenticationMethod == "access-key" {
 			key = accessKeyLogin()
 		} else {
@@ -82,12 +79,8 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if token == "" && key == "" {
+		if key == "" {
 			os.Exit(1)
-		}
-
-		if token != "" {
-			config.SetGlobalConfig(config.Token, token)
 		}
 
 		if key != "" {
@@ -141,12 +134,8 @@ func promptAuthenticationMethod() {
 		Label: "Select authentication method",
 		Items: []string{
 			"Email",
-			//colorizer.Sprintf(
-			//	"Authentication token (can be found under %s)",
-			//	colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
-			//),
 			colorizer.Sprintf(
-				"Access key can be generated on %s",
+				"Access key can be generated at %s",
 				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
 			),
 		},
@@ -279,7 +268,7 @@ func promptAccessKey() (string, error) {
 		Label: "Access key",
 		Validate: func(input string) error {
 			if len(input) == 0 {
-				return errors.New("Please enter your access key.")
+				return errors.New("Please enter your access key")
 			}
 			return nil
 		},
