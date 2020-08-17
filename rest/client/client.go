@@ -68,7 +68,7 @@ func Request(method, path string, body []byte) io.Reader {
 		os.Exit(1)
 	}
 
-	logrus.WithField("response_body", string(data)).Debug("Got response with body")
+	logrus.WithField("response_body", data).Debug("Got response with body")
 
 	return bytes.NewReader(data)
 }

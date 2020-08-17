@@ -38,7 +38,7 @@ func (rest *AuthCalls) Login(request payloads.LoginRequest) (*payloads.TokenResp
 	return extractToken(
 		client.Request(
 			"POST",
-			"user/key",
+			"/api/v1/user/token/generate",
 			data,
 		),
 	)

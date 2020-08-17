@@ -135,18 +135,6 @@ func GetTruffleContracts(buildDir string, networkIDs []string, objects ...*model
 			}
 
 			absPath := node.AbsolutePath
-			if absPath[0] == '@' {
-				localPath, err := os.Getwd()
-				if err != nil {
-					return nil, 0, errors.Wrap(err, "failed getting working dir")
-				}
-
-				absPath = path.Join(localPath, "node_modules", absPath)
-				doesNotExist := checkIfFileDoesNotExist(absPath)
-				if doesNotExist {
-					absPath = getGlobalPathForModule(node.AbsolutePath)
-				}
-			}
 
 			if runtime.GOOS == "windows" && strings.HasPrefix(absPath, "/") {
 				absPath = strings.ReplaceAll(absPath, "/", "\\")
@@ -180,16 +168,31 @@ func GetTruffleContracts(buildDir string, networkIDs []string, objects ...*model
 		numberOfContractsWithANetwork += len(contract.Networks)
 	}
 
-	for path, included := range sources {
+	for localPath, included := range sources {
 		if !included {
-			source, err := ioutil.ReadFile(path)
+			currentLocalPath := localPath
+			if localPath[0] == '@' {
+				localPath, err := os.Getwd()
+				if err != nil {
+					return nil, 0, errors.Wrap(err, "failed getting working dir")
+				}
+
+				localPath = path.Join(localPath, "node_modules", currentLocalPath)
+				doesNotExist := checkIfFileDoesNotExist(currentLocalPath)
+				if doesNotExist {
+					localPath = getGlobalPathForModule(currentLocalPath)
+				}
+			}
+
+
+			source, err := ioutil.ReadFile(localPath)
 			if err != nil {
 				return nil, 0, errors.Wrap(err, "failed reading contract source file")
 			}
 
 			contracts = append(contracts, Contract{
 				Source:     string(source),
-				SourcePath: path,
+				SourcePath: localPath,
 			})
 		}
 	}
