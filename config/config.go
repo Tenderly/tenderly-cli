@@ -16,8 +16,9 @@ import (
 )
 
 const (
-	Token     = "token"
-	AccessKey = "access_key"
+	Token       = "token"
+	AccessKey   = "access_key"
+	AccessKeyId = "access_key_id"
 
 	AccountID   = "account_id"
 	Username    = "username"
@@ -257,6 +258,10 @@ func GetToken() string {
 
 func GetAccessKey() string {
 	return getString(AccessKey)
+}
+
+func GetAccessKeyId() string {
+	return getString(AccessKeyId)
 }
 
 func IsLoggedIn() bool {

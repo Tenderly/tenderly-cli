@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
-	path2 "path"
+	"path"
 	"regexp"
 	"strings"
 )
@@ -42,7 +42,7 @@ func checkIfFileDoesNotExist(path string) bool {
 	return exist
 }
 
-func getGlobalPathForModule(path string) string {
+func getGlobalPathForModule(localPath string) string {
 	//global path - npm
 	cmd := exec.Command("npm", "root", "-g")
 	var out bytes.Buffer
@@ -54,7 +54,7 @@ func getGlobalPathForModule(path string) string {
 	}
 
 	globalNodeModule := strings.TrimSuffix(out.String(), "\n")
-	absPath := path2.Join(globalNodeModule, path)
+	absPath := path.Join(globalNodeModule, localPath)
 	doesNotExist := checkIfFileDoesNotExist(absPath)
 	if doesNotExist {
 		//global path - yarn
@@ -67,7 +67,7 @@ func getGlobalPathForModule(path string) string {
 		}
 
 		globalYarnModule := strings.TrimSuffix(out.String(), "\n")
-		absPath = path2.Join(globalYarnModule, path)
+		absPath = path.Join(globalYarnModule, localPath)
 	}
 
 	return absPath

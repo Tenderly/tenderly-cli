@@ -61,9 +61,10 @@ var loginCmd = &cobra.Command{
 
 		rest := newRest()
 		var key string
+		var keyId string
 
 		if providedAuthenticationMethod == "email" {
-			key = emailLogin(rest)
+			key, keyId = emailLogin(rest)
 		} else if providedAuthenticationMethod == "access-key" {
 			key = accessKeyLogin()
 		} else {
@@ -84,6 +85,7 @@ var loginCmd = &cobra.Command{
 		}
 
 		config.SetGlobalConfig(config.AccessKey, key)
+		config.SetGlobalConfig(config.AccessKeyId, keyId)
 
 		user, err := rest.User.User()
 		if err != nil {
@@ -144,8 +146,9 @@ func promptAuthenticationMethod() {
 	}
 }
 
-func emailLogin(rest *rest.Rest) string {
+func emailLogin(rest *rest.Rest) (string, string) {
 	var token string
+	var tokenId string
 
 	for i := 0; i < numberOfTries; i++ {
 		var email string
@@ -193,10 +196,11 @@ func emailLogin(rest *rest.Rest) string {
 		}
 
 		token = tokenResponse.Token
+		tokenId = tokenResponse.ID
 		break
 	}
 
-	return token
+	return token, tokenId
 }
 
 func accessKeyLogin() string {

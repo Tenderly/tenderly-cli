@@ -30,6 +30,11 @@ func (r RegisterRequest) Valid() bool {
 }
 
 type TokenResponse struct {
-	Token string    `json:"token"`
+	ID    string    `json:"id"`
+	Token string    `json:"secret"`
+	Error *ApiError `json:"error"`
+}
+
+type LogoutResponse struct {
 	Error *ApiError `json:"error"`
 }
