@@ -42,7 +42,7 @@ func checkIfFileDoesNotExist(path string) bool {
 	return exist
 }
 
-func getGlobalPathForModule(path string) (string) {
+func getGlobalPathForModule(path string) string {
 	//global path - npm
 	cmd := exec.Command("npm", "root", "-g")
 	var out bytes.Buffer

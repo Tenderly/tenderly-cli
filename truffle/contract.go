@@ -171,19 +171,18 @@ func GetTruffleContracts(buildDir string, networkIDs []string, objects ...*model
 	for localPath, included := range sources {
 		if !included {
 			currentLocalPath := localPath
-			if localPath[0] == '@' {
-				localPath, err := os.Getwd()
+			if len(localPath) > 0 && localPath[0] == '@' {
+				localPath, err = os.Getwd()
 				if err != nil {
 					return nil, 0, errors.Wrap(err, "failed getting working dir")
 				}
 
 				localPath = path.Join(localPath, "node_modules", currentLocalPath)
-				doesNotExist := checkIfFileDoesNotExist(currentLocalPath)
+				doesNotExist := checkIfFileDoesNotExist(localPath)
 				if doesNotExist {
 					localPath = getGlobalPathForModule(currentLocalPath)
 				}
 			}
-
 
 			source, err := ioutil.ReadFile(localPath)
 			if err != nil {
@@ -192,7 +191,7 @@ func GetTruffleContracts(buildDir string, networkIDs []string, objects ...*model
 
 			contracts = append(contracts, Contract{
 				Source:     string(source),
-				SourcePath: localPath,
+				SourcePath: currentLocalPath,
 			})
 		}
 	}
