@@ -3,9 +3,11 @@ package client
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/userError"
 	"io"
 	"io/ioutil"
@@ -41,6 +43,23 @@ func Request(method, path string, body []byte) io.Reader {
 	} else if token := config.GetToken(); token != "" {
 		// set auth token
 		req.Header.Add("Authorization", "Bearer "+token)
+
+		urlPath := "/api/v1/user/token"
+		if requestUrl != fmt.Sprintf("%s/%s", apiBase, urlPath) {
+			var request payloads.GenerateAccessTokenRequest
+			request.Name = "CLI access token"
+
+			body, err := json.Marshal(request)
+			if err != nil {
+				logrus.Debug("failed to marshall req")
+			} else {
+				Request(
+					"POST",
+					urlPath,
+					body,
+				)
+			}
+		}
 	}
 
 	logrus.WithFields(logrus.Fields{
