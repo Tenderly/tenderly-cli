@@ -28,8 +28,8 @@ var forceLogin bool
 func init() {
 	loginCmd.PersistentFlags().StringVar(&providedEmail, "email", "", "The email used for logging in.")
 	loginCmd.PersistentFlags().StringVar(&providedPassword, "password", "", "The password used for logging in.")
-	loginCmd.PersistentFlags().StringVar(&providedAccessKey, "access-key", "", "The access key generated in UI")
-	loginCmd.PersistentFlags().StringVar(&providedAuthenticationMethod, "authentication-method", "", "Pick the authentication method. Possible values are email or token")
+	loginCmd.PersistentFlags().StringVar(&providedAccessKey, "access-key", "", "The access key generated in your Tenderly dashboard.")
+	loginCmd.PersistentFlags().StringVar(&providedAuthenticationMethod, "authentication-method", "", "Pick the authentication method. Possible values are email or token.")
 	loginCmd.PersistentFlags().BoolVar(&forceLogin, "force", false, "Don't check if you are already logged in.")
 	rootCmd.AddCommand(loginCmd)
 }
@@ -73,7 +73,7 @@ var loginCmd = &cobra.Command{
 					"The %s can either be %s or %s",
 					colorizer.Bold(colorizer.Green("--authentication-method")),
 					colorizer.Bold(colorizer.Green("email")),
-					colorizer.Bold(colorizer.Green("token")),
+					colorizer.Bold(colorizer.Green("access-key")),
 				),
 			))
 			os.Exit(1)
@@ -83,9 +83,7 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if key != "" {
-			config.SetGlobalConfig(config.AccessKey, key)
-		}
+		config.SetGlobalConfig(config.AccessKey, key)
 
 		user, err := rest.User.User()
 		if err != nil {
@@ -93,14 +91,6 @@ var loginCmd = &cobra.Command{
 				userError.LogErrorf("cannot fetch user info: %s", userError.NewUserError(
 					err,
 					fmt.Sprintf("%s", colorizer.Red("Couldn't fetch user information. This can happen if your access key is not valid. Please try again.")),
-				))
-				os.Exit(1)
-			}
-
-			if providedAuthenticationMethod == "token" {
-				userError.LogErrorf("cannot fetch user info: %s", userError.NewUserError(
-					err,
-					"Couldn't fetch user information. This can happen if your authentication token is not valid. Please try again.",
 				))
 				os.Exit(1)
 			}
