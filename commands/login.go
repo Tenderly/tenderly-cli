@@ -21,15 +21,15 @@ const (
 
 var providedEmail string
 var providedPassword string
-var providedToken string
+var providedAccessKey string
 var providedAuthenticationMethod string
 var forceLogin bool
 
 func init() {
 	loginCmd.PersistentFlags().StringVar(&providedEmail, "email", "", "The email used for logging in.")
 	loginCmd.PersistentFlags().StringVar(&providedPassword, "password", "", "The password used for logging in.")
-	loginCmd.PersistentFlags().StringVar(&providedToken, "token", "", "The token used for logging in.")
-	loginCmd.PersistentFlags().StringVar(&providedAuthenticationMethod, "authentication-method", "", "Pick the authentication method. Possible values are email or token")
+	loginCmd.PersistentFlags().StringVar(&providedAccessKey, "access-key", "", "The access key generated in your Tenderly dashboard.")
+	loginCmd.PersistentFlags().StringVar(&providedAuthenticationMethod, "authentication-method", "", "Pick the authentication method. Possible values are email or token.")
 	loginCmd.PersistentFlags().BoolVar(&forceLogin, "force", false, "Don't check if you are already logged in.")
 	rootCmd.AddCommand(loginCmd)
 }
@@ -60,12 +60,13 @@ var loginCmd = &cobra.Command{
 		}
 
 		rest := newRest()
-		var token string
+		var key string
+		var keyId string
 
 		if providedAuthenticationMethod == "email" {
-			token = emailLogin(rest)
-		} else if providedAuthenticationMethod == "token" {
-			token = tokenLogin()
+			key, keyId = emailLogin(rest)
+		} else if providedAuthenticationMethod == "access-key" {
+			key = accessKeyLogin()
 		} else {
 			userError.LogErrorf("unsupported authentication method: %s", userError.NewUserError(
 				fmt.Errorf("non-supported authentication method: %s", providedAuthenticationMethod),
@@ -73,24 +74,25 @@ var loginCmd = &cobra.Command{
 					"The %s can either be %s or %s",
 					colorizer.Bold(colorizer.Green("--authentication-method")),
 					colorizer.Bold(colorizer.Green("email")),
-					colorizer.Bold(colorizer.Green("token")),
+					colorizer.Bold(colorizer.Green("access-key")),
 				),
 			))
 			os.Exit(1)
 		}
 
-		if token == "" {
+		if key == "" {
 			os.Exit(1)
 		}
 
-		config.SetGlobalConfig(config.Token, token)
+		config.SetGlobalConfig(config.AccessKey, key)
+		config.SetGlobalConfig(config.AccessKeyId, keyId)
 
 		user, err := rest.User.User()
 		if err != nil {
-			if providedAuthenticationMethod == "token" {
+			if providedAuthenticationMethod == "access-key" {
 				userError.LogErrorf("cannot fetch user info: %s", userError.NewUserError(
 					err,
-					"Couldn't fetch user information. This can happen if your authentication token is not valid. Please try again.",
+					fmt.Sprintf("%s", colorizer.Red("Couldn't fetch user information. This can happen if your access key is not valid. Please try again.")),
 				))
 				os.Exit(1)
 			}
@@ -125,7 +127,7 @@ func promptAuthenticationMethod() {
 		Items: []string{
 			"Email",
 			colorizer.Sprintf(
-				"Authentication token (can be found under %s)",
+				"Access key can be generated at %s",
 				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
 			),
 		},
@@ -140,12 +142,13 @@ func promptAuthenticationMethod() {
 	providedAuthenticationMethod = "email"
 
 	if index == 1 {
-		providedAuthenticationMethod = "token"
+		providedAuthenticationMethod = "access-key"
 	}
 }
 
-func emailLogin(rest *rest.Rest) string {
+func emailLogin(rest *rest.Rest) (string, string) {
 	var token string
+	var tokenId string
 
 	for i := 0; i < numberOfTries; i++ {
 		var email string
@@ -193,18 +196,20 @@ func emailLogin(rest *rest.Rest) string {
 		}
 
 		token = tokenResponse.Token
+		tokenId = tokenResponse.ID
+
 		break
 	}
 
-	return token
+	return token, tokenId
 }
 
-func tokenLogin() string {
-	if len(providedToken) != 0 {
-		return providedToken
+func accessKeyLogin() string {
+	if len(providedAccessKey) != 0 {
+		return providedAccessKey
 	}
 
-	result, err := promptToken()
+	result, err := promptAccessKey()
 	if err != nil {
 		return ""
 	}
@@ -253,12 +258,12 @@ func promptPassword() (string, error) {
 	return result, nil
 }
 
-func promptToken() (string, error) {
+func promptAccessKey() (string, error) {
 	prompt := promptui.Prompt{
-		Label: "Authentication token",
+		Label: "Access key",
 		Validate: func(input string) error {
 			if len(input) == 0 {
-				return errors.New("Please enter your authenticaiton token")
+				return errors.New("Please enter your access key")
 			}
 			return nil
 		},

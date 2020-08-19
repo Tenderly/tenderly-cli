@@ -18,6 +18,10 @@ type RegisterRequest struct {
 	Password  string `json:"password"`
 }
 
+type GenerateAccessTokenRequest struct {
+	Name string `json:"name"`
+}
+
 var accountIDFormat = regexp.MustCompile("^[a-zA-Z0-9]{5,20}$")
 
 func (r RegisterRequest) Valid() bool {
@@ -30,6 +34,11 @@ func (r RegisterRequest) Valid() bool {
 }
 
 type TokenResponse struct {
-	Token string    `json:"token"`
+	ID    string    `json:"id"`
+	Token string    `json:"secret"`
+	Error *ApiError `json:"error"`
+}
+
+type LogoutResponse struct {
 	Error *ApiError `json:"error"`
 }

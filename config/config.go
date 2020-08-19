@@ -16,7 +16,9 @@ import (
 )
 
 const (
-	Token = "token"
+	Token       = "token"
+	AccessKey   = "access_key"
+	AccessKeyId = "access_key_id"
 
 	AccountID   = "account_id"
 	Username    = "username"
@@ -254,8 +256,20 @@ func GetToken() string {
 	return getString(Token)
 }
 
+func GetAccessKey() string {
+	return getString(AccessKey)
+}
+
+func GetAccessKeyId() string {
+	return getString(AccessKeyId)
+}
+
+func GetAccountId() string {
+	return getString(AccountID)
+}
+
 func IsLoggedIn() bool {
-	return getString(Token) != ""
+	return getString(Token) != "" || getString(AccessKey) != ""
 }
 
 func IsProjectInit() bool {

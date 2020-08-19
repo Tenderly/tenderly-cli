@@ -1,10 +1,16 @@
 package truffle
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"math/rand"
+	"os"
+	"os/exec"
+	"path"
 	"regexp"
+	"strings"
 )
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -27,4 +33,42 @@ func extractConfigWithDivider(config, divider string) (string, error) {
 	}
 
 	return matches[1], nil
+}
+
+func checkIfFileDoesNotExist(path string) bool {
+	_, err := os.Stat(path)
+	exist := os.IsNotExist(err)
+
+	return exist
+}
+
+func getGlobalPathForModule(localPath string) string {
+	//global path - npm
+	cmd := exec.Command("npm", "root", "-g")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		logrus.Debug(err, "failed running npm")
+		return ""
+	}
+
+	globalNodeModule := strings.TrimSuffix(out.String(), "\n")
+	absPath := path.Join(globalNodeModule, localPath)
+	doesNotExist := checkIfFileDoesNotExist(absPath)
+	if doesNotExist {
+		//global path - yarn
+		cmd = exec.Command("yarn", "global", "dir")
+		cmd.Stdout = &out
+		err := cmd.Run()
+		if err != nil {
+			logrus.Debug(err, "failed running yarn")
+			return ""
+		}
+
+		globalYarnModule := strings.TrimSuffix(out.String(), "\n")
+		absPath = path.Join(globalYarnModule, localPath)
+	}
+
+	return absPath
 }
