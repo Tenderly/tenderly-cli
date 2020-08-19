@@ -1,18 +1,18 @@
 package payloads
 
 import (
-	"github.com/tenderly/tenderly-cli/truffle"
+	"github.com/tenderly/tenderly-cli/providers"
 )
 
 type UploadContractsRequest struct {
-	Contracts []truffle.Contract `json:"contracts"`
-	Config    *Config            `json:"config,omitempty"`
-	Tag       string             `json:"tag,omitempty"`
+	Contracts []providers.Contract `json:"contracts"`
+	Config    *Config              `json:"config,omitempty"`
+	Tag       string               `json:"tag,omitempty"`
 }
 
 type UploadContractsResponse struct {
-	Contracts []truffle.ApiContract `json:"contracts"`
-	Error     *ApiError             `json:"error"`
+	Contracts []providers.ApiContract `json:"contracts"`
+	Error     *ApiError               `json:"error"`
 }
 
 type Config struct {
@@ -21,7 +21,7 @@ type Config struct {
 	EvmVersion         *string `json:"evm_version,omitempty"`
 }
 
-func ParseNewTruffleConfig(compilers map[string]truffle.Compiler) *Config {
+func ParseNewTruffleConfig(compilers map[string]providers.Compiler) *Config {
 	if _, exists := compilers["solc"]; !exists {
 		return nil
 	}
@@ -46,7 +46,7 @@ func ParseNewTruffleConfig(compilers map[string]truffle.Compiler) *Config {
 	return &payload
 }
 
-func ParseOldTruffleConfig(solc map[string]truffle.Optimizer) *Config {
+func ParseOldTruffleConfig(solc map[string]providers.Optimizer) *Config {
 	if _, exists := solc["optimizer"]; !exists {
 		return nil
 	}
@@ -57,4 +57,23 @@ func ParseOldTruffleConfig(solc map[string]truffle.Optimizer) *Config {
 		OptimizationsUsed:  optimizer.Enabled,
 		OptimizationsCount: optimizer.Runs,
 	}
+}
+
+func ParseOpenZeppelinConfig(compilers map[string]providers.Compiler) *Config {
+	if _, exists := compilers["solc"]; !exists {
+		return nil
+	}
+
+	compiler := compilers["solc"]
+
+	payload := Config{
+		EvmVersion: compiler.EvmVersion,
+	}
+
+	if compiler.Optimizer != nil {
+		payload.OptimizationsUsed = compiler.Optimizer.Enabled
+		payload.OptimizationsCount = compiler.Optimizer.Runs
+	}
+
+	return &payload
 }

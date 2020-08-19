@@ -4,7 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/tenderly/tenderly-cli/ethereum/types"
 	"github.com/tenderly/tenderly-cli/model"
-	"github.com/tenderly/tenderly-cli/truffle"
+	"github.com/tenderly/tenderly-cli/providers"
 )
 
 type ExportTransactionRequest struct {
@@ -43,7 +43,7 @@ type Export struct {
 }
 
 type ExportTransactionResponse struct {
-	Export    *Export               `json:"export"`
-	Contracts []truffle.ApiContract `json:"contracts"`
-	Error     *ApiError             `json:"error"`
+	Export    *Export                 `json:"export"`
+	Contracts []providers.ApiContract `json:"contracts"`
+	Error     *ApiError               `json:"error"`
 }

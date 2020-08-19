@@ -1,4 +1,4 @@
-package truffle
+package openzeppelin
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 
 // NewContractSource builds the Contract Source from the provided config, and scoped to the provided network.
 func (dp *DeploymentProvider) NewContractSource(path string, networkId string, client ethereum.Client) (stacktrace.ContractSource, error) {
-	truffleContracts, err := dp.loadTruffleContracts(path)
+	truffleContracts, err := dp.loadOpenZeppelinContracts(path)
 	if err != nil {
 		return nil, err
 	}
@@ -27,11 +27,11 @@ func (dp *DeploymentProvider) NewContractSource(path string, networkId string, c
 	return cs, nil
 }
 
-func (dp *DeploymentProvider) loadTruffleContracts(path string) ([]*providers.Contract, error) {
+func (dp *DeploymentProvider) loadOpenZeppelinContracts(path string) ([]*providers.Contract, error) {
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed listing truffle build files: %s", err)
+		return nil, fmt.Errorf("failed listing openzeppelin build files: %s", err)
 	}
 
 	var contracts []*providers.Contract
@@ -42,13 +42,13 @@ func (dp *DeploymentProvider) loadTruffleContracts(path string) ([]*providers.Co
 
 		data, err := ioutil.ReadFile(filepath.Join(path, file.Name()))
 		if err != nil {
-			return nil, fmt.Errorf("failed reading truffle build files: %s", err)
+			return nil, fmt.Errorf("failed reading openzeppelin build files: %s", err)
 		}
 
 		var contract providers.Contract
 		err = json.Unmarshal(data, &contract)
 		if err != nil {
-			return nil, fmt.Errorf("failed parsing truffle build files: %s", err)
+			return nil, fmt.Errorf("failed parsing openzeppelin build files: %s", err)
 		}
 
 		contracts = append(contracts, &contract)

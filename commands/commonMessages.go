@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 )
@@ -44,7 +43,7 @@ func DetectedProjectMessage(
 	action string,
 	commandFmt string,
 ) {
-	projectDirectories := truffle.FindTruffleDirectories()
+	projectDirectories := deploymentProvider.FindDirectories()
 	projectsLen := len(projectDirectories)
 	if printLoginSuccess {
 		logrus.Info(colorizer.Sprintf("Now that you are successfully logged in, you can use the %s command to initialize a new project.",

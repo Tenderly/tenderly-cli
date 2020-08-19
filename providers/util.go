@@ -1,4 +1,4 @@
-package truffle
+package providers
 
 import (
 	"bytes"
@@ -13,9 +13,18 @@ import (
 	"strings"
 )
 
+type DeploymentProviderName string
+
+const (
+	TruffleDeploymentProvider      DeploymentProviderName = "Truffle"
+	OpenZeppelinDeploymentProvider DeploymentProviderName = "OpenZeppelin"
+)
+
+var AllProviders = []DeploymentProviderName{TruffleDeploymentProvider, OpenZeppelinDeploymentProvider}
+
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-func randSeq(n int) string {
+func RandSeq(n int) string {
 	b := make([]rune, n)
 	lettersLen := len(letters)
 	for i := range b {
@@ -24,7 +33,7 @@ func randSeq(n int) string {
 	return string(b)
 }
 
-func extractConfigWithDivider(config, divider string) (string, error) {
+func ExtractConfigWithDivider(config, divider string) (string, error) {
 	reg := regexp.MustCompile(fmt.Sprintf("%s(?P<Config>.*)%s", divider, divider))
 	matches := reg.FindStringSubmatch(config)
 

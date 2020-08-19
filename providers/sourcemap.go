@@ -1,4 +1,4 @@
-package truffle
+package providers
 
 import (
 	"encoding/hex"
@@ -9,8 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/tenderly/tenderly-cli/stacktrace"
 )
-
-//@TODO: Move this to use standard contracts.
 
 func ParseContract(contract *Contract) (stacktrace.SourceMap, error) {
 	rawSrcMap := contract.DeployedSourceMap

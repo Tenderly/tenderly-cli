@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"github.com/tenderly/tenderly-cli/openzeppelin"
+	"github.com/tenderly/tenderly-cli/providers"
 	"math/big"
 	"os"
 	"regexp"
@@ -186,7 +188,7 @@ var exportCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		contracts, truffleConfig, err := contractsWithConfig(networkId, state.StateObjects)
+		contracts, providerConfig, err := contractsWithConfig(networkId, state.StateObjects)
 		if err != nil {
 			userError.LogErrorf("Unable to get contract: %s", err)
 			os.Exit(1)
@@ -210,7 +212,7 @@ var exportCmd = &cobra.Command{
 			},
 			ContractsData: payloads.UploadContractsRequest{
 				Contracts: contracts,
-				Config:    truffleConfig,
+				Config:    providerConfig,
 			},
 		}, network.ProjectSlug)
 
@@ -369,21 +371,26 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 	return tx, state, networkId, nil
 }
 
-func contractsWithConfig(networkId string, objects []*model.StateObject) ([]truffle.Contract, *payloads.Config, error) {
+func contractsWithConfig(
+	networkId string,
+	objects []*model.StateObject,
+) ([]providers.Contract, *payloads.Config, error) {
 	logrus.Info("Collecting contracts...")
 
-	truffleConfig, err := MustGetTruffleConfig()
+	providerConfig, err := deploymentProvider.MustGetConfig()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	contracts, _, err := truffle.GetTruffleContracts(truffleConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
+	contracts, _, err := providers.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
 
 	var configPayload *payloads.Config
-	if truffleConfig.ConfigType == truffle.NewTruffleConfigFile && truffleConfig.Compilers != nil {
-		configPayload = payloads.ParseNewTruffleConfig(truffleConfig.Compilers)
-	} else if truffleConfig.ConfigType == truffle.OldTruffleConfigFile && truffleConfig.Solc != nil {
-		configPayload = payloads.ParseOldTruffleConfig(truffleConfig.Solc)
+	if providerConfig.ConfigType == truffle.NewTruffleConfigFile && providerConfig.Compilers != nil {
+		configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
+	} else if providerConfig.ConfigType == truffle.OldTruffleConfigFile && providerConfig.Solc != nil {
+		configPayload = payloads.ParseOldTruffleConfig(providerConfig.Solc)
+	} else if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Solc != nil {
+		configPayload = payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
 	}
 
 	return contracts, configPayload, nil

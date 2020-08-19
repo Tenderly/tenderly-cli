@@ -2,7 +2,6 @@ package commands
 
 import (
 	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
 	"log"
 	"os"
@@ -35,7 +34,7 @@ var proxyCmd = &cobra.Command{
 	Use:   "proxy",
 	Short: "Creates a server that proxies rpc requests to an Ethereum node and builds a stacktrace in case any errors occur during execution",
 	Run: func(cmd *cobra.Command, args []string) {
-		if !truffle.CheckIfTruffleStructure(config.ProjectDirectory) && !forceProxy {
+		if !deploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !forceProxy {
 			WrongFolderMessage("proxy", "tenderly proxy --project-dir=\"%s\"")
 			os.Exit(1)
 		}
@@ -52,7 +51,7 @@ var proxyCmd = &cobra.Command{
 
 		loadProxyConfigFromProject()
 
-		truffleConfig, err := MustGetTruffleConfig()
+		providerConfig, err := deploymentProvider.MustGetConfig()
 		if err != nil {
 			userError.LogErrorf("unable to upload contracts: %s", err)
 			os.Exit(1)
@@ -64,9 +63,10 @@ var proxyCmd = &cobra.Command{
 			targetPort,
 			proxyHost,
 			proxyPort,
-			truffleConfig.ProjectDirectory,
-			truffleConfig.AbsoluteBuildDirectoryPath(),
+			providerConfig.ProjectDirectory,
+			providerConfig.AbsoluteBuildDirectoryPath(),
 			colorizer,
+			deploymentProvider,
 		); err != nil {
 			log.Fatal(err)
 		}

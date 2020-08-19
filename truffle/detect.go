@@ -15,7 +15,7 @@ var truffleFolders = []string{
 	"migrations",
 }
 
-func FindTruffleDirectories() []string {
+func (dp *DeploymentProvider) FindDirectories() []string {
 	if runtime.GOOS != "darwin" {
 		return nil
 	}
@@ -50,7 +50,7 @@ func FindTruffleDirectories() []string {
 		}
 
 		dir := path.Dir(possibleDirectory)
-		if !CheckIfTruffleStructure(dir) {
+		if !dp.CheckIfProviderStructure(dir) {
 			continue
 		}
 
@@ -70,7 +70,7 @@ func FindTruffleDirectories() []string {
 	return result
 }
 
-func CheckIfTruffleStructure(directory string) bool {
+func (dp *DeploymentProvider) CheckIfProviderStructure(directory string) bool {
 	for _, truffleFolder := range truffleFolders {
 		folderPath := path.Join(directory, truffleFolder)
 		if _, err := os.Stat(folderPath); err != nil {

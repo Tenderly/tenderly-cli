@@ -1,4 +1,4 @@
-package truffle
+package openzeppelin
 
 import (
 	"encoding/json"
@@ -15,26 +15,25 @@ import (
 )
 
 const (
-	NewTruffleConfigFile = "truffle-config.js"
-	OldTruffleConfigFile = "truffle.js"
+	OpenzeppelinConfigFile = "networks.js"
 )
 
 func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
-	trufflePath := filepath.Join(projectDir, configName)
+	openzeppelinPath := filepath.Join(projectDir, configName)
 	divider := getDivider()
 
-	logrus.Debugf("Trying truffle config path: %s", trufflePath)
+	logrus.Debugf("Trying openzeppelin config path: %s", openzeppelinPath)
 
-	_, err := os.Stat(trufflePath)
+	_, err := os.Stat(openzeppelinPath)
 	if os.IsNotExist(err) {
 		return nil, err
 	}
 	if err != nil {
-		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, trufflePath, err)
+		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, openzeppelinPath, err)
 	}
 
 	if runtime.GOOS == "windows" {
-		trufflePath = strings.ReplaceAll(trufflePath, `\`, `\\`)
+		openzeppelinPath = strings.ReplaceAll(openzeppelinPath, `\`, `\\`)
 	}
 
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
@@ -56,9 +55,11 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 
 		console.log("%s" + jsonConfig + "%s");
 		process.exit(0);
-	`, trufflePath, divider, divider)).CombinedOutput()
+	`, openzeppelinPath, divider, divider)).CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("cannot evaluate %s, tried path: %s, error: %s, output: %s", configName, trufflePath, err, string(data))
+		return nil, fmt.Errorf(
+			"cannot evaluate %s, tried path: %s, error: %s, output: %s",
+			configName, openzeppelinPath, err, string(data))
 	}
 
 	configString, err := providers.ExtractConfigWithDivider(string(data), divider)
@@ -67,16 +68,16 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 
-	var truffleConfig providers.Config
-	err = json.Unmarshal([]byte(configString), &truffleConfig)
+	var openzeppelinConfig providers.Config
+	err = json.Unmarshal([]byte(configString), &openzeppelinConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 
-	truffleConfig.ProjectDirectory = projectDir
-	truffleConfig.ConfigType = configName
+	openzeppelinConfig.ProjectDirectory = projectDir
+	openzeppelinConfig.ConfigType = configName
 
-	return &truffleConfig, nil
+	return &openzeppelinConfig, nil
 }
 
 func getDivider() string {
@@ -85,7 +86,7 @@ func getDivider() string {
 
 func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 	projectDir, err := filepath.Abs(config.ProjectDirectory)
-	truffleConfigFile := NewTruffleConfigFile
+	openzeppelinConfigFile := OpenzeppelinConfigFile
 
 	if err != nil {
 		return nil, userError.NewUserError(
@@ -94,33 +95,13 @@ func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 		)
 	}
 
-	truffleConfig, err := dp.GetConfig(truffleConfigFile, projectDir)
-	if err != nil && !os.IsNotExist(err) {
-		return nil, userError.NewUserError(
-			fmt.Errorf("unable to fetch config: %s", err),
-			"Couldn't read Truffle config file",
-		)
-	}
-	if os.IsNotExist(err) {
-		logrus.Debugf("couldn't read new truffle config file: %s", err)
-		truffleConfigFile = OldTruffleConfigFile
-		truffleConfig, err = dp.GetConfig(truffleConfigFile, projectDir)
-	}
-
-	if os.IsNotExist(err) {
-		logrus.Debugf("couldn't read truffle config file: %s", err)
-		return nil, userError.NewUserError(
-			fmt.Errorf("unable to fetch config: %s", err),
-			"Couldn't find Truffle config file",
-		)
-	}
-
+	openzeppelinConfig, err := dp.GetConfig(openzeppelinConfigFile, projectDir)
 	if err != nil {
 		return nil, userError.NewUserError(
 			fmt.Errorf("unable to fetch config: %s", err),
-			"Couldn't read Truffle config file",
+			"Couldn't read OpenZeppelin config file",
 		)
 	}
 
-	return truffleConfig, nil
+	return openzeppelinConfig, nil
 }
