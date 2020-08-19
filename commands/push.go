@@ -56,6 +56,7 @@ var pushCmd = &cobra.Command{
 }
 
 func uploadContracts(rest *rest.Rest) error {
+	initProvider()
 	CheckProvider(deploymentProvider)
 
 	logrus.Info(fmt.Sprintf("Analyzing %s configuration...", deploymentProvider.GetProviderName()))

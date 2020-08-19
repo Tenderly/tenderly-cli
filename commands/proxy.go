@@ -34,8 +34,11 @@ var proxyCmd = &cobra.Command{
 	Use:   "proxy",
 	Short: "Creates a server that proxies rpc requests to an Ethereum node and builds a stacktrace in case any errors occur during execution",
 	Run: func(cmd *cobra.Command, args []string) {
-		CheckProvider(deploymentProvider)
-		if !deploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !forceProxy {
+		initProvider()
+		if !forceProxy {
+			CheckProvider(deploymentProvider)
+		}
+		if !forceProxy && !deploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) {
 			WrongFolderMessage("proxy", "tenderly proxy --project-dir=\"%s\"")
 			os.Exit(1)
 		}

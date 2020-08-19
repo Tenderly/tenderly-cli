@@ -57,6 +57,7 @@ var verifyCmd = &cobra.Command{
 }
 
 func verifyContracts(rest *rest.Rest) error {
+	initProvider()
 	CheckProvider(deploymentProvider)
 
 	logrus.Info("Analyzing provider configuration...")

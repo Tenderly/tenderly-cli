@@ -4,23 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"github.com/logrusorgru/aurora"
-	"github.com/tenderly/tenderly-cli/openzeppelin"
-	"github.com/tenderly/tenderly-cli/providers"
-	"github.com/tenderly/tenderly-cli/truffle"
-	"github.com/tenderly/tenderly-cli/userError"
-	"os"
-	"path/filepath"
-
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/userError"
+	"os"
 )
 
 var debugMode bool
 var resetProvider bool
 var outputMode string
 var colorizer aurora.Aurora
-var deploymentProvider providers.DeploymentProvider
 
 type TenderlyStandardFormatter struct {
 }
@@ -79,8 +73,6 @@ var rootCmd = &cobra.Command{
 func initConfig() {
 	initLog()
 	config.Init()
-
-	initProvider()
 }
 
 func initLog() {
@@ -95,81 +87,6 @@ func initLog() {
 		colorizer = aurora.NewAurora(true)
 		logrus.SetFormatter(&TenderlyStandardFormatter{})
 	}
-}
-
-func initProvider() {
-	trufflePath := filepath.Join(config.ProjectDirectory, truffle.NewTruffleConfigFile)
-	openZeppelinPath := filepath.Join(config.ProjectDirectory, openzeppelin.OpenzeppelinConfigFile)
-	oldTrufflePath := filepath.Join(config.ProjectDirectory, truffle.OldTruffleConfigFile)
-
-	var provider providers.DeploymentProviderName
-
-	provider = providers.DeploymentProviderName(config.MaybeGetString(config.Provider))
-
-	//If both config files exist, prompt user to choose
-	if provider == "" || resetProvider {
-		if _, err := os.Stat(openZeppelinPath); err == nil {
-			if _, err := os.Stat(trufflePath); err == nil {
-				provider = promptProviderSelect()
-			} else if _, err := os.Stat(oldTrufflePath); err == nil {
-				provider = promptProviderSelect()
-			}
-		}
-	}
-
-	config.SetProjectConfig(config.Provider, provider)
-	WriteProjectConfig()
-
-	logrus.Debugf("Trying OpenZeppelin config path: %s", openZeppelinPath)
-	if provider == providers.OpenZeppelinDeploymentProvider {
-
-		_, err := os.Stat(openZeppelinPath)
-
-		if err == nil {
-			deploymentProvider = openzeppelin.NewDeploymentProvider()
-			return
-		}
-
-		logrus.Debugf(
-			fmt.Sprintf("unable to fetch config\n%s",
-				" Couldn't read OpenZeppelin config file"),
-		)
-		os.Exit(1)
-	}
-	logrus.Debugf("couldn't read new OpenZeppelin config file")
-
-	logrus.Debugf("Trying truffle config path: %s", trufflePath)
-
-	_, err := os.Stat(trufflePath)
-
-	if err == nil {
-		deploymentProvider = truffle.NewDeploymentProvider()
-		return
-	}
-
-	if !os.IsNotExist(err) {
-		logrus.Debugf(
-			fmt.Sprintf("unable to fetch config\n%s",
-				"Couldn't read Truffle config file"),
-		)
-		os.Exit(1)
-	}
-
-	logrus.Debugf("couldn't read new truffle config file: %s", err)
-
-	logrus.Debugf("Trying old truffle config path: %s", trufflePath)
-
-	_, err = os.Stat(oldTrufflePath)
-
-	if err == nil {
-		deploymentProvider = truffle.NewDeploymentProvider()
-		return
-	}
-
-	logrus.Debugf(
-		fmt.Sprintf("unable to fetch config\n%s",
-			"Couldn't read old Truffle config file"),
-	)
 }
 
 func printHelp() {

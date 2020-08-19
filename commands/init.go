@@ -33,6 +33,7 @@ var initCmd = &cobra.Command{
 		rest := newRest()
 
 		if !forceInit {
+			initProvider()
 			CheckProvider(deploymentProvider)
 		}
 
