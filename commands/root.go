@@ -17,6 +17,7 @@ import (
 )
 
 var debugMode bool
+var resetProvider bool
 var outputMode string
 var colorizer aurora.Aurora
 var deploymentProvider providers.DeploymentProvider
@@ -34,6 +35,7 @@ func init() {
 	initLog()
 
 	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Turn on debug level logging.")
+	rootCmd.PersistentFlags().BoolVar(&resetProvider, "reset-provider", false, "Clear set deployment provider. If not provided will use provider from tenderly.yaml")
 	rootCmd.PersistentFlags().StringVar(&outputMode, "output", "text", "Which output mode to use: text or json. If not provided. text output will be used.")
 	rootCmd.PersistentFlags().StringVar(&config.GlobalConfigName, "global-config", "config", "Global configuration file name (without the extension)")
 	rootCmd.PersistentFlags().StringVar(&config.ProjectConfigName, "project-config", "tenderly", "Project configuration file name (without the extension)")
@@ -105,7 +107,7 @@ func initProvider() {
 	provider = providers.DeploymentProviderName(config.MaybeGetString(config.Provider))
 
 	//If both config files exist, prompt user to choose
-	if provider == "" {
+	if provider == "" || resetProvider {
 		if _, err := os.Stat(openZeppelinPath); err == nil {
 			if _, err := os.Stat(trufflePath); err == nil {
 				provider = promptProviderSelect()
@@ -128,9 +130,9 @@ func initProvider() {
 			return
 		}
 
-		logrus.Print(
-			fmt.Errorf("unable to fetch config: %s", err),
-			" Couldn't read OpenZeppelin config file",
+		logrus.Debugf(
+			fmt.Sprintf("unable to fetch config\n%s",
+				" Couldn't read OpenZeppelin config file"),
 		)
 		os.Exit(1)
 	}
@@ -146,9 +148,9 @@ func initProvider() {
 	}
 
 	if !os.IsNotExist(err) {
-		logrus.Print(
-			fmt.Errorf("unable to fetch config: %s", err),
-			"Couldn't read Truffle config file",
+		logrus.Debugf(
+			fmt.Sprintf("unable to fetch config\n%s",
+				"Couldn't read Truffle config file"),
 		)
 		os.Exit(1)
 	}
@@ -164,13 +166,10 @@ func initProvider() {
 		return
 	}
 
-	logrus.Print(
-		fmt.Errorf("unable to fetch config: %s", err),
-		"Couldn't read old Truffle config file",
+	logrus.Debugf(
+		fmt.Sprintf("unable to fetch config\n%s",
+			"Couldn't read old Truffle config file"),
 	)
-	if !forceInit {
-		os.Exit(1)
-	}
 }
 
 func printHelp() {

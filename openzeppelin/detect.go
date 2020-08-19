@@ -10,7 +10,7 @@ var openZeppelinFolders = []string{
 	".openzeppelin",
 }
 
-func (dp *DeploymentProvider) FindDirectories() []string {
+func FindDirectories() []string {
 	return []string{}
 }
 

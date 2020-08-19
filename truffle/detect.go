@@ -15,7 +15,7 @@ var truffleFolders = []string{
 	"migrations",
 }
 
-func (dp *DeploymentProvider) FindDirectories() []string {
+func FindDirectories() []string {
 	if runtime.GOOS != "darwin" {
 		return nil
 	}
@@ -50,7 +50,7 @@ func (dp *DeploymentProvider) FindDirectories() []string {
 		}
 
 		dir := path.Dir(possibleDirectory)
-		if !dp.CheckIfProviderStructure(dir) {
+		if !CheckIfProviderStructure(dir) {
 			continue
 		}
 
@@ -71,6 +71,17 @@ func (dp *DeploymentProvider) FindDirectories() []string {
 }
 
 func (dp *DeploymentProvider) CheckIfProviderStructure(directory string) bool {
+	for _, truffleFolder := range truffleFolders {
+		folderPath := path.Join(directory, truffleFolder)
+		if _, err := os.Stat(folderPath); err != nil {
+			return false
+		}
+	}
+
+	return true
+}
+
+func CheckIfProviderStructure(directory string) bool {
 	for _, truffleFolder := range truffleFolders {
 		folderPath := path.Join(directory, truffleFolder)
 		if _, err := os.Stat(folderPath); err != nil {

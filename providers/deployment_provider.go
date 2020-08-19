@@ -12,7 +12,6 @@ import (
 type DeploymentProvider interface {
 	GetConfig(configName string, configDir string) (*Config, error)
 	MustGetConfig() (*Config, error)
-	FindDirectories() []string
 	CheckIfProviderStructure(directory string) bool
 	NewContractSource(path string, networkId string, client ethereum.Client) (stacktrace.ContractSource, error)
 	GetProviderName() DeploymentProviderName

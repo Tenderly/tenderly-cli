@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/providers"
+	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 )
@@ -16,6 +18,13 @@ func CheckLogin() {
 	}
 }
 
+func CheckProvider(deploymentProvider providers.DeploymentProvider) {
+	if deploymentProvider == nil {
+		logrus.Error("\nOpenzeppelin or Truffle configuration was not detected.\n\n",
+			"Please run the instruction in a folder with the configuration files")
+		os.Exit(1)
+	}
+}
 func WriteGlobalConfig() {
 	err := config.WriteGlobalConfig()
 	if err != nil {
@@ -43,7 +52,7 @@ func DetectedProjectMessage(
 	action string,
 	commandFmt string,
 ) {
-	projectDirectories := deploymentProvider.FindDirectories()
+	projectDirectories := truffle.FindDirectories()
 	projectsLen := len(projectDirectories)
 	if printLoginSuccess {
 		logrus.Info(colorizer.Sprintf("Now that you are successfully logged in, you can use the %s command to initialize a new project.",
@@ -87,7 +96,7 @@ func DetectedProjectMessage(
 }
 
 func WrongFolderMessage(action string, commandFmt string) {
-	logrus.Info("Couldn't detect Truffle directory structure. This can be caused by:")
+	logrus.Info("Couldn't detect provider directory structure. This can be caused by:")
 	logrus.Println()
 	logrus.Info(colorizer.Sprintf("\t• The directory is not set correctly. "+
 		"If this is the case, either check if you are in the right directory or pass an alternative directory by using the %s flag.",

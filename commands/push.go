@@ -56,7 +56,9 @@ var pushCmd = &cobra.Command{
 }
 
 func uploadContracts(rest *rest.Rest) error {
-	logrus.Info("Analyzing Truffle configuration...")
+	CheckProvider(deploymentProvider)
+
+	logrus.Info(fmt.Sprintf("Analyzing %s configuration...", deploymentProvider.GetProviderName()))
 
 	providerConfig, err := deploymentProvider.MustGetConfig()
 	if err != nil {

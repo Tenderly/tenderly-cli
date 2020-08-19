@@ -32,6 +32,10 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
 
+		if !forceInit {
+			CheckProvider(deploymentProvider)
+		}
+
 		CheckLogin()
 
 		if config.IsProjectInit() && !reInit {
