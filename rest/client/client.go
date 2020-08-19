@@ -52,7 +52,7 @@ func Request(method, path string, body []byte) io.Reader {
 			body, err := json.Marshal(request)
 			if err != nil {
 				logrus.Debug("failed to marshall generate access token request", logrus.Fields{
-					"url_path": urlPath,
+					"url_path":   urlPath,
 					"account_id": config.GetAccountId(),
 				})
 			} else {
@@ -72,6 +72,17 @@ func Request(method, path string, body []byte) io.Reader {
 
 				config.SetGlobalConfig(config.AccessKey, tokenResp.Token)
 				config.SetGlobalConfig(config.AccessKeyId, tokenResp.ID)
+
+				//@TODO(filip): remove this once we
+				err = config.WriteGlobalConfig()
+				if err != nil {
+					userError.LogErrorf(
+						"write global config: %s",
+						userError.NewUserError(err, "Couldn't write global config file"),
+					)
+
+					return nil
+				}
 
 				req.Header.Add("x-access-key", tokenResp.Token)
 				req.Header.Del("Authorization")
