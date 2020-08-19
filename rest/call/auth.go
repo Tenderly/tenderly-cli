@@ -2,6 +2,7 @@ package call
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/tenderly/tenderly-cli/rest/client"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"io"
@@ -38,8 +39,18 @@ func (rest *AuthCalls) Login(request payloads.LoginRequest) (*payloads.TokenResp
 	return extractToken(
 		client.Request(
 			"POST",
-			"login",
+			"login/token",
 			data,
+		),
+	)
+}
+
+func (rest *AuthCalls) Logout(accountId string, tokenId string) error {
+	return extractLogutResp(
+		client.Request(
+			"DELETE",
+			fmt.Sprintf("api/v1/account/%s/token/%s", accountId, tokenId),
+			nil,
 		),
 	)
 }
@@ -49,4 +60,10 @@ func extractToken(reader io.Reader) (*payloads.TokenResponse, error) {
 	err := json.NewDecoder(reader).Decode(&token)
 
 	return &token, err
+}
+
+func extractLogutResp(reader io.Reader) error {
+	var logut payloads.LoginRequest
+	err := json.NewDecoder(reader).Decode(&logut)
+	return err
 }

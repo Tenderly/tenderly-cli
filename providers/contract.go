@@ -6,7 +6,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tenderly/tenderly-cli/model"
 	"io/ioutil"
-	"path/filepath"
+	"os"
+	"path"
 	"runtime"
 	"strings"
 )
@@ -43,7 +44,7 @@ func GetContracts(
 			continue
 		}
 
-		filePath := filepath.Join(buildDir, file.Name())
+		filePath := path.Join(buildDir, file.Name())
 		data, err := ioutil.ReadFile(filePath)
 
 		if err != nil {
@@ -67,6 +68,7 @@ func GetContracts(
 			}
 
 			absPath := node.AbsolutePath
+
 			if runtime.GOOS == "windows" && strings.HasPrefix(absPath, "/") {
 				absPath = strings.ReplaceAll(absPath, "/", "\\")
 				absPath = strings.TrimPrefix(absPath, "\\")
@@ -99,16 +101,30 @@ func GetContracts(
 		numberOfContractsWithANetwork += len(contract.Networks)
 	}
 
-	for path, included := range sources {
+	for localPath, included := range sources {
 		if !included {
-			source, err := ioutil.ReadFile(path)
+			currentLocalPath := localPath
+			if len(localPath) > 0 && localPath[0] == '@' {
+				localPath, err = os.Getwd()
+				if err != nil {
+					return nil, 0, errors.Wrap(err, "failed getting working dir")
+				}
+
+				localPath = path.Join(localPath, "node_modules", currentLocalPath)
+				doesNotExist := checkIfFileDoesNotExist(localPath)
+				if doesNotExist {
+					localPath = getGlobalPathForModule(currentLocalPath)
+				}
+			}
+
+			source, err := ioutil.ReadFile(localPath)
 			if err != nil {
 				return nil, 0, errors.Wrap(err, "failed reading contract source file")
 			}
 
 			contracts = append(contracts, Contract{
 				Source:     string(source),
-				SourcePath: path,
+				SourcePath: currentLocalPath,
 			})
 		}
 	}

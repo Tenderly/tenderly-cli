@@ -34,7 +34,6 @@ var pushCmd = &cobra.Command{
 	Short: "Pushes the contracts to the configured project. After the contracts are pushed they are actively monitored by Tenderly.",
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
-
 		CheckLogin()
 
 		if !config.IsProjectInit() {

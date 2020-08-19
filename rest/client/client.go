@@ -3,9 +3,11 @@ package client
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/userError"
 	"io"
 	"io/ioutil"
@@ -35,9 +37,46 @@ func Request(method, path string, body []byte) io.Reader {
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: false}
 
-	if token := config.GetToken(); token != "" {
+	if key := config.GetAccessKey(); key != "" {
+		// set access key
+		req.Header.Add("x-access-key", key)
+	} else if token := config.GetToken(); token != "" {
 		// set auth token
 		req.Header.Add("Authorization", "Bearer "+token)
+
+		urlPath := fmt.Sprintf("api/v1/account/%s/token", config.GetAccountId())
+		if requestUrl != fmt.Sprintf("%s/%s", apiBase, urlPath) {
+			var request payloads.GenerateAccessTokenRequest
+			request.Name = "CLI access token"
+
+			body, err := json.Marshal(request)
+			if err != nil {
+				logrus.Debug("failed to marshall generate access token request", logrus.Fields{
+					"url_path": urlPath,
+					"account_id": config.GetAccountId(),
+				})
+			} else {
+				reader := Request(
+					"POST",
+					urlPath,
+					body,
+				)
+
+				var tokenResp payloads.TokenResponse
+				err := json.NewDecoder(reader).Decode(&tokenResp)
+
+				if err != nil || tokenResp.Error != nil {
+					logrus.Debug("failed creating token")
+					return nil
+				}
+
+				config.SetGlobalConfig(config.AccessKey, tokenResp.Token)
+				config.SetGlobalConfig(config.AccessKeyId, tokenResp.ID)
+
+				req.Header.Add("x-access-key", tokenResp.Token)
+				req.Header.Del("Authorization")
+			}
+		}
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -65,7 +104,7 @@ func Request(method, path string, body []byte) io.Reader {
 		os.Exit(1)
 	}
 
-	logrus.WithField("response_body", string(data)).Debug("Got response with body")
+	logrus.WithField("response_body", data).Debug("Got response with body")
 
 	return bytes.NewReader(data)
 }
