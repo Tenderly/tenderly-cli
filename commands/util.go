@@ -22,6 +22,7 @@ func newRest() *rest.Rest {
 		call.NewProjectCalls(),
 		call.NewContractCalls(),
 		call.NewExportCalls(),
+		call.NewNetworkCalls(),
 	)
 }
 
@@ -182,20 +183,10 @@ func promptRpcAddress() string {
 	return result
 }
 
-func promptForkedNetwork() string {
-	forkedNetworks := []string{
-		"None",
-		"Mainnet",
-		"Goerli",
-		"Kovan",
-		"Ropsten",
-		"Rinkeby",
-		"xDai",
-	}
-
+func promptForkedNetwork(forkedNetworkNames []string) string {
 	promptNetworks := promptui.Select{
 		Label: "If you are forking a public network, please define which one",
-		Items: forkedNetworks,
+		Items: forkedNetworkNames,
 	}
 
 	index, _, err := promptNetworks.Run()
@@ -209,7 +200,7 @@ func promptForkedNetwork() string {
 		return ""
 	}
 
-	return forkedNetworks[index]
+	return forkedNetworkNames[index]
 }
 
 func promptProviderSelect() providers.DeploymentProviderName {
