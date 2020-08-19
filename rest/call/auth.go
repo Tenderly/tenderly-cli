@@ -39,17 +39,17 @@ func (rest *AuthCalls) Login(request payloads.LoginRequest) (*payloads.TokenResp
 	return extractToken(
 		client.Request(
 			"POST",
-			"/api/v1/user/token/generate",
+			"login/token",
 			data,
 		),
 	)
 }
 
-func (rest *AuthCalls) Logout(tokenId string) error {
+func (rest *AuthCalls) Logout(accountId string, tokenId string) error {
 	return extractLogutResp(
 		client.Request(
 			"DELETE",
-			fmt.Sprintf("%s/%s", "/api/v1/user/token", tokenId),
+			fmt.Sprintf("api/v1/account/%s/token/%s", accountId, tokenId),
 			nil,
 		),
 	)

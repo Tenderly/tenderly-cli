@@ -197,6 +197,7 @@ func emailLogin(rest *rest.Rest) (string, string) {
 
 		token = tokenResponse.Token
 		tokenId = tokenResponse.ID
+
 		break
 	}
 

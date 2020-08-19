@@ -44,7 +44,7 @@ func Request(method, path string, body []byte) io.Reader {
 		// set auth token
 		req.Header.Add("Authorization", "Bearer "+token)
 
-		urlPath := "/api/v1/user/token"
+		urlPath := fmt.Sprintf("api/v1/account/%s/token", config.GetAccountId())
 		if requestUrl != fmt.Sprintf("%s/%s", apiBase, urlPath) {
 			var request payloads.GenerateAccessTokenRequest
 			request.Name = "CLI access token"
@@ -53,11 +53,25 @@ func Request(method, path string, body []byte) io.Reader {
 			if err != nil {
 				logrus.Debug("failed to marshall req")
 			} else {
-				Request(
+				reader := Request(
 					"POST",
 					urlPath,
 					body,
 				)
+
+				var tokenResp payloads.TokenResponse
+				err := json.NewDecoder(reader).Decode(&tokenResp)
+
+				if err != nil || tokenResp.Error != nil {
+					logrus.Debug("failed creating token")
+					return nil
+				}
+
+				config.SetGlobalConfig(config.AccessKey, tokenResp.Token)
+				config.SetGlobalConfig(config.AccessKeyId, tokenResp.ID)
+
+				req.Header.Add("x-access-key", tokenResp.Token)
+				req.Header.Del("Authorization")
 			}
 		}
 	}

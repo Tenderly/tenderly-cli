@@ -8,7 +8,7 @@ import (
 type AuthRoutes interface {
 	Register(request payloads.RegisterRequest) (*payloads.TokenResponse, error)
 	Login(request payloads.LoginRequest) (*payloads.TokenResponse, error)
-	Logout(accessTokenId string) error
+	Logout(accountId string, tokenId string) error
 }
 
 type UserRoutes interface {

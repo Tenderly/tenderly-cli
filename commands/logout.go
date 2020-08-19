@@ -15,6 +15,12 @@ var logoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Use this command to logout of the currently logged in Tenderly account",
 	Run: func(cmd *cobra.Command, args []string) {
+		if !config.IsLoggedIn() {
+			logrus.Info(colorizer.Sprintf("It seems that you are not logged in, in order to logout you need to " +
+				"be loged in first."))
+			return
+		}
+
 		rest := newRest()
 		emailLogout(rest)
 
@@ -31,7 +37,7 @@ var logoutCmd = &cobra.Command{
 }
 
 func emailLogout(rest *rest.Rest) {
-	err := rest.Auth.Logout(config.GetAccessKeyId())
+	err := rest.Auth.Logout(config.GetAccountId(), config.GetAccessKeyId())
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,

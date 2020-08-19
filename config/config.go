@@ -264,8 +264,12 @@ func GetAccessKeyId() string {
 	return getString(AccessKeyId)
 }
 
+func GetAccountId() string {
+	return getString(AccountID)
+}
+
 func IsLoggedIn() bool {
-	return getString(Token) != ""
+	return getString(Token) != "" || getString(AccessKey) != ""
 }
 
 func IsProjectInit() bool {
