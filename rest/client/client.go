@@ -51,7 +51,10 @@ func Request(method, path string, body []byte) io.Reader {
 
 			body, err := json.Marshal(request)
 			if err != nil {
-				logrus.Debug("failed to marshall req")
+				logrus.Debug("failed to marshall generate access token request", logrus.Fields{
+					"url_path": urlPath,
+					"account_id": config.GetAccountId(),
+				})
 			} else {
 				reader := Request(
 					"POST",
