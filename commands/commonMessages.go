@@ -20,8 +20,8 @@ func CheckLogin() {
 
 func CheckProvider(deploymentProvider providers.DeploymentProvider) {
 	if deploymentProvider == nil {
-		logrus.Error("\nOpenzeppelin or Truffle configuration was not detected.\n\n",
-			"Please run the instruction in a folder with the configuration files")
+		logrus.Error("OpenZeppelin or Truffle configuration was not detected.\n\n",
+			"Please re-run this command in a folder where at least one of the frameworks is configured.")
 		os.Exit(1)
 	}
 }

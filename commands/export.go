@@ -128,7 +128,7 @@ var exportInitCmd = &cobra.Command{
 		}
 
 		if forkedNetwork == "" {
-			var networkNames []string
+			networkNames := []string{"None"}
 			for _, network := range *networks {
 				networkNames = append(networkNames, network.Name)
 			}
