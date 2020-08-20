@@ -32,6 +32,8 @@ var verifyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
 
+		initProvider()
+		CheckProvider(deploymentProvider)
 		CheckLogin()
 
 		if !deploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !forceInit {
@@ -57,9 +59,6 @@ var verifyCmd = &cobra.Command{
 }
 
 func verifyContracts(rest *rest.Rest) error {
-	initProvider()
-	CheckProvider(deploymentProvider)
-
 	logrus.Info("Analyzing provider configuration...")
 
 	providerConfig, err := deploymentProvider.MustGetConfig()
