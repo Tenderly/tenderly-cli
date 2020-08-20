@@ -126,8 +126,12 @@ func verifyContracts(rest *rest.Rest) error {
 	var configPayload *payloads.Config
 	if providerConfig.ConfigType == truffle.NewTruffleConfigFile && providerConfig.Compilers != nil {
 		configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
-	} else if providerConfig.ConfigType == truffle.OldTruffleConfigFile && providerConfig.Solc != nil {
-		configPayload = payloads.ParseOldTruffleConfig(providerConfig.Solc)
+	} else if providerConfig.ConfigType == truffle.OldTruffleConfigFile {
+		if providerConfig.Solc != nil {
+			configPayload = payloads.ParseOldTruffleConfig(providerConfig.Solc)
+		} else if providerConfig.Compilers != nil {
+			configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
+		}
 	} else if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Solc != nil {
 		configPayload = payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
 	}
