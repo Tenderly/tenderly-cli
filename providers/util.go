@@ -76,7 +76,7 @@ func getGlobalPathForModule(localPath string) string {
 		}
 
 		globalYarnModule := strings.TrimSuffix(out.String(), "\n")
-		absPath = path.Join(globalYarnModule, localPath)
+		absPath = path.Join(globalYarnModule, "node_modules", localPath)
 	}
 
 	return absPath
