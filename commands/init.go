@@ -32,9 +32,12 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
 
+		deploymentProviderName := ""
+
 		if !forceInit {
 			initProvider()
 			CheckProvider(deploymentProvider)
+			deploymentProviderName = deploymentProvider.GetProviderName().String()
 		}
 
 		CheckLogin()
@@ -55,7 +58,7 @@ var initCmd = &cobra.Command{
 		if config.IsProjectInit() && reInit {
 			config.SetProjectConfig(config.ProjectSlug, "")
 			config.SetProjectConfig(config.AccountID, "")
-			config.SetProjectConfig(config.Provider, "")
+			config.SetProjectConfig(config.Provider, deploymentProviderName)
 		}
 
 		accountID := config.GetString(config.AccountID)

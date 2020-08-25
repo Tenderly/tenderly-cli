@@ -249,7 +249,7 @@ func initProvider() {
 	WriteProjectConfig()
 
 	logrus.Debugf("Trying OpenZeppelin config path: %s", openZeppelinPath)
-	if provider == providers.OpenZeppelinDeploymentProvider {
+	if provider == providers.OpenZeppelinDeploymentProvider || provider == "" {
 
 		_, err := os.Stat(openZeppelinPath)
 

@@ -15,6 +15,10 @@ import (
 
 type DeploymentProviderName string
 
+func (d DeploymentProviderName) String() string {
+	return string(d)
+}
+
 const (
 	TruffleDeploymentProvider      DeploymentProviderName = "Truffle"
 	OpenZeppelinDeploymentProvider DeploymentProviderName = "OpenZeppelin"
