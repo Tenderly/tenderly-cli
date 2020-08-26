@@ -68,7 +68,7 @@ func verifyContracts(rest *rest.Rest) error {
 
 	networkIDs := extractNetworkIDs(verifyNetworks)
 
-	contracts, numberOfContractsWithANetwork, err := providers.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), networkIDs)
+	contracts, numberOfContractsWithANetwork, err := deploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), networkIDs)
 	if err != nil {
 		return userError.NewUserError(
 			errors.Wrap(err, "unable to get provider contracts"),

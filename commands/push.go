@@ -85,11 +85,11 @@ func uploadContracts(rest *rest.Rest) error {
 		))
 
 		providedNetworksIDs := append(networkIDs, projectConfiguration.Networks...)
-		contracts, numberOfContractsWithANetwork, err := providers.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
+		contracts, numberOfContractsWithANetwork, err := deploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
 		if err != nil {
 			return userError.NewUserError(
-				errors.Wrap(err, "unable to get truffle contracts"),
-				fmt.Sprintf("Couldn't read Truffle build files at: %s", providerConfig.AbsoluteBuildDirectoryPath()),
+				errors.Wrap(err, "unable to get provider contracts"),
+				fmt.Sprintf("Couldn't read %s build files at: %s", deploymentProvider.GetProviderName(), providerConfig.AbsoluteBuildDirectoryPath()),
 			)
 		}
 

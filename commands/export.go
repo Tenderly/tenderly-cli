@@ -384,7 +384,7 @@ func contractsWithConfig(
 		return nil, nil, err
 	}
 
-	contracts, _, err := providers.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
+	contracts, _, err := deploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
 
 	var configPayload *payloads.Config
 	if providerConfig.ConfigType == truffle.NewTruffleConfigFile && providerConfig.Compilers != nil {

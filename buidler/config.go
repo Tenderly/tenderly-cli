@@ -18,6 +18,14 @@ const (
 	BuidlerConfigFile = "buidler.config.js"
 )
 
+type BuidlerConfig struct {
+	ProjectDirectory string                             `json:"project_directory"`
+	BuildDirectory   string                             `json:"contracts_build_directory"`
+	Networks         map[string]providers.NetworkConfig `json:"networks"`
+	Solc             providers.Compiler                 `json:"solc"`
+	ConfigType       string                             `json:"-"`
+}
+
 func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
 	buidlerPath := filepath.Join(projectDir, configName)
 	divider := getDivider()
@@ -68,7 +76,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 
-	var buidlerConfig providers.Config
+	var buidlerConfig BuidlerConfig
 	err = json.Unmarshal([]byte(configString), &buidlerConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read %s", configName)
@@ -77,7 +85,28 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	buidlerConfig.ProjectDirectory = projectDir
 	buidlerConfig.ConfigType = configName
 
-	return &buidlerConfig, nil
+	networks := make(map[string]providers.NetworkConfig)
+
+	for key, network := range buidlerConfig.Networks {
+		networkId := network.NetworkID
+		if val, ok := providers.NetworkIdMap[key]; ok {
+			networkId = val
+		}
+		networks[key] = providers.NetworkConfig{
+			NetworkID: networkId,
+			Url:       network.Url,
+		}
+	}
+
+	return &providers.Config{
+		ProjectDirectory: buidlerConfig.ProjectDirectory,
+		BuildDirectory:   buidlerConfig.BuildDirectory,
+		Networks:         networks,
+		Compilers: map[string]providers.Compiler{
+			"solc": buidlerConfig.Solc,
+		},
+		ConfigType: buidlerConfig.ConfigType,
+	}, nil
 }
 
 func getDivider() string {

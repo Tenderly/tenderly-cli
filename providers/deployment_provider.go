@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/stacktrace"
 	"path/filepath"
 	"time"
@@ -15,6 +16,7 @@ type DeploymentProvider interface {
 	CheckIfProviderStructure(directory string) bool
 	NewContractSource(path string, networkId string, client ethereum.Client) (stacktrace.ContractSource, error)
 	GetProviderName() DeploymentProviderName
+	GetContracts(buildDir string, networkIDs []string, objects ...*model.StateObject) ([]Contract, int, error)
 }
 
 type Config struct {
@@ -31,6 +33,10 @@ func (c *Config) AbsoluteBuildDirectoryPath() string {
 		c.BuildDirectory = filepath.Join(".", "build", "contracts")
 	}
 
+	if c.ConfigType == "buidler.config.js" {
+		c.BuildDirectory = filepath.Join(".", "deployments", "kovan")
+	}
+
 	switch c.BuildDirectory[0] {
 	case '.':
 		return filepath.Join(c.ProjectDirectory, c.BuildDirectory)
@@ -43,6 +49,7 @@ type NetworkConfig struct {
 	Host      string      `json:"host"`
 	Port      int         `json:"port"`
 	NetworkID interface{} `json:"network_id"`
+	Url       string      `json:"url"`
 }
 
 type Compiler struct {
