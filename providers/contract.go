@@ -7,7 +7,7 @@ import (
 	"github.com/tenderly/tenderly-cli/model"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -44,7 +44,7 @@ func GetContracts(
 			continue
 		}
 
-		filePath := path.Join(buildDir, file.Name())
+		filePath := filepath.Join(buildDir, file.Name())
 		data, err := ioutil.ReadFile(filePath)
 
 		if err != nil {
@@ -61,7 +61,14 @@ func GetContracts(
 			contract.Networks = make(map[string]ContractNetwork)
 		}
 
-		sources[contract.SourcePath] = true
+		sourcePath := contract.SourcePath
+		if runtime.GOOS == "windows" && strings.HasPrefix(sourcePath, "/") {
+			sourcePath = strings.ReplaceAll(sourcePath, "/", "\\")
+			sourcePath = strings.TrimPrefix(sourcePath, "\\")
+			sourcePath = strings.Replace(sourcePath, "\\", ":\\", 1)
+		}
+		sources[sourcePath] = true
+
 		for _, node := range contract.Ast.Nodes {
 			if node.NodeType != "ImportDirective" {
 				continue
@@ -110,7 +117,7 @@ func GetContracts(
 					return nil, 0, errors.Wrap(err, "failed getting working dir")
 				}
 
-				localPath = path.Join(localPath, "node_modules", currentLocalPath)
+				localPath = filepath.Join(localPath, "node_modules", currentLocalPath)
 				doesNotExist := checkIfFileDoesNotExist(localPath)
 				if doesNotExist {
 					localPath = getGlobalPathForModule(currentLocalPath)

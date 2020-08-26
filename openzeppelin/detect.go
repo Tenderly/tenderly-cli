@@ -2,7 +2,7 @@ package openzeppelin
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 )
 
 var openZeppelinFolders = []string{
@@ -16,7 +16,7 @@ func FindDirectories() []string {
 
 func (dp *DeploymentProvider) CheckIfProviderStructure(directory string) bool {
 	for _, openZeppelinFolder := range openZeppelinFolders {
-		folderPath := path.Join(directory, openZeppelinFolder)
+		folderPath := filepath.Join(directory, openZeppelinFolder)
 		if _, err := os.Stat(folderPath); err != nil {
 			return false
 		}
