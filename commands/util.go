@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/buidler"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/openzeppelin"
 	"github.com/tenderly/tenderly-cli/providers"
@@ -229,6 +230,7 @@ func initProvider() {
 	trufflePath := filepath.Join(config.ProjectDirectory, truffle.NewTruffleConfigFile)
 	openZeppelinPath := filepath.Join(config.ProjectDirectory, openzeppelin.OpenzeppelinConfigFile)
 	oldTrufflePath := filepath.Join(config.ProjectDirectory, truffle.OldTruffleConfigFile)
+	buidlerPath := filepath.Join(config.ProjectDirectory, buidler.BuidlerConfigFile)
 
 	var provider providers.DeploymentProviderName
 
@@ -263,6 +265,21 @@ func initProvider() {
 				" Couldn't read OpenZeppelin config file"),
 		)
 	}
+
+	if provider == providers.BuidlerDeploymentProvider || provider == "" {
+		_, err := os.Stat(buidlerPath)
+
+		if err == nil {
+			deploymentProvider = buidler.NewDeploymentProvider()
+			return
+		}
+
+		logrus.Debugf(
+			fmt.Sprintf("unable to fetch config\n%s",
+				" Couldn't read Buidler config file"),
+		)
+	}
+
 	logrus.Debugf("couldn't read new OpenZeppelin config file")
 
 	logrus.Debugf("Trying truffle config path: %s", trufflePath)
