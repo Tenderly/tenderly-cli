@@ -262,7 +262,6 @@ func initProvider() {
 			fmt.Sprintf("unable to fetch config\n%s",
 				" Couldn't read OpenZeppelin config file"),
 		)
-		os.Exit(1)
 	}
 	logrus.Debugf("couldn't read new OpenZeppelin config file")
 

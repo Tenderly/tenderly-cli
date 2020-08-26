@@ -117,6 +117,11 @@ func GetContracts(
 					return nil, 0, errors.Wrap(err, "failed getting working dir")
 				}
 
+				if runtime.GOOS == "windows" {
+					currentLocalPath = strings.ReplaceAll(currentLocalPath, "/", "\\")
+					currentLocalPath = strings.TrimPrefix(currentLocalPath, "\\")
+				}
+
 				localPath = filepath.Join(localPath, "node_modules", currentLocalPath)
 				doesNotExist := checkIfFileDoesNotExist(localPath)
 				if doesNotExist {
