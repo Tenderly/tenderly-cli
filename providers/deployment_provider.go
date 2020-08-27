@@ -34,7 +34,7 @@ func (c *Config) AbsoluteBuildDirectoryPath() string {
 	}
 
 	if c.ConfigType == "buidler.config.js" {
-		c.BuildDirectory = filepath.Join(".", "deployments", "kovan")
+		c.BuildDirectory = filepath.Join(".", "deployments")
 	}
 
 	switch c.BuildDirectory[0] {
@@ -89,6 +89,10 @@ type Contract struct {
 type ContractCompiler struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
+}
+
+type ContractSources struct {
+	Content string `json:"content"`
 }
 
 type ContractNetwork struct {

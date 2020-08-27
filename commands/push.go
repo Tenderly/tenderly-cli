@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/buidler"
 	"github.com/tenderly/tenderly-cli/openzeppelin"
 	"github.com/tenderly/tenderly-cli/providers"
 	"os"
@@ -149,6 +150,8 @@ func uploadContracts(rest *rest.Rest) error {
 				configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
 			}
 		} else if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Solc != nil {
+			configPayload = payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
+		} else if providerConfig.ConfigType == buidler.BuidlerConfigFile {
 			configPayload = payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
 		}
 
