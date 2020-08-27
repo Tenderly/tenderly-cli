@@ -45,7 +45,19 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	}
 
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
-		var config = require("%s");
+		let { BuidlerContext } = require("@nomiclabs/buidler/internal/context");
+		let { loadConfigAndTasks } = require("@nomiclabs/buidler/internal/core/config/config-loading");
+		let { loadTsNodeIfPresent } = require("@nomiclabs/buidler/internal/core/typescript-support");
+		
+		
+		loadTsNodeIfPresent();
+		BuidlerContext.createBuidlerContext();
+		const config = loadConfigAndTasks({
+			config: "%s"
+		})
+
+		
+		console.log(config);
 
 		var cache = [];
 
