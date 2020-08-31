@@ -95,7 +95,7 @@ var initCmd = &cobra.Command{
 
 		config.SetProjectConfig(config.ProjectSlug, projectSlug)
 		config.SetProjectConfig(config.AccountID, accountID)
-		config.SetProjectConfig(config.Provider, "")
+		config.SetProjectConfig(config.Provider, deploymentProviderName)
 		WriteProjectConfig()
 
 		logrus.Info(colorizer.Sprintf("Project successfully initialized. "+
