@@ -2,6 +2,7 @@ package commands
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/manifoldco/promptui"
@@ -61,7 +62,7 @@ var initCmd = &cobra.Command{
 			config.SetProjectConfig(config.Provider, deploymentProviderName)
 		}
 
-		accountID := config.GetString(config.AccountID)
+		accountID := config.GetAccountId()
 
 		projectsResponse, err := rest.Project.GetProjects(accountID)
 		if err != nil {
@@ -87,8 +88,13 @@ var initCmd = &cobra.Command{
 			project = promptProjectSelect(projectsResponse.Projects, rest)
 		}
 
-		config.SetProjectConfig(config.ProjectSlug, project.Slug)
-		config.SetProjectConfig(config.AccountID, project.Owner)
+		projectSlug := project.Slug
+		if project.Owner.String() != accountID {
+			projectSlug = fmt.Sprintf("%s/%s", project.OwnerInfo.Username, project.Slug)
+		}
+
+		config.SetProjectConfig(config.ProjectSlug, projectSlug)
+		config.SetProjectConfig(config.AccountID, accountID)
 		config.SetProjectConfig(config.Provider, "")
 		WriteProjectConfig()
 
