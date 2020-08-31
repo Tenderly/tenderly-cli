@@ -27,8 +27,8 @@ func init() {
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initialize Tenderly CLI.",
-	Long:  "User authentication, project creation, contract uploading.",
+	Short: "Initialize Tenderly CLI",
+	Long:  "User authentication, project creation, contract uploading",
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := newRest()
 

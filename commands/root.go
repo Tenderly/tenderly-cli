@@ -29,8 +29,8 @@ func init() {
 	initLog()
 
 	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Turn on debug level logging.")
-	rootCmd.PersistentFlags().BoolVar(&resetProvider, "reset-provider", false, "Clear set deployment provider. If not provided will use provider from tenderly.yaml")
-	rootCmd.PersistentFlags().StringVar(&outputMode, "output", "text", "Which output mode to use: text or json. If not provided. text output will be used.")
+	rootCmd.PersistentFlags().BoolVar(&resetProvider, "reset-provider", false, "Clear set deployment provider. If not provided, will use provider from tenderly.yaml")
+	rootCmd.PersistentFlags().StringVar(&outputMode, "output", "text", "Which output mode to use: text or json. If not provided, text output will be used.")
 	rootCmd.PersistentFlags().StringVar(&config.GlobalConfigName, "global-config", "config", "Global configuration file name (without the extension)")
 	rootCmd.PersistentFlags().StringVar(&config.ProjectConfigName, "project-config", "tenderly", "Project configuration file name (without the extension)")
 	rootCmd.PersistentFlags().StringVar(&config.ProjectDirectory,
