@@ -211,10 +211,10 @@ func promptForkedNetwork(forkedNetworkNames []string) string {
 	return forkedNetworkNames[index]
 }
 
-func promptProviderSelect() providers.DeploymentProviderName {
+func promptProviderSelect(deploymentProviders []providers.DeploymentProviderName) providers.DeploymentProviderName {
 	promptProviders := promptui.Select{
 		Label: "Select Provider",
-		Items: providers.AllProviders,
+		Items: deploymentProviders,
 	}
 
 	index, _, err := promptProviders.Run()
@@ -223,7 +223,7 @@ func promptProviderSelect() providers.DeploymentProviderName {
 		os.Exit(1)
 	}
 
-	return providers.AllProviders[index]
+	return deploymentProviders[index]
 }
 
 func initProvider() {
@@ -236,15 +236,25 @@ func initProvider() {
 
 	provider = providers.DeploymentProviderName(config.MaybeGetString(config.Provider))
 
+	var promptProviders []providers.DeploymentProviderName
+
 	//If both config files exist, prompt user to choose
 	if provider == "" || resetProvider {
 		if _, err := os.Stat(openZeppelinPath); err == nil {
-			if _, err := os.Stat(trufflePath); err == nil {
-				provider = promptProviderSelect()
-			} else if _, err := os.Stat(oldTrufflePath); err == nil {
-				provider = promptProviderSelect()
-			}
+			promptProviders = append(promptProviders, providers.OpenZeppelinDeploymentProvider)
 		}
+		if _, err := os.Stat(trufflePath); err == nil {
+			promptProviders = append(promptProviders, providers.TruffleDeploymentProvider)
+		} else if _, err := os.Stat(oldTrufflePath); err == nil {
+			promptProviders = append(promptProviders, providers.TruffleDeploymentProvider)
+		}
+		if _, err := os.Stat(buidlerPath); err == nil {
+			promptProviders = append(promptProviders, providers.BuidlerDeploymentProvider)
+		}
+	}
+
+	if len(promptProviders) > 1 {
+		provider = promptProviderSelect(promptProviders)
 	}
 
 	config.SetProjectConfig(config.Provider, provider)
