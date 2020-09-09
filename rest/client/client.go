@@ -15,6 +15,8 @@ import (
 	"os"
 )
 
+const sessionLimitErrorSlug = "session_limit_exceeded"
+
 func Request(method, path string, body []byte) io.Reader {
 	apiBase := "https://api.tenderly.co"
 	if alternativeApiBase := config.MaybeGetString("api_base"); len(alternativeApiBase) != 0 {
@@ -66,8 +68,25 @@ func Request(method, path string, body []byte) io.Reader {
 				err := json.NewDecoder(reader).Decode(&tokenResp)
 
 				if err != nil || tokenResp.Error != nil {
-					logrus.Debug("failed creating token")
-					return nil
+					if tokenResp.Error.Slug == sessionLimitErrorSlug {
+						config.SetGlobalConfig(config.Token, "")
+						err = config.WriteGlobalConfig()
+						if err != nil {
+							userError.LogErrorf(
+								"write global config: %s",
+								userError.NewUserError(err, "Couldn't write global config file"),
+							)
+
+							return nil
+						}
+						logrus.Info("Maximum number of active sessions exceeded. " +
+							"You are allowed to have no more than 3 simultaneously active sessions. \n" +
+							"Please use login again with tenderly login command in order to generate new session.")
+
+						os.Exit(1)
+					}
+
+					logrus.Debug("failed creating token, user has been logged out")
 				}
 
 				config.SetGlobalConfig(config.AccessKey, tokenResp.Token)

@@ -63,7 +63,11 @@ func extractToken(reader io.Reader) (*payloads.TokenResponse, error) {
 }
 
 func extractLogutResp(reader io.Reader) error {
-	var logut payloads.LoginRequest
+	if reader == nil {
+		return nil
+	}
+
+	var logut payloads.LogoutResponse
 	err := json.NewDecoder(reader).Decode(&logut)
 	return err
 }
