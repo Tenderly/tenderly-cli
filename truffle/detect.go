@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"os/user"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -72,7 +73,7 @@ func FindDirectories() []string {
 
 func (dp *DeploymentProvider) CheckIfProviderStructure(directory string) bool {
 	for _, truffleFolder := range truffleFolders {
-		folderPath := path.Join(directory, truffleFolder)
+		folderPath := filepath.Join(directory, truffleFolder)
 		if _, err := os.Stat(folderPath); err != nil {
 			return false
 		}
@@ -83,7 +84,7 @@ func (dp *DeploymentProvider) CheckIfProviderStructure(directory string) bool {
 
 func CheckIfProviderStructure(directory string) bool {
 	for _, truffleFolder := range truffleFolders {
-		folderPath := path.Join(directory, truffleFolder)
+		folderPath := filepath.Join(directory, truffleFolder)
 		if _, err := os.Stat(folderPath); err != nil {
 			return false
 		}

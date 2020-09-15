@@ -49,7 +49,7 @@ func init() {
 
 var exportInitCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Export init is a helper subcommand for creating export network.",
+	Short: "Export init is a helper subcommand for creating exported network configuration",
 	Run: func(cmd *cobra.Command, args []string) {
 		CheckLogin()
 
@@ -452,7 +452,7 @@ func GetNetwork(networkId string) *config.ExportNetwork {
 	}
 
 	if network == nil {
-		logrus.Error(colorizer.Sprintf("Couldn't find network %s in the configuration file. Please use the % command to set up a new network.",
+		logrus.Error(colorizer.Sprintf("Couldn't find network %s in the configuration file. Please use the %s command to set up a new network.",
 			colorizer.Bold(colorizer.Red(networkId)),
 			colorizer.Bold(colorizer.Green("tenderly export init")),
 		))

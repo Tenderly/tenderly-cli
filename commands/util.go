@@ -245,11 +245,13 @@ func initProvider() {
 		}
 	}
 
-	config.SetProjectConfig(config.Provider, provider)
-	WriteProjectConfig()
+	if provider != "" {
+		config.SetProjectConfig(config.Provider, provider)
+		WriteProjectConfig()
+	}
 
 	logrus.Debugf("Trying OpenZeppelin config path: %s", openZeppelinPath)
-	if provider == providers.OpenZeppelinDeploymentProvider {
+	if provider == providers.OpenZeppelinDeploymentProvider || provider == "" {
 
 		_, err := os.Stat(openZeppelinPath)
 
@@ -262,7 +264,6 @@ func initProvider() {
 			fmt.Sprintf("unable to fetch config\n%s",
 				" Couldn't read OpenZeppelin config file"),
 		)
-		os.Exit(1)
 	}
 	logrus.Debugf("couldn't read new OpenZeppelin config file")
 
