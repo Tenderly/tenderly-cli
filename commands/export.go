@@ -395,7 +395,7 @@ func contractsWithConfig(
 		} else if providerConfig.Compilers != nil {
 			configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
 		}
-	} else if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Solc != nil {
+	} else if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Compilers != nil {
 		configPayload = payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
 	}
 
