@@ -101,7 +101,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 
 	for key, network := range buidlerConfig.Networks {
 		networkId := network.NetworkID
-		if val, ok := providers.NetworkIdMap[key]; ok {
+		if val, ok := dp.NetworkIdMap[key]; ok {
 			networkId = val
 		}
 		networks[key] = providers.NetworkConfig{

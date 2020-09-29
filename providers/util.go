@@ -29,14 +29,6 @@ var AllProviders = []DeploymentProviderName{TruffleDeploymentProvider, OpenZeppe
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-var NetworkIdMap = map[string]int{
-	"mainnet": 1,
-	"kovan":   42,
-	"rinkeby": 4,
-	"ropsten": 3,
-	"goerli":  5,
-}
-
 func RandSeq(n int) string {
 	b := make([]rune, n)
 	lettersLen := len(letters)

@@ -283,6 +283,11 @@ func initProvider() {
 
 		if err == nil {
 			deploymentProvider = buidler.NewDeploymentProvider()
+
+			if deploymentProvider == nil {
+				logrus.Error("Error initializing buidler")
+			}
+
 			return
 		}
 

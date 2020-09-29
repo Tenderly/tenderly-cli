@@ -108,7 +108,7 @@ func (dp *DeploymentProvider) GetContracts(
 			}
 
 			if len(networkData) == 1 {
-				if val, ok := providers.NetworkIdMap[networkData[0]]; ok {
+				if val, ok := dp.NetworkIdMap[networkData[0]]; ok {
 					contract.Networks[strconv.Itoa(val)] = providers.ContractNetwork{
 						Address:         buidlerContract.Address,
 						TransactionHash: buidlerContract.Receipt.TransactionHash,
