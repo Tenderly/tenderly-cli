@@ -327,3 +327,26 @@ func initProvider() {
 			"Couldn't read old Truffle config file"),
 	)
 }
+
+func GetConfigPayload(providerConfig *providers.Config) *payloads.Config {
+	if providerConfig.ConfigType == truffle.NewTruffleConfigFile && providerConfig.Compilers != nil {
+		return payloads.ParseNewTruffleConfig(providerConfig.Compilers)
+	}
+
+	if providerConfig.ConfigType == truffle.OldTruffleConfigFile {
+		if providerConfig.Solc != nil {
+			return payloads.ParseOldTruffleConfig(providerConfig.Solc)
+		} else if providerConfig.Compilers != nil {
+			return payloads.ParseNewTruffleConfig(providerConfig.Compilers)
+		}
+	}
+	if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Compilers != nil {
+		return payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
+	}
+
+	if providerConfig.ConfigType == buidler.BuidlerConfigFile {
+		return payloads.ParseBuidlerConfig(providerConfig.Solc)
+	}
+
+	return nil
+}

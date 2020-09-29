@@ -150,11 +150,9 @@ func (dp *DeploymentProvider) GetContracts(
 			}
 
 			if object := objectMap[contract.DeployedBytecode]; object != nil && len(networkIDs) == 1 {
-				if _, ok := contract.Networks[networkIDs[0]]; !ok {
-					contract.Networks[networkIDs[0]] = providers.ContractNetwork{
-						Links:   nil, // @TODO: Libraries
-						Address: object.Address,
-					}
+				contract.Networks[networkIDs[0]] = providers.ContractNetwork{
+					Links:   nil, // @TODO: Libraries
+					Address: object.Address,
 				}
 			}
 
