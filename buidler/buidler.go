@@ -5,6 +5,7 @@ import (
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/call"
 	"strconv"
+	"strings"
 )
 
 type DeploymentProvider struct {
@@ -32,9 +33,9 @@ func NewDeploymentProvider() *DeploymentProvider {
 	for _, v := range *networks {
 		val, err := strconv.Atoi(v.ID)
 		if err != nil {
-			return nil
+			continue
 		}
-		idMap[v.Name] = val
+		idMap[strings.ToLower(v.Name)] = val
 	}
 
 	return &DeploymentProvider{

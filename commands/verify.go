@@ -86,7 +86,7 @@ func verifyContracts(rest *rest.Rest) error {
 	if numberOfContractsWithANetwork == 0 {
 		if deploymentProvider.GetProviderName() == providers.OpenZeppelinDeploymentProvider {
 			return userError.NewUserError(
-				fmt.Errorf("no contracts with a netowrk found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
+				fmt.Errorf("no contracts with a netowork found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
 				colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.\n"+
 					"There is currently an issue with exporting networks for regular contracts.\n The OpenZeppelin team has come up with a workaround,"+
 					"so make sure you run %s before running %s\n"+
@@ -99,7 +99,7 @@ func verifyContracts(rest *rest.Rest) error {
 			)
 		}
 		return userError.NewUserError(
-			fmt.Errorf("no contracts with a netowrk found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
+			fmt.Errorf("no contracts with a netowork found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
 			colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
 				colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
 			),

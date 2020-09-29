@@ -349,8 +349,8 @@ func GetConfigPayload(providerConfig *providers.Config) *payloads.Config {
 		return payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
 	}
 
-	if providerConfig.ConfigType == buidler.BuidlerConfigFile {
-		return payloads.ParseBuidlerConfig(providerConfig.Solc)
+	if providerConfig.ConfigType == buidler.BuidlerConfigFile && providerConfig.Compilers != nil {
+		return payloads.ParseBuidlerConfig(providerConfig.Compilers)
 	}
 
 	return nil

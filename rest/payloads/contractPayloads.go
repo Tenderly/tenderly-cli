@@ -78,15 +78,21 @@ func ParseOpenZeppelinConfig(compilers map[string]providers.Compiler) *Config {
 	return &payload
 }
 
-func ParseBuidlerConfig(solc map[string]providers.Optimizer) *Config {
-	if _, exists := solc["optimizer"]; !exists {
+func ParseBuidlerConfig(compilers map[string]providers.Compiler) *Config {
+	if _, exists := compilers["solc"]; !exists {
 		return nil
 	}
 
-	optimizer := solc["optimizer"]
+	compiler := compilers["solc"]
 
-	return &Config{
-		OptimizationsUsed:  optimizer.Enabled,
-		OptimizationsCount: optimizer.Runs,
+	payload := Config{
+		EvmVersion: compiler.EvmVersion,
 	}
+
+	if compiler.Optimizer != nil {
+		payload.OptimizationsUsed = compiler.Optimizer.Enabled
+		payload.OptimizationsCount = compiler.Optimizer.Runs
+	}
+
+	return &payload
 }
