@@ -16,7 +16,7 @@ import (
 )
 
 type BuidlerContract struct {
-	providers.Contract
+	*providers.Contract
 	Address  string         `json:"address"`
 	Receipt  buidlerReceipt `json:"receipt"`
 	Metadata string         `json:"metadata"`
