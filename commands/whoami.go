@@ -14,7 +14,7 @@ func init() {
 
 var whoamiCmd = &cobra.Command{
 	Use:   "whoami",
-	Short: "Who am I.",
+	Short: "Who am I?",
 	Run: func(cmd *cobra.Command, args []string) {
 		CheckLogin()
 		rest := newRest()

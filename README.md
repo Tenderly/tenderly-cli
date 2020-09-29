@@ -13,7 +13,6 @@ Tenderly CLI is a suite of development tools that allows you to debug, monitor a
     * [Push](#push)
     * [Export setup](#export-init)
     * [Export local transactions to Tenderly](#export)
-    * [Local Proxy Debugging](#proxy-debugging)
     * [Check for updates](#check-for-updates)
     * [Version](#version)
     * [Who am I?](#who-am-i)
@@ -179,6 +178,7 @@ tenderly export {{transaction_hash}}
 | --project | / | The project in which the exported transactions will be stored |
 | --rpc | 127.0.0.1:8545 | The address and port of the local rpc node |
 | --forked-network | / | Optional name of the network which you are forking locally. Can be one of Mainnet, Goerli, Kovan, Ropsten, Rinkeby, xDai |
+| --protocol | / | Specify the protocol used for the rpc node. By default `wss`, `https`, `ws`, `http` are tried in that order |
 | --help | / | Help for export command |
 
 #### Advanced usage
@@ -226,71 +226,6 @@ tenderly verify
 | --networks | / | A comma separated list of network ids to verify |
 | --help | / | Help for verify command |
 
-### Proxy Debugging
-
-The proxy server is currently made to work with the [Truffle framework](https://truffleframework.com/) and requires the proxy to be run from the root of your Smart Contract project where the Truffle configuration is located.
-
-```
-// Example using Ganache defaults
-tenderly proxy --target-port 7545
-```
-
-In your Truffle configuration, configure your local network config to point to the running proxy or create a new network for proxy debugging.
-
-```
-module.exports = {
-    networks: {
-        //...
-        proxy: {
-            host: "127.0.0.1",
-            port: 9545,
-            network_id: "*",
-            gasPrice: 0
-        },
-        ganache: {
-            host: "127.0.0.1",
-            port: 7545,
-            network_id: "*",
-            gasPrice: 0
-        },
-        //...
-    }
-};
-```
-
-After setting up the network you can now call your Truffle commands just as before by changing the `--network` to the appropriate one.
-
-```
-$user > truffle exec ./scripts/test-scripts.js --network proxy
-Using network 'proxy'.
-
-
-Error: 0x0 Error: REVERT, execution stopped
-	at require(square == original)
-		in FailContract:5
-
-...
-```
-
-Now when your transactions fail you can see the exact line of code in which the error occurred and the whole stacktrace by using our proxy command.
-
-#### Note
-
-You must run `truffle migrate --network proxy` first, so the contract information (address to source mapping) can be picked up by the `proxy` command from the `build` folder.
-
-#### Command Flags
-
-| Flag | Default | Description |
-| --- | --- | --- |
-| --path | "./" | Path to the project build folder where your Truffle configuration is located |
-| --proxy-host | "127.0.0.1" | Host on which the proxy will be listening |
-| --proxy-port | "9545" | Port on which the proxy will be listening |
-| --target-host | "127.0.0.1" | Target host of your Blockchain RPC |
-| --target-port | "8545" | Target port of your Blockchain RPC |
-| --target-schema | "http" | Blockchain RPC protocol |
-| --write-config | / | Write proxy settings to the project configuration file |
-| --help | / | Help for proxy command |
-
 ### Check for updates
 
 The `update-check` command checks if there is a new version of the Tenderly CLI and gives update instructions and changelog information.
@@ -318,6 +253,10 @@ The `logout` command disconnects your local Tenderly CLI from your [Tenderly Das
 ```
 tenderly logout
 ```
+
+### Proxy Debugging
+
+The proxy command is deprecated in favor of the [export](#export) command.
 
 ### Global Flags
 

@@ -36,7 +36,7 @@ func init() {
 
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "User authentication.",
+	Short: "User authentication",
 	Run: func(cmd *cobra.Command, args []string) {
 		if config.IsLoggedIn() && !forceLogin {
 			alreadyLoggedIn := config.GetString(config.Username)

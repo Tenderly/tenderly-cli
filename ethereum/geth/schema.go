@@ -2,6 +2,7 @@ package geth
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -116,7 +117,10 @@ func (ethSchema) GetStorage(address string, offset common.Hash, block *types.Num
 		param = fmt.Sprintf("0x%x", *block)
 	}
 
-	return jsonrpc2.NewRequest("eth_getStorageAt", address, offset, param), &data
+	re := regexp.MustCompile("^(0x)0*([0-9a-fA-F]+)$")
+	slot := re.ReplaceAllString(offset.String(), "$1$2")
+
+	return jsonrpc2.NewRequest("eth_getStorageAt", address, slot, param), &data
 }
 
 // Net

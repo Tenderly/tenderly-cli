@@ -257,8 +257,10 @@ func initProvider() {
 		provider = promptProviderSelect(promptProviders)
 	}
 
-	config.SetProjectConfig(config.Provider, provider)
-	WriteProjectConfig()
+	if provider != "" {
+		config.SetProjectConfig(config.Provider, provider)
+		WriteProjectConfig()
+	}
 
 	logrus.Debugf("Trying OpenZeppelin config path: %s", openZeppelinPath)
 	if provider == providers.OpenZeppelinDeploymentProvider || provider == "" {
