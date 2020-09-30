@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/buidler"
 	"github.com/tenderly/tenderly-cli/openzeppelin"
 	"github.com/tenderly/tenderly-cli/providers"
 	"os"
@@ -64,7 +65,7 @@ func verifyContracts(rest *rest.Rest) error {
 
 	networkIDs := extractNetworkIDs(verifyNetworks)
 
-	contracts, numberOfContractsWithANetwork, err := providers.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), networkIDs)
+	contracts, numberOfContractsWithANetwork, err := deploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), networkIDs)
 	if err != nil {
 		return userError.NewUserError(
 			errors.Wrap(err, "unable to get provider contracts"),
@@ -85,7 +86,7 @@ func verifyContracts(rest *rest.Rest) error {
 	if numberOfContractsWithANetwork == 0 {
 		if deploymentProvider.GetProviderName() == providers.OpenZeppelinDeploymentProvider {
 			return userError.NewUserError(
-				fmt.Errorf("no contracts with a netowrk found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
+				fmt.Errorf("no contracts with a netowork found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
 				colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.\n"+
 					"There is currently an issue with exporting networks for regular contracts.\n The OpenZeppelin team has come up with a workaround,"+
 					"so make sure you run %s before running %s\n"+
@@ -98,7 +99,7 @@ func verifyContracts(rest *rest.Rest) error {
 			)
 		}
 		return userError.NewUserError(
-			fmt.Errorf("no contracts with a netowrk found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
+			fmt.Errorf("no contracts with a netowork found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
 			colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
 				colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
 			),
@@ -128,6 +129,8 @@ func verifyContracts(rest *rest.Rest) error {
 			configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
 		}
 	} else if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Solc != nil {
+		configPayload = payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
+	} else if providerConfig.ConfigType == buidler.BuidlerConfigFile {
 		configPayload = payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
 	}
 

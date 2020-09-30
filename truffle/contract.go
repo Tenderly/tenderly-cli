@@ -1,10 +1,11 @@
-package providers
+package truffle
 
 import (
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/tenderly/tenderly-cli/model"
+	"github.com/tenderly/tenderly-cli/providers"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -12,11 +13,11 @@ import (
 	"strings"
 )
 
-func GetContracts(
+func (dp *DeploymentProvider) GetContracts(
 	buildDir string,
 	networkIDs []string,
 	objects ...*model.StateObject,
-) ([]Contract, int, error) {
+) ([]providers.Contract, int, error) {
 	files, err := ioutil.ReadDir(buildDir)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "failed listing build files")
@@ -37,7 +38,7 @@ func GetContracts(
 	hasNetworkFilters := len(networkIDFilterMap) > 0
 
 	sources := make(map[string]bool)
-	var contracts []Contract
+	var contracts []providers.Contract
 	var numberOfContractsWithANetwork int
 	for _, file := range files {
 		if file.IsDir() || !strings.HasSuffix(file.Name(), ".json") {
@@ -51,14 +52,14 @@ func GetContracts(
 			return nil, 0, errors.Wrap(err, "failed reading build file")
 		}
 
-		var contract Contract
+		var contract providers.Contract
 		err = json.Unmarshal(data, &contract)
 		if err != nil {
 			return nil, 0, errors.Wrap(err, "failed parsing build file")
 		}
 
 		if contract.Networks == nil {
-			contract.Networks = make(map[string]ContractNetwork)
+			contract.Networks = make(map[string]providers.ContractNetwork)
 		}
 
 		sourcePath := contract.SourcePath
@@ -88,7 +89,7 @@ func GetContracts(
 		}
 
 		if object := objectMap[contract.DeployedBytecode]; object != nil && len(networkIDs) == 1 {
-			contract.Networks[networkIDs[0]] = ContractNetwork{
+			contract.Networks[networkIDs[0]] = providers.ContractNetwork{
 				Links:   nil, // @TODO: Libraries
 				Address: object.Address,
 			}
@@ -121,9 +122,9 @@ func GetContracts(
 				}
 
 				localPath = filepath.Join(localPath, "node_modules", currentLocalPath)
-				doesNotExist := checkIfFileDoesNotExist(localPath)
+				doesNotExist := providers.CheckIfFileDoesNotExist(localPath)
 				if doesNotExist {
-					localPath = getGlobalPathForModule(currentLocalPath)
+					localPath = providers.GetGlobalPathForModule(currentLocalPath)
 				}
 			}
 
@@ -132,7 +133,7 @@ func GetContracts(
 				return nil, 0, errors.Wrap(err, "failed reading contract source file")
 			}
 
-			contracts = append(contracts, Contract{
+			contracts = append(contracts, providers.Contract{
 				Source:     string(source),
 				SourcePath: currentLocalPath,
 			})

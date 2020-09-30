@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/buidler"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/openzeppelin"
 	"github.com/tenderly/tenderly-cli/providers"
@@ -210,10 +211,10 @@ func promptForkedNetwork(forkedNetworkNames []string) string {
 	return forkedNetworkNames[index]
 }
 
-func promptProviderSelect() providers.DeploymentProviderName {
+func promptProviderSelect(deploymentProviders []providers.DeploymentProviderName) providers.DeploymentProviderName {
 	promptProviders := promptui.Select{
 		Label: "Select Provider",
-		Items: providers.AllProviders,
+		Items: deploymentProviders,
 	}
 
 	index, _, err := promptProviders.Run()
@@ -222,27 +223,38 @@ func promptProviderSelect() providers.DeploymentProviderName {
 		os.Exit(1)
 	}
 
-	return providers.AllProviders[index]
+	return deploymentProviders[index]
 }
 
 func initProvider() {
 	trufflePath := filepath.Join(config.ProjectDirectory, truffle.NewTruffleConfigFile)
 	openZeppelinPath := filepath.Join(config.ProjectDirectory, openzeppelin.OpenzeppelinConfigFile)
 	oldTrufflePath := filepath.Join(config.ProjectDirectory, truffle.OldTruffleConfigFile)
+	buidlerPath := filepath.Join(config.ProjectDirectory, buidler.BuidlerConfigFile)
 
 	var provider providers.DeploymentProviderName
 
 	provider = providers.DeploymentProviderName(config.MaybeGetString(config.Provider))
 
+	var promptProviders []providers.DeploymentProviderName
+
 	//If both config files exist, prompt user to choose
 	if provider == "" || resetProvider {
 		if _, err := os.Stat(openZeppelinPath); err == nil {
-			if _, err := os.Stat(trufflePath); err == nil {
-				provider = promptProviderSelect()
-			} else if _, err := os.Stat(oldTrufflePath); err == nil {
-				provider = promptProviderSelect()
-			}
+			promptProviders = append(promptProviders, providers.OpenZeppelinDeploymentProvider)
 		}
+		if _, err := os.Stat(trufflePath); err == nil {
+			promptProviders = append(promptProviders, providers.TruffleDeploymentProvider)
+		} else if _, err := os.Stat(oldTrufflePath); err == nil {
+			promptProviders = append(promptProviders, providers.TruffleDeploymentProvider)
+		}
+		if _, err := os.Stat(buidlerPath); err == nil {
+			promptProviders = append(promptProviders, providers.BuidlerDeploymentProvider)
+		}
+	}
+
+	if len(promptProviders) > 1 {
+		provider = promptProviderSelect(promptProviders)
 	}
 
 	if provider != "" {
@@ -265,6 +277,26 @@ func initProvider() {
 				" Couldn't read OpenZeppelin config file"),
 		)
 	}
+
+	if provider == providers.BuidlerDeploymentProvider || provider == "" {
+		_, err := os.Stat(buidlerPath)
+
+		if err == nil {
+			deploymentProvider = buidler.NewDeploymentProvider()
+
+			if deploymentProvider == nil {
+				logrus.Error("Error initializing buidler")
+			}
+
+			return
+		}
+
+		logrus.Debugf(
+			fmt.Sprintf("unable to fetch config\n%s",
+				" Couldn't read Buidler config file"),
+		)
+	}
+
 	logrus.Debugf("couldn't read new OpenZeppelin config file")
 
 	logrus.Debugf("Trying truffle config path: %s", trufflePath)
@@ -299,4 +331,27 @@ func initProvider() {
 		fmt.Sprintf("unable to fetch config\n%s",
 			"Couldn't read old Truffle config file"),
 	)
+}
+
+func GetConfigPayload(providerConfig *providers.Config) *payloads.Config {
+	if providerConfig.ConfigType == truffle.NewTruffleConfigFile && providerConfig.Compilers != nil {
+		return payloads.ParseNewTruffleConfig(providerConfig.Compilers)
+	}
+
+	if providerConfig.ConfigType == truffle.OldTruffleConfigFile {
+		if providerConfig.Solc != nil {
+			return payloads.ParseOldTruffleConfig(providerConfig.Solc)
+		} else if providerConfig.Compilers != nil {
+			return payloads.ParseNewTruffleConfig(providerConfig.Compilers)
+		}
+	}
+	if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Compilers != nil {
+		return payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
+	}
+
+	if providerConfig.ConfigType == buidler.BuidlerConfigFile && providerConfig.Compilers != nil {
+		return payloads.ParseBuidlerConfig(providerConfig.Compilers)
+	}
+
+	return nil
 }

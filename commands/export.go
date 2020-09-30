@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"github.com/tenderly/tenderly-cli/openzeppelin"
 	"github.com/tenderly/tenderly-cli/providers"
 	"math/big"
 	"os"
@@ -22,7 +21,6 @@ import (
 	"github.com/tenderly/tenderly-cli/ethereum/types"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
-	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
@@ -384,20 +382,9 @@ func contractsWithConfig(
 		return nil, nil, err
 	}
 
-	contracts, _, err := providers.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
+	contracts, _, err := deploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
 
-	var configPayload *payloads.Config
-	if providerConfig.ConfigType == truffle.NewTruffleConfigFile && providerConfig.Compilers != nil {
-		configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
-	} else if providerConfig.ConfigType == truffle.OldTruffleConfigFile {
-		if providerConfig.Solc != nil {
-			configPayload = payloads.ParseOldTruffleConfig(providerConfig.Solc)
-		} else if providerConfig.Compilers != nil {
-			configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
-		}
-	} else if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Compilers != nil {
-		configPayload = payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
-	}
+	configPayload := GetConfigPayload(providerConfig)
 
 	return contracts, configPayload, nil
 }

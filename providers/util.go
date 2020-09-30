@@ -22,9 +22,10 @@ func (d DeploymentProviderName) String() string {
 const (
 	TruffleDeploymentProvider      DeploymentProviderName = "Truffle"
 	OpenZeppelinDeploymentProvider DeploymentProviderName = "OpenZeppelin"
+	BuidlerDeploymentProvider      DeploymentProviderName = "Buidler"
 )
 
-var AllProviders = []DeploymentProviderName{TruffleDeploymentProvider, OpenZeppelinDeploymentProvider}
+var AllProviders = []DeploymentProviderName{TruffleDeploymentProvider, OpenZeppelinDeploymentProvider, BuidlerDeploymentProvider}
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
@@ -48,14 +49,14 @@ func ExtractConfigWithDivider(config, divider string) (string, error) {
 	return matches[1], nil
 }
 
-func checkIfFileDoesNotExist(path string) bool {
+func CheckIfFileDoesNotExist(path string) bool {
 	_, err := os.Stat(path)
 	exist := os.IsNotExist(err)
 
 	return exist
 }
 
-func getGlobalPathForModule(localPath string) string {
+func GetGlobalPathForModule(localPath string) string {
 	//global path - npm
 	cmd := exec.Command("npm", "root", "-g")
 	var out bytes.Buffer
@@ -68,7 +69,7 @@ func getGlobalPathForModule(localPath string) string {
 
 	globalNodeModule := strings.TrimSuffix(out.String(), "\n")
 	absPath := filepath.Join(globalNodeModule, localPath)
-	doesNotExist := checkIfFileDoesNotExist(absPath)
+	doesNotExist := CheckIfFileDoesNotExist(absPath)
 	if doesNotExist {
 		//global path - yarn
 		cmd = exec.Command("yarn", "global", "dir")

@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/tenderly/tenderly-cli/openzeppelin"
 	"github.com/tenderly/tenderly-cli/providers"
 	"os"
 	"strconv"
@@ -16,7 +15,6 @@ import (
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
-	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
@@ -85,11 +83,11 @@ func uploadContracts(rest *rest.Rest) error {
 		))
 
 		providedNetworksIDs := append(networkIDs, projectConfiguration.Networks...)
-		contracts, numberOfContractsWithANetwork, err := providers.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
+		contracts, numberOfContractsWithANetwork, err := deploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
 		if err != nil {
 			return userError.NewUserError(
-				errors.Wrap(err, "unable to get truffle contracts"),
-				fmt.Sprintf("Couldn't read Truffle build files at: %s", providerConfig.AbsoluteBuildDirectoryPath()),
+				errors.Wrap(err, "unable to get provider contracts"),
+				fmt.Sprintf("Couldn't read %s build files at: %s", deploymentProvider.GetProviderName(), providerConfig.AbsoluteBuildDirectoryPath()),
 			)
 		}
 
@@ -139,18 +137,7 @@ func uploadContracts(rest *rest.Rest) error {
 
 		s.Start()
 
-		var configPayload *payloads.Config
-		if providerConfig.ConfigType == truffle.NewTruffleConfigFile && providerConfig.Compilers != nil {
-			configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
-		} else if providerConfig.ConfigType == truffle.OldTruffleConfigFile {
-			if providerConfig.Solc != nil {
-				configPayload = payloads.ParseOldTruffleConfig(providerConfig.Solc)
-			} else if providerConfig.Compilers != nil {
-				configPayload = payloads.ParseNewTruffleConfig(providerConfig.Compilers)
-			}
-		} else if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Solc != nil {
-			configPayload = payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
-		}
+		configPayload := GetConfigPayload(providerConfig)
 
 		response, err := rest.Contract.UploadContracts(payloads.UploadContractsRequest{
 			Contracts: contracts,
