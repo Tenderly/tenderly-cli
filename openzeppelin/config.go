@@ -18,20 +18,15 @@ import (
 
 const (
 	OpenzeppelinConfigFile        = "networks.js"
-	OpenZeppelinProjectConfigFile = ".openzeppelin/project.json"
+	OpenZeppelinProjectConfigFile = "project.json"
 )
 
 func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
 	openzeppelinPath := filepath.Join(projectDir, configName)
-	openzeppelinProjectPath := filepath.Join(projectDir, OpenZeppelinProjectConfigFile)
+	openzeppelinProjectPath := filepath.Join(projectDir, ".openzeppelin", OpenZeppelinProjectConfigFile)
 	divider := getDivider()
 
 	logrus.Debugf("Trying openzeppelin config path: %s", openzeppelinPath)
-
-	if runtime.GOOS == "windows" {
-		openzeppelinPath = strings.ReplaceAll(openzeppelinPath, `\`, `\\`)
-		openzeppelinProjectPath = strings.ReplaceAll(openzeppelinProjectPath, `\`, `\\`)
-	}
 
 	_, err := os.Stat(openzeppelinPath)
 	if os.IsNotExist(err) {
@@ -39,6 +34,11 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	}
 	if err != nil {
 		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, openzeppelinPath, err)
+	}
+
+	if runtime.GOOS == "windows" {
+		openzeppelinPath = strings.ReplaceAll(openzeppelinPath, `\`, `\\`)
+		openzeppelinProjectPath = strings.ReplaceAll(openzeppelinProjectPath, `\`, `\\`)
 	}
 
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
