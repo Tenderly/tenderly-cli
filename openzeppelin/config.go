@@ -7,22 +7,31 @@ import (
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/userError"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
 const (
-	OpenzeppelinConfigFile = "networks.js"
+	OpenzeppelinConfigFile        = "networks.js"
+	OpenZeppelinProjectConfigFile = ".openzeppelin/project.json"
 )
 
 func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
 	openzeppelinPath := filepath.Join(projectDir, configName)
+	openzeppelinProjectPath := filepath.Join(projectDir, OpenZeppelinProjectConfigFile)
 	divider := getDivider()
 
 	logrus.Debugf("Trying openzeppelin config path: %s", openzeppelinPath)
+
+	if runtime.GOOS == "windows" {
+		openzeppelinPath = strings.ReplaceAll(openzeppelinPath, `\`, `\\`)
+		openzeppelinProjectPath = strings.ReplaceAll(openzeppelinProjectPath, `\`, `\\`)
+	}
 
 	_, err := os.Stat(openzeppelinPath)
 	if os.IsNotExist(err) {
@@ -30,10 +39,6 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	}
 	if err != nil {
 		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, openzeppelinPath, err)
-	}
-
-	if runtime.GOOS == "windows" {
-		openzeppelinPath = strings.ReplaceAll(openzeppelinPath, `\`, `\\`)
 	}
 
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
@@ -76,6 +81,47 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 
 	openzeppelinConfig.ProjectDirectory = projectDir
 	openzeppelinConfig.ConfigType = configName
+
+	_, err = os.Stat(openzeppelinProjectPath)
+	if os.IsNotExist(err) {
+		return nil, err
+	}
+	if err != nil {
+		return nil, fmt.Errorf("cannot find project.json, tried path: %s, error: %s", openzeppelinProjectPath, err)
+	}
+
+	data, err = ioutil.ReadFile(openzeppelinProjectPath)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read project.json, tried path: %s, error: %s", openzeppelinProjectPath, err)
+	}
+
+	var openzeppelinCompilerData providers.OZProjectData
+	err = json.Unmarshal(data, &openzeppelinCompilerData)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read %s", OpenZeppelinProjectConfigFile)
+	}
+
+	if openzeppelinCompilerData.Compiler == nil {
+		return &openzeppelinConfig, nil
+	}
+
+	runs, err := strconv.Atoi(openzeppelinCompilerData.Compiler.CompilerSettings.Optimizer.Runs)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse optimization runs")
+	}
+
+	openzeppelinConfig.Compilers = map[string]providers.Compiler{
+		"solc": {
+			Version: openzeppelinCompilerData.Compiler.Version,
+			Settings: &providers.CompilerSettings{
+				Optimizer: &providers.Optimizer{
+					Enabled: &openzeppelinCompilerData.Compiler.CompilerSettings.Optimizer.Enabled,
+					Runs:    &runs,
+				},
+				EvmVersion: nil,
+			},
+		},
+	}
 
 	return &openzeppelinConfig, nil
 }

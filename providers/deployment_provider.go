@@ -28,6 +28,24 @@ type Config struct {
 	ConfigType       string                   `json:"-"`
 }
 
+type OZProjectData struct {
+	Compiler *OzCompilerData `json:"compiler"`
+}
+
+type OzCompilerData struct {
+	CompilerSettings *OZCompilerSettings `json:"compilerSettings"`
+	Version          string              `json:"solcVersion"`
+}
+
+type OZCompilerSettings struct {
+	Optimizer *OZOptimizer `json:"optimizer"`
+}
+
+type OZOptimizer struct {
+	Enabled bool   `json:"enabled"`
+	Runs    string `json:"runs"`
+}
+
 func (c *Config) AbsoluteBuildDirectoryPath() string {
 	if c.BuildDirectory == "" {
 		c.BuildDirectory = filepath.Join(".", "build", "contracts")

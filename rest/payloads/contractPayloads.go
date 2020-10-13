@@ -70,9 +70,9 @@ func ParseOpenZeppelinConfig(compilers map[string]providers.Compiler) *Config {
 		EvmVersion: compiler.EvmVersion,
 	}
 
-	if compiler.Optimizer != nil {
-		payload.OptimizationsUsed = compiler.Optimizer.Enabled
-		payload.OptimizationsCount = compiler.Optimizer.Runs
+	if compiler.Settings != nil && compiler.Settings.Optimizer != nil {
+		payload.OptimizationsUsed = compiler.Settings.Optimizer.Enabled
+		payload.OptimizationsCount = compiler.Settings.Optimizer.Runs
 	}
 
 	return &payload
