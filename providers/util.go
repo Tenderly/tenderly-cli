@@ -23,9 +23,15 @@ const (
 	TruffleDeploymentProvider      DeploymentProviderName = "Truffle"
 	OpenZeppelinDeploymentProvider DeploymentProviderName = "OpenZeppelin"
 	BuidlerDeploymentProvider      DeploymentProviderName = "Buidler"
+	HardhatDeploymentProvider      DeploymentProviderName = "Hardhat"
 )
 
-var AllProviders = []DeploymentProviderName{TruffleDeploymentProvider, OpenZeppelinDeploymentProvider, BuidlerDeploymentProvider}
+var AllProviders = []DeploymentProviderName{
+	TruffleDeploymentProvider,
+	OpenZeppelinDeploymentProvider,
+	BuidlerDeploymentProvider,
+	HardhatDeploymentProvider,
+}
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 

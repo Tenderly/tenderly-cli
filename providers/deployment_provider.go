@@ -51,7 +51,7 @@ func (c *Config) AbsoluteBuildDirectoryPath() string {
 		c.BuildDirectory = filepath.Join(".", "build", "contracts")
 	}
 
-	if c.ConfigType == "buidler.config.js" {
+	if c.ConfigType == "buidler.config.js" || c.ConfigType == "hardhat.config.js" {
 		c.BuildDirectory = filepath.Join(".", "deployments")
 	}
 

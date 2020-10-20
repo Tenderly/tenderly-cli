@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/buidler"
 	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/hardhat"
 	"github.com/tenderly/tenderly-cli/openzeppelin"
 	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/truffle"
@@ -231,6 +232,7 @@ func initProvider() {
 	openZeppelinPath := filepath.Join(config.ProjectDirectory, openzeppelin.OpenzeppelinConfigFile)
 	oldTrufflePath := filepath.Join(config.ProjectDirectory, truffle.OldTruffleConfigFile)
 	buidlerPath := filepath.Join(config.ProjectDirectory, buidler.BuidlerConfigFile)
+	hardhatPath := filepath.Join(config.ProjectDirectory, hardhat.HardhatConfigFile)
 
 	var provider providers.DeploymentProviderName
 
@@ -250,6 +252,9 @@ func initProvider() {
 		}
 		if _, err := os.Stat(buidlerPath); err == nil {
 			promptProviders = append(promptProviders, providers.BuidlerDeploymentProvider)
+		}
+		if _, err := os.Stat(buidlerPath); err == nil {
+			promptProviders = append(promptProviders, providers.HardhatDeploymentProvider)
 		}
 	}
 
@@ -278,6 +283,10 @@ func initProvider() {
 		)
 	}
 
+	logrus.Debugf("couldn't read new OpenzeppelinConfig config file")
+
+	logrus.Debugf("Trying buidler config path: %s", buidlerPath)
+
 	if provider == providers.BuidlerDeploymentProvider || provider == "" {
 		_, err := os.Stat(buidlerPath)
 
@@ -297,7 +306,28 @@ func initProvider() {
 		)
 	}
 
-	logrus.Debugf("couldn't read new OpenZeppelin config file")
+	logrus.Debugf("couldn't read new Buidler config file")
+
+	logrus.Debug("Trying hardhat config path: %s", hardhatPath)
+
+	if provider == providers.HardhatDeploymentProvider || provider == "" {
+		_, err := os.Stat(hardhatPath)
+
+		if err == nil {
+			deploymentProvider = hardhat.NewDeploymentProvider()
+
+			if deploymentProvider == nil {
+				logrus.Error("Error initializing hardhat")
+			}
+
+			return
+		}
+
+		logrus.Debugf(
+			fmt.Sprintf("unable to fetch config\n%s",
+				" Couldn't read Hardhat config file"),
+		)
+	}
 
 	logrus.Debugf("Trying truffle config path: %s", trufflePath)
 
@@ -351,6 +381,10 @@ func GetConfigPayload(providerConfig *providers.Config) *payloads.Config {
 
 	if providerConfig.ConfigType == buidler.BuidlerConfigFile && providerConfig.Compilers != nil {
 		return payloads.ParseBuidlerConfig(providerConfig.Compilers)
+	}
+
+	if providerConfig.ConfigType == hardhat.HardhatConfigFile && providerConfig.Compilers != nil {
+		return payloads.ParseHardhatConfig(providerConfig.Compilers)
 	}
 
 	return nil
