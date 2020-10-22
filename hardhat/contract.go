@@ -134,6 +134,7 @@ func (dp *DeploymentProvider) GetContracts(
 
 			for path, _ := range hardhatMeta.Sources {
 				if !strings.Contains(path, "@") {
+					sources[path] = false
 					continue
 				}
 				absPath := path
@@ -197,7 +198,23 @@ func (dp *DeploymentProvider) GetContracts(
 
 				source, err := ioutil.ReadFile(localPath)
 				if err != nil {
-					return nil, 0, errors.Wrap(err, "failed reading contract source file")
+					localPath = filepath.Join("node_modules", currentLocalPath)
+					doesNotExist := providers.CheckIfFileDoesNotExist(localPath)
+					if doesNotExist {
+						localPath = providers.GetGlobalPathForModule(currentLocalPath)
+					}
+
+					source, err := ioutil.ReadFile(localPath)
+					if err != nil {
+						return nil, 0, errors.Wrap(err, "failed reading contract source file")
+					}
+
+					contracts = append(contracts, providers.Contract{
+						Source:     string(source),
+						SourcePath: currentLocalPath,
+					})
+
+					continue
 				}
 
 				contracts = append(contracts, providers.Contract{
