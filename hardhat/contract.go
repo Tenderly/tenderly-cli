@@ -113,6 +113,24 @@ func (dp *DeploymentProvider) GetContracts(
 						Address:         hardhatContract.Address,
 						TransactionHash: hardhatContract.Receipt.TransactionHash,
 					}
+				} else {
+					chainIdPath := filepath.Join(filePath, ".chainId")
+
+					chainData, err := ioutil.ReadFile(chainIdPath)
+					if err != nil {
+						return nil, 0, errors.Wrap(err, "failed reading chainId file")
+					}
+
+					var chainId int
+					err = json.Unmarshal(chainData, &chainId)
+					if err != nil {
+						return nil, 0, errors.Wrap(err, "failed parsing build file")
+					}
+
+					contract.Networks[strconv.Itoa(chainId)] = providers.ContractNetwork{
+						Address:         hardhatContract.Address,
+						TransactionHash: hardhatContract.Receipt.TransactionHash,
+					}
 				}
 			}
 
