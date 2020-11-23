@@ -29,7 +29,7 @@ func init() {
 	loginCmd.PersistentFlags().StringVar(&providedEmail, "email", "", "The email used for logging in.")
 	loginCmd.PersistentFlags().StringVar(&providedPassword, "password", "", "The password used for logging in.")
 	loginCmd.PersistentFlags().StringVar(&providedAccessKey, "access-key", "", "The access key generated in your Tenderly dashboard.")
-	loginCmd.PersistentFlags().StringVar(&providedAuthenticationMethod, "authentication-method", "", "Pick the authentication method. Possible values are email or token.")
+	loginCmd.PersistentFlags().StringVar(&providedAuthenticationMethod, "authentication-method", "", "Pick the authentication method. Possible values are email or access-key.")
 	loginCmd.PersistentFlags().BoolVar(&forceLogin, "force", false, "Don't check if you are already logged in.")
 	rootCmd.AddCommand(loginCmd)
 }

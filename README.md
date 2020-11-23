@@ -73,7 +73,7 @@ tenderly login
 
 | Flag | Default | Description |
 | --- | --- | --- |
-| --authentication-method | / | Pick the authentication method. Possible values are email or token |
+| --authentication-method | / | Pick the authentication method. Possible values are email or access-key |
 | --email | / | The email used when authentication method is email |
 | --password | / | The password used when authentication method is email |
 | --token | / | The token used when authentication method is token |
