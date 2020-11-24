@@ -217,12 +217,12 @@ func uploadContracts(rest *rest.Rest) error {
 		))
 	}
 
-	for k, v := range pushErrors {
-		userError.LogErrorf(fmt.Sprintf("Push for %s failed with error: ", k)+"%s", v)
+	for projectSlug, pushError := range pushErrors {
+		userError.LogErrorf(fmt.Sprintf("Push for %s failed with error: ", projectSlug)+"%s", pushError)
 	}
 
 	if len(pushErrors) > 0 {
-		return userError.NewUserError(errors.New("some project uploads failed"), "Some of the project pushes were not successful. You can see the list above")
+		return userError.NewUserError(errors.New("some project uploads failed"), "Some of the project pushes were not successful. Please see the list above")
 	}
 
 	return nil
