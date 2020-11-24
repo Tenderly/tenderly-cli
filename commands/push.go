@@ -76,6 +76,8 @@ func uploadContracts(rest *rest.Rest) error {
 		)
 	}
 
+	pushErrors := make(map[string]*userError.UserError)
+
 	for projectSlug, projectConfiguration := range projectConfigurations {
 		logrus.Info(colorizer.Sprintf(
 			"Pushing Smart Contracts for project: %s",
@@ -103,7 +105,7 @@ func uploadContracts(rest *rest.Rest) error {
 		}
 		if numberOfContractsWithANetwork == 0 {
 			if deploymentProvider.GetProviderName() == providers.OpenZeppelinDeploymentProvider {
-				return userError.NewUserError(
+				pushErrors[projectSlug] = userError.NewUserError(
 					fmt.Errorf("no contracts with a netowrk found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
 					colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.\n"+
 						"There is currently an issue with exporting networks for regular contracts.\nThe OpenZeppelin team has come up with a workaround,"+
@@ -115,13 +117,15 @@ func uploadContracts(rest *rest.Rest) error {
 						colorizer.Bold(colorizer.Green("https://github.com/OpenZeppelin/openzeppelin-sdk/issues/1555#issuecomment-644536123")),
 					),
 				)
+				continue
 			}
-			return userError.NewUserError(
+			pushErrors[projectSlug] = userError.NewUserError(
 				fmt.Errorf("no contracts with a netowrk found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
 				colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
 					colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
 				),
 			)
+			continue
 		}
 
 		logrus.Info("We have detected the following Smart Contracts:")
@@ -148,17 +152,19 @@ func uploadContracts(rest *rest.Rest) error {
 		s.Stop()
 
 		if err != nil {
-			return userError.NewUserError(
+			pushErrors[projectSlug] = userError.NewUserError(
 				fmt.Errorf("failed uploading contracts: %s", err),
 				"Couldn't push contracts to the Tenderly servers",
 			)
+			continue
 		}
 
 		if response.Error != nil {
-			return userError.NewUserError(
+			pushErrors[projectSlug] = userError.NewUserError(
 				fmt.Errorf("api error uploading contracts: %s", response.Error.Slug),
 				response.Error.Message,
 			)
+			continue
 		}
 
 		if len(response.Contracts) != numberOfContractsWithANetwork {
@@ -187,13 +193,14 @@ func uploadContracts(rest *rest.Rest) error {
 				}
 			}
 
-			return userError.NewUserError(
+			pushErrors[projectSlug] = userError.NewUserError(
 				fmt.Errorf("unexpected number of pushed contracts. Got: %d expected: %d", len(response.Contracts), len(contracts)),
 				fmt.Sprintf("Some of the contracts haven't been pushed. This can happen when the contract isn't deployed to a supported network or some other error might have occurred. "+
 					"Below is the list with all the contracts that weren't pushed successfully:\n%s",
 					strings.Join(nonPushedContracts, "\n"),
 				),
 			)
+			continue
 		}
 
 		username := config.GetString(config.Username)
@@ -208,6 +215,14 @@ func uploadContracts(rest *rest.Rest) error {
 			colorizer.Bold(colorizer.Green(projectSlug)),
 			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.co/%s/%s/contracts", username, projectSlug))),
 		))
+	}
+
+	for k, v := range pushErrors {
+		userError.LogErrorf(fmt.Sprintf("Push for %s failed with error: ", k)+"%s", v)
+	}
+
+	if len(pushErrors) > 0 {
+		return userError.NewUserError(errors.New("some project uploads failed"), "Some of the project pushes were not successful. You can see the list above")
 	}
 
 	return nil
