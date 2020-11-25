@@ -20,7 +20,7 @@ func CheckLogin() {
 
 func CheckProvider(deploymentProvider providers.DeploymentProvider) {
 	if deploymentProvider == nil {
-		logrus.Error("OpenZeppelin or Truffle configuration was not detected.\n\n",
+		logrus.Error("Hardhat, Buidler, OpenZeppelin or Truffle configuration was not detected.\n\n",
 			"Please re-run this command in a folder where at least one of the frameworks is configured.")
 		os.Exit(1)
 	}
