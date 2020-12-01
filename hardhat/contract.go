@@ -83,9 +83,11 @@ func (dp *DeploymentProvider) GetContracts(
 				return nil, 0, errors.Wrap(err, "failed parsing build file")
 			}
 
-			err = json.Unmarshal([]byte(hardhatContract.Metadata), &hardhatMeta)
-			if err != nil {
-				return nil, 0, errors.Wrap(err, "failed parsing build file")
+			if hardhatContract.Metadata != "" {
+				err = json.Unmarshal([]byte(hardhatContract.Metadata), &hardhatMeta)
+				if err != nil {
+					return nil, 0, errors.Wrap(err, "failed parsing build file")
+				}
 			}
 
 			contract := providers.Contract{

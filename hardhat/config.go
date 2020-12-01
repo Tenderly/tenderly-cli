@@ -14,10 +14,6 @@ import (
 	"strings"
 )
 
-const (
-	HardhatConfigFile = "hardhat.config.js"
-)
-
 type HardhatConfig struct {
 	ProjectDirectory string                             `json:"project_directory"`
 	BuildDirectory   string                             `json:"contracts_build_directory"`
@@ -133,7 +129,7 @@ func getDivider() string {
 
 func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 	projectDir, err := filepath.Abs(config.ProjectDirectory)
-	hardhatConfigFile := HardhatConfigFile
+	hardhatConfigFile := providers.HardhatConfigFile
 
 	if err != nil {
 		return nil, userError.NewUserError(
@@ -144,10 +140,16 @@ func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 
 	hardhatConfig, err := dp.GetConfig(hardhatConfigFile, projectDir)
 	if err != nil {
-		return nil, userError.NewUserError(
-			fmt.Errorf("unable to fetch config: %s", err),
-			"Couldn't read Hardhat config file",
-		)
+		hardhatConfigFile = providers.HardhatConfigFileTs
+
+		hardhatConfig, err = dp.GetConfig(hardhatConfigFile, projectDir)
+
+		if err != nil {
+			return nil, userError.NewUserError(
+				fmt.Errorf("unable to fetch config: %s", err),
+				"Couldn't read Hardhat config file",
+			)
+		}
 	}
 
 	return hardhatConfig, nil

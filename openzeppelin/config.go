@@ -16,14 +16,9 @@ import (
 	"strings"
 )
 
-const (
-	OpenzeppelinConfigFile        = "networks.js"
-	OpenZeppelinProjectConfigFile = "project.json"
-)
-
 func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
 	openzeppelinPath := filepath.Join(projectDir, configName)
-	openzeppelinProjectPath := filepath.Join(projectDir, ".openzeppelin", OpenZeppelinProjectConfigFile)
+	openzeppelinProjectPath := filepath.Join(projectDir, ".openzeppelin", providers.OpenZeppelinProjectConfigFile)
 	divider := getDivider()
 
 	logrus.Debugf("Trying openzeppelin config path: %s", openzeppelinPath)
@@ -98,7 +93,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	var openzeppelinCompilerData providers.OZProjectData
 	err = json.Unmarshal(data, &openzeppelinCompilerData)
 	if err != nil {
-		return nil, fmt.Errorf("cannot read %s", OpenZeppelinProjectConfigFile)
+		return nil, fmt.Errorf("cannot read %s", providers.OpenZeppelinProjectConfigFile)
 	}
 
 	if openzeppelinCompilerData.Compiler == nil {
@@ -132,7 +127,7 @@ func getDivider() string {
 
 func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 	projectDir, err := filepath.Abs(config.ProjectDirectory)
-	openzeppelinConfigFile := OpenzeppelinConfigFile
+	openzeppelinConfigFile := providers.OpenzeppelinConfigFile
 
 	if err != nil {
 		return nil, userError.NewUserError(

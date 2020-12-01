@@ -24,6 +24,17 @@ const (
 	OpenZeppelinDeploymentProvider DeploymentProviderName = "OpenZeppelin"
 	BuidlerDeploymentProvider      DeploymentProviderName = "Buidler"
 	HardhatDeploymentProvider      DeploymentProviderName = "Hardhat"
+
+	HardhatConfigFile   = "hardhat.config.js"
+	HardhatConfigFileTs = "hardhat.config.ts"
+
+	BuidlerConfigFile = "buidler.config.js"
+
+	NewTruffleConfigFile = "truffle-config.js"
+	OldTruffleConfigFile = "truffle.js"
+
+	OpenzeppelinConfigFile        = "networks.js"
+	OpenZeppelinProjectConfigFile = "project.json"
 )
 
 var AllProviders = []DeploymentProviderName{

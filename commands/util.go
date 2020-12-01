@@ -228,11 +228,12 @@ func promptProviderSelect(deploymentProviders []providers.DeploymentProviderName
 }
 
 func initProvider() {
-	trufflePath := filepath.Join(config.ProjectDirectory, truffle.NewTruffleConfigFile)
-	openZeppelinPath := filepath.Join(config.ProjectDirectory, openzeppelin.OpenzeppelinConfigFile)
-	oldTrufflePath := filepath.Join(config.ProjectDirectory, truffle.OldTruffleConfigFile)
-	buidlerPath := filepath.Join(config.ProjectDirectory, buidler.BuidlerConfigFile)
-	hardhatPath := filepath.Join(config.ProjectDirectory, hardhat.HardhatConfigFile)
+	trufflePath := filepath.Join(config.ProjectDirectory, providers.NewTruffleConfigFile)
+	openZeppelinPath := filepath.Join(config.ProjectDirectory, providers.OpenzeppelinConfigFile)
+	oldTrufflePath := filepath.Join(config.ProjectDirectory, providers.OldTruffleConfigFile)
+	buidlerPath := filepath.Join(config.ProjectDirectory, providers.BuidlerConfigFile)
+	hardhatPath := filepath.Join(config.ProjectDirectory, providers.HardhatConfigFile)
+	hardhatPathTs := filepath.Join(config.ProjectDirectory, providers.HardhatConfigFileTs)
 
 	var provider providers.DeploymentProviderName
 
@@ -308,10 +309,31 @@ func initProvider() {
 
 	logrus.Debugf("couldn't read new Buidler config file")
 
-	logrus.Debug("Trying hardhat config path: %s", hardhatPath)
+	logrus.Debugf("Trying hardhat config path: %s", hardhatPath)
 
 	if provider == providers.HardhatDeploymentProvider || provider == "" {
 		_, err := os.Stat(hardhatPath)
+
+		if err == nil {
+			deploymentProvider = hardhat.NewDeploymentProvider()
+
+			if deploymentProvider == nil {
+				logrus.Error("Error initializing hardhat")
+			}
+
+			return
+		}
+
+		logrus.Debugf(
+			fmt.Sprintf("unable to fetch config\n%s",
+				" Couldn't read Hardhat config file"),
+		)
+	}
+
+	logrus.Debugf("Trying hardhat ts config path: %s", hardhatPathTs)
+
+	if provider == providers.HardhatDeploymentProvider || provider == "" {
+		_, err := os.Stat(hardhatPathTs)
 
 		if err == nil {
 			deploymentProvider = hardhat.NewDeploymentProvider()
@@ -364,26 +386,26 @@ func initProvider() {
 }
 
 func GetConfigPayload(providerConfig *providers.Config) *payloads.Config {
-	if providerConfig.ConfigType == truffle.NewTruffleConfigFile && providerConfig.Compilers != nil {
+	if providerConfig.ConfigType == providers.NewTruffleConfigFile && providerConfig.Compilers != nil {
 		return payloads.ParseNewTruffleConfig(providerConfig.Compilers)
 	}
 
-	if providerConfig.ConfigType == truffle.OldTruffleConfigFile {
+	if providerConfig.ConfigType == providers.OldTruffleConfigFile {
 		if providerConfig.Solc != nil {
 			return payloads.ParseOldTruffleConfig(providerConfig.Solc)
 		} else if providerConfig.Compilers != nil {
 			return payloads.ParseNewTruffleConfig(providerConfig.Compilers)
 		}
 	}
-	if providerConfig.ConfigType == openzeppelin.OpenzeppelinConfigFile && providerConfig.Compilers != nil {
+	if providerConfig.ConfigType == providers.OpenzeppelinConfigFile && providerConfig.Compilers != nil {
 		return payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
 	}
 
-	if providerConfig.ConfigType == buidler.BuidlerConfigFile && providerConfig.Compilers != nil {
+	if providerConfig.ConfigType == providers.BuidlerConfigFile && providerConfig.Compilers != nil {
 		return payloads.ParseBuidlerConfig(providerConfig.Compilers)
 	}
 
-	if providerConfig.ConfigType == hardhat.HardhatConfigFile && providerConfig.Compilers != nil {
+	if (providerConfig.ConfigType == providers.HardhatConfigFile || providerConfig.ConfigType == providers.HardhatConfigFileTs) && providerConfig.Compilers != nil {
 		return payloads.ParseHardhatConfig(providerConfig.Compilers)
 	}
 
