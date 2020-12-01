@@ -14,11 +14,6 @@ import (
 	"strings"
 )
 
-const (
-	NewTruffleConfigFile = "truffle-config.js"
-	OldTruffleConfigFile = "truffle.js"
-)
-
 func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
 	trufflePath := filepath.Join(projectDir, configName)
 	divider := getDivider()
@@ -85,7 +80,7 @@ func getDivider() string {
 
 func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 	projectDir, err := filepath.Abs(config.ProjectDirectory)
-	truffleConfigFile := NewTruffleConfigFile
+	truffleConfigFile := providers.NewTruffleConfigFile
 
 	if err != nil {
 		return nil, userError.NewUserError(
@@ -103,7 +98,7 @@ func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 	}
 	if os.IsNotExist(err) {
 		logrus.Debugf("couldn't read new truffle config file: %s", err)
-		truffleConfigFile = OldTruffleConfigFile
+		truffleConfigFile = providers.OldTruffleConfigFile
 		truffleConfig, err = dp.GetConfig(truffleConfigFile, projectDir)
 	}
 

@@ -14,10 +14,6 @@ import (
 	"strings"
 )
 
-const (
-	BuidlerConfigFile = "buidler.config.js"
-)
-
 type BuidlerConfig struct {
 	ProjectDirectory string                             `json:"project_directory"`
 	BuildDirectory   string                             `json:"contracts_build_directory"`
@@ -127,7 +123,7 @@ func getDivider() string {
 
 func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 	projectDir, err := filepath.Abs(config.ProjectDirectory)
-	buidlerConfigFile := BuidlerConfigFile
+	buidlerConfigFile := providers.BuidlerConfigFile
 
 	if err != nil {
 		return nil, userError.NewUserError(
