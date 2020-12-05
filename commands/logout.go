@@ -28,6 +28,7 @@ var logoutCmd = &cobra.Command{
 		config.SetGlobalConfig(config.AccessKey, "")
 		config.SetGlobalConfig(config.AccessKeyId, "")
 		config.SetGlobalConfig(config.Email, "")
+		config.SetGlobalConfig(config.OrganizationName, "")
 		config.SetGlobalConfig(config.Username, "")
 		config.SetGlobalConfig(config.AccountID, "")
 		WriteGlobalConfig()

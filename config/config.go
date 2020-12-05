@@ -26,6 +26,8 @@ const (
 	ProjectSlug = "project_slug"
 	Provider    = "provider"
 
+	OrganizationName = "org_name"
+
 	Exports = "exports"
 
 	Projects = "projects"

@@ -16,23 +16,23 @@ func NewUserCalls() *UserCalls {
 	return &UserCalls{}
 }
 
-func (rest *UserCalls) User() (*model.User, error) {
-	var userResponse payloads.UserResponse
-	response := client.Request("GET", "api/v1/user", nil)
+func (rest *UserCalls) Principal() (*model.Principal, error) {
+	var principalResponse payloads.PrincipalResponse
+	response := client.Request("GET", "api/v1/principal", nil)
 
-	err := json.NewDecoder(response).Decode(&userResponse)
+	err := json.NewDecoder(response).Decode(&principalResponse)
 	if err != nil {
 		logrus.Debug("failed parsing user response")
 		return nil, err
 	}
 
-	if userResponse.Error != nil {
+	if principalResponse.Error != nil {
 		logrus.Debug("failed fetching user data ", logrus.Fields{
-			"error_message": userResponse.Error.Message,
+			"error_message": principalResponse.Error.Message,
 		})
 
-		return nil, userResponse.Error
+		return nil, principalResponse.Error
 	}
 
-	return userResponse.User, err
+	return principalResponse.Principal, err
 }
