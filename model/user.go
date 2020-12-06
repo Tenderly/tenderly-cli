@@ -28,11 +28,11 @@ type Organization struct {
 }
 
 type Principal struct {
-	ID AccountID `json:"id" sql:"type:varchar(36),pk"`
+	ID AccountID `json:"id"`
 
-	Username     string        `json:"username" sql:"type:varchar(255)"`
-	Organization *Organization `json:"organization,omitempty" pg:"fk:id"`
-	User         *User         `json:"user,omitempty" pg:"fk:id"`
+	Username     string        `json:"username"`
+	Organization *Organization `json:"organization,omitempty" `
+	User         *User         `json:"user,omitempty"`
 
-	Type PrincipalType `json:"type" sql:",notnull"`
+	Type PrincipalType `json:"type"`
 }
