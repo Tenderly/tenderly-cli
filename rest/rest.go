@@ -12,7 +12,7 @@ type AuthRoutes interface {
 }
 
 type UserRoutes interface {
-	User() (*model.User, error)
+	Principal() (*model.Principal, error)
 }
 
 type ProjectRoutes interface {

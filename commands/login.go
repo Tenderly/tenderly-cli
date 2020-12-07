@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/userError"
@@ -42,6 +43,9 @@ var loginCmd = &cobra.Command{
 			alreadyLoggedIn := config.GetString(config.Username)
 			if len(alreadyLoggedIn) == 0 {
 				alreadyLoggedIn = config.GetString(config.Email)
+			}
+			if len(alreadyLoggedIn) == 0 {
+				alreadyLoggedIn = config.GetString(config.OrganizationName)
 			}
 			if len(alreadyLoggedIn) == 0 {
 				alreadyLoggedIn = config.GetString(config.AccountID)
@@ -87,7 +91,7 @@ var loginCmd = &cobra.Command{
 		config.SetGlobalConfig(config.AccessKey, key)
 		config.SetGlobalConfig(config.AccessKeyId, keyId)
 
-		user, err := rest.User.User()
+		principal, err := rest.User.Principal()
 		if err != nil {
 			if providedAuthenticationMethod == "access-key" {
 				userError.LogErrorf("cannot fetch user info: %s", userError.NewUserError(
@@ -107,9 +111,17 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		config.SetGlobalConfig(config.AccountID, user.ID)
-		config.SetGlobalConfig(config.Email, user.Email)
-		config.SetGlobalConfig(config.Username, user.Username)
+		config.SetGlobalConfig(config.AccountID, principal.ID)
+
+		if principal.Type == model.UserPrincipalType {
+			config.SetGlobalConfig(config.Email, principal.User.Email)
+		}
+
+		if principal.Type == model.OrganizationPrincipalType {
+			config.SetGlobalConfig(config.OrganizationName, principal.Organization.Name)
+		}
+
+		config.SetGlobalConfig(config.Username, principal.Username)
 
 		WriteGlobalConfig()
 

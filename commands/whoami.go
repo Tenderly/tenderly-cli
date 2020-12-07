@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 
@@ -19,7 +20,7 @@ var whoamiCmd = &cobra.Command{
 		CheckLogin()
 		rest := newRest()
 
-		user, err := rest.User.User()
+		principal, err := rest.User.Principal()
 		if err != nil {
 			userError.LogErrorf("failed whoami: %s", userError.NewUserError(
 				err,
@@ -31,10 +32,16 @@ var whoamiCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		logrus.Infof("ID: %s", colorizer.Bold(colorizer.Green(user.ID)))
-		logrus.Infof("Email: %s", colorizer.Bold(colorizer.Green(user.Email)))
-		if len(user.Username) != 0 {
-			logrus.Infof("Username: %s", colorizer.Bold(colorizer.Green(user.Username)))
+		logrus.Infof("ID: %s", colorizer.Bold(colorizer.Green(principal.ID)))
+		if principal.Type == model.UserPrincipalType {
+			logrus.Infof("Email: %s", colorizer.Bold(colorizer.Green(principal.User.Email)))
+		}
+		if principal.Type == model.OrganizationPrincipalType {
+			logrus.Infof("Organization name: %s", colorizer.Bold(colorizer.Green(principal.Organization.Name)))
+		}
+
+		if len(principal.Username) != 0 {
+			logrus.Infof("Username: %s", colorizer.Bold(colorizer.Green(principal.Username)))
 		}
 	},
 }
