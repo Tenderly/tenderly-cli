@@ -32,7 +32,7 @@ func NewProcessor(client *ethereum.Client, chainConfig *params.ChainConfig) *Pro
 	}
 }
 
-func (p *Processor) ProcessTransaction(hash string) (*model.TransactionState, error) {
+func (p *Processor) ProcessTransaction(hash string, force bool) (*model.TransactionState, error) {
 	_, err := p.client.GetTransaction(hash)
 	if err != nil {
 		return nil, userError.NewUserError(
@@ -57,10 +57,10 @@ func (p *Processor) ProcessTransaction(hash string) (*model.TransactionState, er
 		)
 	}
 
-	return p.processTransactions(block, receipt.TransactionIndex().Value())
+	return p.processTransactions(block, receipt.TransactionIndex().Value(), force)
 }
 
-func (p *Processor) processTransactions(ethBlock tenderlyTypes.Block, ti int64) (*model.TransactionState, error) {
+func (p *Processor) processTransactions(ethBlock tenderlyTypes.Block, ti int64, force bool) (*model.TransactionState, error) {
 	stateDB := state.NewState(p.client, ethBlock.Number().Value())
 
 	blockHeader, err := p.client.GetBlockByHash(ethBlock.Hash().String())
@@ -95,11 +95,11 @@ func (p *Processor) processTransactions(ethBlock tenderlyTypes.Block, ti int64) 
 		Nonce:       blockHeader.Nonce(),
 	}
 
-	return p.applyTransactions(ethBlock.Hash(), ethBlock.Transactions()[:ti+1], stateDB, header, author)
+	return p.applyTransactions(ethBlock.Hash(), ethBlock.Transactions()[:ti+1], stateDB, header, author, force)
 }
 
 func (p Processor) applyTransactions(blockHash common.Hash, txs []tenderlyTypes.Transaction,
-	stateDB *state.StateDB, header types.Header, author *common.Address,
+	stateDB *state.StateDB, header types.Header, author *common.Address, force bool,
 ) (*model.TransactionState, error) {
 	var txState *model.TransactionState
 	for ti := 0; ti < len(txs); ti++ {
@@ -126,7 +126,7 @@ func (p Processor) applyTransactions(blockHash common.Hash, txs []tenderlyTypes.
 			return nil, err
 		}
 
-		if txState.GasUsed != receipt.GasUsed().ToInt().Uint64() {
+		if txState.GasUsed != receipt.GasUsed().ToInt().Uint64() && !force {
 			return nil, userError.NewUserError(
 				errors.New("gas mismatch between receipt and actual gas used"),
 				fmt.Sprintf("Rerun gas mismatch for transaction %s. This can happen when the chain config is incorrect or the local node is not running the latest version.\n\n"+

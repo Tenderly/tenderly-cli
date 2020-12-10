@@ -31,6 +31,7 @@ var forkedNetwork string
 var rpcAddress string
 var protocol string
 var reExport bool
+var forceExport bool
 
 var network *config.ExportNetwork
 
@@ -41,6 +42,7 @@ func init() {
 	exportCmd.PersistentFlags().StringVar(&rpcAddress, "rpc", "", "The address and port of the local rpc node.")
 	exportCmd.PersistentFlags().StringVar(&protocol, "protocol", "", "Specify protocol for rpc node.")
 	exportCmd.PersistentFlags().BoolVar(&reExport, "re-init", false, "Force initializes an exported network if it was already initialized.")
+	exportCmd.PersistentFlags().BoolVar(&forceExport, "force", false, "Forces transaction export without gas cost validation")
 	exportCmd.AddCommand(exportInitCmd)
 	rootCmd.AddCommand(exportCmd)
 }
@@ -357,7 +359,7 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 		)
 	}
 
-	state, err := evm.NewProcessor(client, network.ChainConfig).ProcessTransaction(hash)
+	state, err := evm.NewProcessor(client, network.ChainConfig).ProcessTransaction(hash, forceExport)
 	if err != nil {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "error processing transaction"),
