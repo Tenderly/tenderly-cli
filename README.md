@@ -180,6 +180,7 @@ tenderly export {{transaction_hash}}
 | --forked-network | / | Optional name of the network which you are forking locally. Can be one of Mainnet, Goerli, Kovan, Ropsten, Rinkeby, xDai |
 | --protocol | / | Specify the protocol used for the rpc node. By default `wss`, `https`, `ws`, `http` are tried in that order |
 | --help | / | Help for export command |
+| --force| false | Export the transaction regardless of gas mismatch|
 
 #### Advanced usage
 

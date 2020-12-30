@@ -187,6 +187,7 @@ var exportCmd = &cobra.Command{
 		tx, state, networkId, err := transactionWithState(hash, network)
 		if err != nil {
 			userError.LogErrorf("Unable to get transaction rerunning information: %s", err)
+			logrus.Info("Try exporting with --force to ignore some validation")
 			os.Exit(1)
 		}
 
