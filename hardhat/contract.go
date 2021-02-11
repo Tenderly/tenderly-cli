@@ -153,6 +153,10 @@ func (dp *DeploymentProvider) GetContracts(
 			sources[sourcePath] = true
 
 			for path, _ := range hardhatMeta.Sources {
+				if strings.Contains(path, contract.Name) {
+					contract.SourcePath = path
+					continue
+				}
 				if !strings.Contains(path, "@") {
 					sources[path] = false
 					continue
