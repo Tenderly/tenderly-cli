@@ -16,7 +16,7 @@ snapshot:
   name_template: "{{ .Tag }}-next"
 brews:
   - name: tenderly
-    github:
+    tap:
       owner: Tenderly
       name: homebrew-tenderly
     commit_author:
