@@ -87,6 +87,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	var buidlerConfig BuidlerConfig
 	err = json.Unmarshal([]byte(configString), &buidlerConfig)
 	if err != nil {
+		logrus.Debugf("failed unmarshaling config: %s", err)
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 

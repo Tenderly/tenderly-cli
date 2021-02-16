@@ -93,6 +93,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	var hardhatConfig HardhatConfig
 	err = json.Unmarshal([]byte(configString), &hardhatConfig)
 	if err != nil {
+		logrus.Debugf("failed unmarshaling config: %s", err)
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 

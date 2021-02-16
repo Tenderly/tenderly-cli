@@ -71,6 +71,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	var openzeppelinConfig providers.Config
 	err = json.Unmarshal([]byte(configString), &openzeppelinConfig)
 	if err != nil {
+		logrus.Debugf("failed unmarshaling config: %s", err)
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 
@@ -93,6 +94,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	var openzeppelinCompilerData providers.OZProjectData
 	err = json.Unmarshal(data, &openzeppelinCompilerData)
 	if err != nil {
+		logrus.Debugf("failed unmarshaling compiler data: %s", err)
 		return nil, fmt.Errorf("cannot read %s", providers.OpenZeppelinProjectConfigFile)
 	}
 

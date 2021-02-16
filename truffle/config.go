@@ -65,6 +65,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	var truffleConfig providers.Config
 	err = json.Unmarshal([]byte(configString), &truffleConfig)
 	if err != nil {
+		logrus.Debugf("failed unmarshaling config: %s", err)
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 
