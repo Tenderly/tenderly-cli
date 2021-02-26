@@ -20,10 +20,12 @@ import (
 
 var deploymentTag string
 var pushNetworks string
+var pushProjectSlug string
 
 func init() {
 	pushCmd.PersistentFlags().StringVar(&deploymentTag, "tag", "", "Optional tag used for filtering and referencing pushed contracts")
 	pushCmd.PersistentFlags().StringVar(&pushNetworks, "networks", "", "A comma separated list of networks to push")
+	pushCmd.PersistentFlags().StringVar(&pushProjectSlug, "project-slug", "", "The slug of a project you wish to push")
 	rootCmd.AddCommand(pushCmd)
 }
 
@@ -74,6 +76,22 @@ func uploadContracts(rest *rest.Rest) error {
 				colorizer.Bold(colorizer.Green("--debug")),
 			),
 		)
+	}
+
+	if pushProjectSlug != "" {
+		projectConfiguration, exists := projectConfigurations[pushProjectSlug]
+		if !exists {
+			return userError.NewUserError(
+				errors.Wrap(err, "cannot find project configuration via slug"),
+				colorizer.Sprintf("Failed reading project configuration. Couldn't find project with slug: %s",
+					colorizer.Bold(colorizer.Red(pushProjectSlug)),
+				),
+			)
+		}
+
+		projectConfigurations = map[string]*ProjectConfiguration{
+			pushProjectSlug: projectConfiguration,
+		}
 	}
 
 	pushErrors := make(map[string]*userError.UserError)

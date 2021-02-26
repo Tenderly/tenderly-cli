@@ -111,6 +111,7 @@ tenderly push
 | --- | --- | --- |
 | --networks | / | A comma separated list of network ids to push |
 | --tag | / | Optional tag used for filtering and referencing pushed contracts |
+| --project-slug | / | Optional project slug used to pick only one project to push (see advanced usage) |
 | --help | / | Help for push command |
 
 #### Advanced usage
