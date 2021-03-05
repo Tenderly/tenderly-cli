@@ -123,7 +123,7 @@ var exportInitCmd = &cobra.Command{
 		if rpcAddress == "" {
 			rpcAddress = promptRpcAddress()
 		}
-		if network.RpcAddress == "" {
+		if network.RpcAddress != rpcAddress {
 			network.RpcAddress = rpcAddress
 		}
 
@@ -134,7 +134,7 @@ var exportInitCmd = &cobra.Command{
 			}
 			forkedNetwork = promptForkedNetwork(networkNames)
 		}
-		if network.ForkedNetwork == "" {
+		if network.ForkedNetwork != forkedNetwork {
 			network.ForkedNetwork = forkedNetwork
 		}
 
