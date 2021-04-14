@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"github.com/tenderly/tenderly-cli/providers"
 	"math/big"
 	"os"
 	"regexp"
@@ -20,6 +19,7 @@ import (
 	"github.com/tenderly/tenderly-cli/ethereum"
 	"github.com/tenderly/tenderly-cli/ethereum/types"
 	"github.com/tenderly/tenderly-cli/model"
+	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/userError"
 )
@@ -466,6 +466,7 @@ func GetNetwork(networkId string) *config.ExportNetwork {
 			ConstantinopleBlock: 0,
 			PetersburgBlock:     0,
 			IstanbulBlock:       0,
+			BerlinBlock:         0,
 		}
 	}
 

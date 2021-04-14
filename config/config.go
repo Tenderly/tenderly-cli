@@ -85,6 +85,7 @@ type ChainConfig struct {
 	ConstantinopleBlock BigInt `mapstructure:"constantinople_block,omitempty" yaml:"constantinople_block,omitempty"`
 	PetersburgBlock     BigInt `mapstructure:"petersburg_block,omitempty" yaml:"petersburg_block,omitempty"`
 	IstanbulBlock       BigInt `mapstructure:"istanbul_block,omitempty" yaml:"istanbul_block,omitempty"`
+	BerlinBlock         BigInt `mapstructure:"berlin_block,omitempty" yaml:"berlin_block,omitempty"`
 }
 
 var DefaultChainConfig = &ChainConfig{
@@ -97,6 +98,7 @@ var DefaultChainConfig = &ChainConfig{
 	ConstantinopleBlock: 0,
 	PetersburgBlock:     0,
 	IstanbulBlock:       0,
+	BerlinBlock:         0,
 }
 
 func (c *ChainConfig) Config() (*params.ChainConfig, error) {
@@ -140,6 +142,11 @@ func (c *ChainConfig) Config() (*params.ChainConfig, error) {
 		return nil, err
 	}
 
+	berlinBlock, err := toInt(c.BerlinBlock)
+	if err != nil {
+		return nil, err
+	}
+
 	return &params.ChainConfig{
 		HomesteadBlock:      homesteadBlock,
 		EIP150Block:         eip150Block,
@@ -150,6 +157,7 @@ func (c *ChainConfig) Config() (*params.ChainConfig, error) {
 		ConstantinopleBlock: constantinopleBlock,
 		PetersburgBlock:     petersburgBlock,
 		IstanbulBlock:       istanbulBlock,
+		BerlinBlock:         berlinBlock,
 	}, nil
 }
 
