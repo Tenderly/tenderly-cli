@@ -98,7 +98,6 @@ var DefaultChainConfig = &ChainConfig{
 	ConstantinopleBlock: 0,
 	PetersburgBlock:     0,
 	IstanbulBlock:       0,
-	BerlinBlock:         0,
 }
 
 func (c *ChainConfig) Config() (*params.ChainConfig, error) {
@@ -305,6 +304,7 @@ func WriteExportNetwork(networkId string, network *ExportNetwork) error {
 			ConstantinopleBlock: network.ChainConfig.ConstantinopleBlock,
 			PetersburgBlock:     network.ChainConfig.PetersburgBlock,
 			IstanbulBlock:       network.ChainConfig.IstanbulBlock,
+			BerlinBlock:         network.ChainConfig.BerlinBlock,
 		}
 	}
 
