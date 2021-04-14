@@ -82,6 +82,11 @@ type BlockHeader interface {
 	Nonce() [8]byte
 }
 
+type AccessTuple interface {
+	Address() common.Address
+	StorageKeys() []common.Hash
+}
+
 type Transaction interface {
 	Hash() common.Hash
 	BlockNumber() *hexutil.Big
@@ -95,6 +100,8 @@ type Transaction interface {
 	Gas() *hexutil.Big
 	GasPrice() *hexutil.Big
 	Nonce() *hexutil.Big
+
+	AccessList() []AccessTuple
 }
 
 type Log interface {

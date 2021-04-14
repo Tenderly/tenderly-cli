@@ -145,20 +145,28 @@ func (p Processor) applyTransactions(blockHash common.Hash, txs []tenderlyTypes.
 func (p Processor) applyTransaction(tx tenderlyTypes.Transaction, stateDB *state.StateDB,
 	header types.Header, author *common.Address,
 ) (*model.TransactionState, error) {
+	var accessList []types.AccessTuple
+	for _, v := range tx.AccessList() {
+		accessList = append(accessList, types.AccessTuple{
+			Address:     v.Address(),
+			StorageKeys: v.StorageKeys(),
+		})
+	}
 	message := types.NewMessage(tx.From(), tx.To(), tx.Nonce().ToInt().Uint64(),
 		tx.Value().ToInt(), tx.Gas().ToInt().Uint64(),
-		tx.GasPrice().ToInt(), tx.Input(), false)
+		tx.GasPrice().ToInt(), tx.Input(), accessList, false)
 
 	var engine consensus.Engine
 	if p.chainConfig.Clique != nil {
 		engine = clique.New(p.chainConfig.Clique, nil)
 	}
 	chain := newChain(&header, p.client, make(map[int64]*types.Header), engine)
-	context := core.NewEVMContext(message, &header, chain, author)
+	context := core.NewEVMBlockContext(&header, chain, author)
+	txContext := core.NewEVMTxContext(message)
 
-	evm := vm.NewEVM(context, stateDB, p.chainConfig, vm.Config{})
+	evm := vm.NewEVM(context, txContext, stateDB, p.chainConfig, vm.Config{})
 
-	_, gasUsed, failed, err := core.ApplyMessage(evm, message, new(core.GasPool).AddGas(message.Gas()))
+	executionResult, err := core.ApplyMessage(evm, message, new(core.GasPool).AddGas(message.Gas()))
 	if err != nil {
 		return nil, userError.NewUserError(
 			errors.Wrap(err, "unable to apply message"),
@@ -167,8 +175,8 @@ func (p Processor) applyTransaction(tx tenderlyTypes.Transaction, stateDB *state
 	}
 
 	return &model.TransactionState{
-		GasUsed: gasUsed,
-		Status:  !failed,
+		GasUsed: executionResult.UsedGas,
+		Status:  !executionResult.Failed(),
 
 		StateObjects: stateObjects(stateDB),
 		Headers:      headers(chain),

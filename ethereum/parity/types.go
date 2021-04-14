@@ -166,6 +166,19 @@ func (b *BlockHeader) Nonce() [8]byte {
 	return arr
 }
 
+type AccessTuple struct {
+	ValueAddress     common.Address `json:"address"`
+	ValueStorageKeys []common.Hash  `json:"storageKeys"`
+}
+
+func (a AccessTuple) Address() common.Address {
+	return a.ValueAddress
+}
+
+func (a AccessTuple) StorageKeys() []common.Hash {
+	return a.ValueStorageKeys
+}
+
 type Transaction struct {
 	ValueHash        common.Hash     `json:"hash"`
 	ValueFrom        common.Address  `json:"from"`
@@ -181,6 +194,8 @@ type Transaction struct {
 	V *hexutil.Big `json:"v"`
 	R *hexutil.Big `json:"r"`
 	S *hexutil.Big `json:"s"`
+
+	ValueAccessList []*AccessTuple `json:"accessList"`
 }
 
 func (t *Transaction) Hash() common.Hash {
@@ -221,6 +236,17 @@ func (t *Transaction) BlockHash() *common.Hash {
 
 func (t *Transaction) Nonce() *hexutil.Big {
 	return t.ValueNonce
+}
+
+func (t *Transaction) AccessList() (list []types.AccessTuple) {
+	for _, accessTuple := range t.ValueAccessList {
+		list = append(list, &AccessTuple{
+			ValueAddress:     accessTuple.ValueAddress,
+			ValueStorageKeys: accessTuple.ValueStorageKeys,
+		})
+	}
+
+	return
 }
 
 type Log struct {
