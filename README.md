@@ -101,6 +101,9 @@ tenderly init
 
 The `push` command is used to add your contracts to the [Tenderly Dashboard](https://dashboard.tenderly.co).
 
+Note that the `push` command is used **only** for adding contracts that are deploy to a public network. For local networks see
+the [export command](#export).
+
 ```
 tenderly push
 ```
@@ -205,6 +208,7 @@ exports: # running tenderly export will export local transaction to the provided
       constantinople_block: 0 # (default 0)
       petersburg_block: 0 # (default 0)
       istanbul_block: 0 # (default 0)
+      berlin_block: 0 # (default null)
 
   my-company-network:
     project_slug: company-account/my-other-project
