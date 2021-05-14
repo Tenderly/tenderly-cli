@@ -20,6 +20,7 @@ type HardhatConfig struct {
 	Networks         map[string]providers.NetworkConfig `json:"networks"`
 	Solidity         HardhatSolidity                    `json:"solidity"`
 	ConfigType       string                             `json:"-"`
+	Paths            providers.Paths                    `json:"paths"`
 }
 
 type HardhatSolidity struct {
@@ -121,6 +122,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 			"solc": hardhatConfig.Solidity.Compilers[0],
 		},
 		ConfigType: hardhatConfig.ConfigType,
+		Paths:      hardhatConfig.Paths,
 	}, nil
 }
 

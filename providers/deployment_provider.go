@@ -26,6 +26,7 @@ type Config struct {
 	Solc             map[string]Optimizer     `json:"solc"`
 	Compilers        map[string]Compiler      `json:"compilers"`
 	ConfigType       string                   `json:"-"`
+	Paths            Paths                    `json:"paths"`
 }
 
 type OZProjectData struct {
@@ -52,7 +53,11 @@ func (c *Config) AbsoluteBuildDirectoryPath() string {
 	}
 
 	if c.ConfigType == BuidlerConfigFile || c.ConfigType == HardhatConfigFile || c.ConfigType == HardhatConfigFileTs {
-		c.BuildDirectory = filepath.Join(".", "deployments")
+		if c.Paths.Deployments != "" {
+			c.BuildDirectory = c.Paths.Deployments
+		} else {
+			c.BuildDirectory = filepath.Join(".", "deployments")
+		}
 	}
 
 	switch c.BuildDirectory[0] {
@@ -61,6 +66,14 @@ func (c *Config) AbsoluteBuildDirectoryPath() string {
 	default:
 		return c.BuildDirectory
 	}
+}
+
+type Paths struct {
+	Sources     string `json:"sources,omitempty"`
+	Tests       string `json:"tests,omitempty"`
+	Cache       string `json:"cache,omitempty"`
+	Artifacts   string `json:"artifacts,omitempty"`
+	Deployments string `json:"deployments,omitempty"`
 }
 
 type NetworkConfig struct {
