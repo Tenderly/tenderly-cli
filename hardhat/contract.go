@@ -64,9 +64,9 @@ func (dp *DeploymentProvider) GetContracts(
 			continue
 		}
 		filePath := filepath.Join(buildDir, file.Name())
-		contractFiles, err := ioutil.ReadDir(filePath)
+		contractFiles, _ := ioutil.ReadDir(filePath)
 
-		succesfullRead := true
+		successfulRead := true
 		for _, contractFile := range contractFiles {
 			if contractFile.IsDir() || !strings.HasSuffix(contractFile.Name(), ".json") {
 				continue
@@ -76,7 +76,7 @@ func (dp *DeploymentProvider) GetContracts(
 
 			if err != nil {
 				logrus.Debug(fmt.Sprintf("Failed reading build file at %s with error: %s", contractFilePath, err))
-				succesfullRead = false
+				successfulRead = false
 				break
 			}
 
@@ -85,7 +85,7 @@ func (dp *DeploymentProvider) GetContracts(
 			err = json.Unmarshal(data, &hardhatContract)
 			if err != nil {
 				logrus.Debug(fmt.Sprintf("Failed parsing build file at %s with error: %s", contractFilePath, err))
-				succesfullRead = false
+				successfulRead = false
 				break
 			}
 
@@ -93,7 +93,7 @@ func (dp *DeploymentProvider) GetContracts(
 				err = json.Unmarshal([]byte(hardhatContract.Metadata), &hardhatMeta)
 				if err != nil {
 					logrus.Debug(fmt.Sprintf("Failed parsing build file metadata at %s with error: %s", contractFilePath, err))
-					succesfullRead = false
+					successfulRead = false
 					break
 				}
 			}
@@ -129,7 +129,7 @@ func (dp *DeploymentProvider) GetContracts(
 					chainData, err := ioutil.ReadFile(chainIdPath)
 					if err != nil {
 						logrus.Debug(fmt.Sprintf("Failed reading chainID file at %s with error: %s", chainIdPath, err))
-						succesfullRead = false
+						successfulRead = false
 						break
 					}
 
@@ -137,7 +137,7 @@ func (dp *DeploymentProvider) GetContracts(
 					err = json.Unmarshal(chainData, &chainId)
 					if err != nil {
 						logrus.Debug(fmt.Sprintf("Failed parsing chainID file at %s with error: %s", chainIdPath, err))
-						succesfullRead = false
+						successfulRead = false
 						break
 					}
 
@@ -211,7 +211,7 @@ func (dp *DeploymentProvider) GetContracts(
 			numberOfContractsWithANetwork += len(contract.Networks)
 		}
 
-		if !succesfullRead {
+		if !successfulRead {
 			continue
 		}
 
@@ -222,7 +222,7 @@ func (dp *DeploymentProvider) GetContracts(
 					localPath, err = os.Getwd()
 					if err != nil {
 						logrus.Debug(fmt.Sprintf("Failed getting working dir at %s with error: %s", currentLocalPath, err))
-						succesfullRead = false
+						successfulRead = false
 						continue
 					}
 
@@ -249,7 +249,7 @@ func (dp *DeploymentProvider) GetContracts(
 					source, err := ioutil.ReadFile(localPath)
 					if err != nil {
 						logrus.Debug(fmt.Sprintf("Failed reading contract source file at %s with error: %s", localPath, err))
-						succesfullRead = false
+						successfulRead = false
 						continue
 					}
 

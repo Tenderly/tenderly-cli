@@ -14,19 +14,18 @@ type DeploymentProvider interface {
 	GetConfig(configName string, configDir string) (*Config, error)
 	MustGetConfig() (*Config, error)
 	CheckIfProviderStructure(directory string) bool
-	NewContractSource(path string, networkId string, client ethereum.Client) (stacktrace.ContractSource, error)
 	GetProviderName() DeploymentProviderName
 	GetContracts(buildDir string, networkIDs []string, objects ...*model.StateObject) ([]Contract, int, error)
 }
 
 type Config struct {
-	ProjectDirectory string                   `json:"project_directory"`
-	BuildDirectory   string                   `json:"contracts_build_directory"`
-	Networks         map[string]NetworkConfig `json:"networks"`
-	Solc             map[string]Optimizer     `json:"solc"`
-	Compilers        map[string]Compiler      `json:"compilers"`
+	ProjectDirectory string                   `json:"project_directory" yaml:"project_directory"`
+	BuildDirectory   string                   `json:"contracts_build_directory" yaml:"build_directory"`
+	Networks         map[string]NetworkConfig `json:"networks" yaml:"-"`
+	Solc             map[string]Optimizer     `json:"solc" yaml:"solc"`
+	Compilers        map[string]Compiler      `json:"compilers" yaml:"compiler"`
 	ConfigType       string                   `json:"-"`
-	Paths            Paths                    `json:"paths"`
+	Paths            Paths                    `json:"paths" yaml:"paths"`
 }
 
 type OZProjectData struct {
@@ -50,6 +49,10 @@ type OZOptimizer struct {
 func (c *Config) AbsoluteBuildDirectoryPath() string {
 	if c.BuildDirectory == "" {
 		c.BuildDirectory = filepath.Join(".", "build", "contracts")
+	}
+
+	if c.ConfigType == BrownieConfigFile {
+		c.BuildDirectory = filepath.Join(".", "build")
 	}
 
 	if c.ConfigType == BuidlerConfigFile || c.ConfigType == HardhatConfigFile || c.ConfigType == HardhatConfigFileTs {
@@ -84,10 +87,11 @@ type NetworkConfig struct {
 }
 
 type Compiler struct {
-	Version    string            `json:"version"`
-	Settings   *CompilerSettings `json:"settings"`
-	Optimizer  *Optimizer        `json:"optimizer"`
-	EvmVersion *string           `json:"evmVersion"`
+	Version    string            `json:"version" yaml:"version"`
+	Settings   *CompilerSettings `json:"settings" yaml:"settings"`
+	Optimizer  *Optimizer        `json:"optimizer" yaml:"optimizer"`
+	EvmVersion *string           `json:"evmVersion" yaml:"evm_version"`
+	Remappings []string          `json:"remappings" yaml:"remappings"`
 }
 
 type CompilerSettings struct {

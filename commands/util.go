@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/brownie"
 	"github.com/tenderly/tenderly-cli/buidler"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/hardhat"
@@ -234,6 +235,7 @@ func initProvider() {
 	buidlerPath := filepath.Join(config.ProjectDirectory, providers.BuidlerConfigFile)
 	hardhatPath := filepath.Join(config.ProjectDirectory, providers.HardhatConfigFile)
 	hardhatPathTs := filepath.Join(config.ProjectDirectory, providers.HardhatConfigFileTs)
+	browniePath := filepath.Join(config.ProjectDirectory, providers.BrownieConfigFile)
 
 	var provider providers.DeploymentProviderName
 
@@ -351,6 +353,21 @@ func initProvider() {
 		)
 	}
 
+	logrus.Debugf("Trying brownie config path: %s", browniePath)
+
+	if provider == providers.BrownieDeploymentProvider || provider == "" {
+		_, err := os.Stat(browniePath)
+		if err == nil {
+			deploymentProvider = brownie.NewDeploymentProvider()
+			return
+		}
+
+		logrus.Debugf(
+			fmt.Sprintf("unable to fetch config\n%s",
+				" Couldn't read Brownie config file"),
+		)
+	}
+
 	logrus.Debugf("Trying truffle config path: %s", trufflePath)
 
 	_, err := os.Stat(trufflePath)
@@ -398,15 +415,19 @@ func GetConfigPayload(providerConfig *providers.Config) *payloads.Config {
 		}
 	}
 	if providerConfig.ConfigType == providers.OpenzeppelinConfigFile && providerConfig.Compilers != nil {
-		return payloads.ParseOpenZeppelinConfig(providerConfig.Compilers)
+		return payloads.ParseSolcConfigWithSettings(providerConfig.Compilers)
 	}
 
 	if providerConfig.ConfigType == providers.BuidlerConfigFile && providerConfig.Compilers != nil {
-		return payloads.ParseBuidlerConfig(providerConfig.Compilers)
+		return payloads.ParseSolcConfigWithOptimizer(providerConfig.Compilers)
 	}
 
 	if (providerConfig.ConfigType == providers.HardhatConfigFile || providerConfig.ConfigType == providers.HardhatConfigFileTs) && providerConfig.Compilers != nil {
-		return payloads.ParseHardhatConfig(providerConfig.Compilers)
+		return payloads.ParseSolcConfigWithSettings(providerConfig.Compilers)
+	}
+
+	if providerConfig.ConfigType == providers.BrownieConfigFile && providerConfig.Compilers != nil {
+		return payloads.ParseSolcConfigWithOptimizer(providerConfig.Compilers)
 	}
 
 	return nil

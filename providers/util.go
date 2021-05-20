@@ -24,6 +24,7 @@ const (
 	OpenZeppelinDeploymentProvider DeploymentProviderName = "OpenZeppelin"
 	BuidlerDeploymentProvider      DeploymentProviderName = "Buidler"
 	HardhatDeploymentProvider      DeploymentProviderName = "Hardhat"
+	BrownieDeploymentProvider      DeploymentProviderName = "Brownie"
 
 	HardhatConfigFile   = "hardhat.config.js"
 	HardhatConfigFileTs = "hardhat.config.ts"
@@ -35,6 +36,8 @@ const (
 
 	OpenzeppelinConfigFile        = "networks.js"
 	OpenZeppelinProjectConfigFile = "project.json"
+
+	BrownieConfigFile = "brownie-config.yaml"
 )
 
 var AllProviders = []DeploymentProviderName{
@@ -42,6 +45,7 @@ var AllProviders = []DeploymentProviderName{
 	OpenZeppelinDeploymentProvider,
 	BuidlerDeploymentProvider,
 	HardhatDeploymentProvider,
+	BrownieConfigFile,
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
