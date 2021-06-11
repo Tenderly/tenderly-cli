@@ -201,9 +201,7 @@ func (dp *DeploymentProvider) GetContracts(
 				}
 			}
 
-			sourceKey := fmt.Sprintf("contracts/%s.sol", contract.Name)
-
-			if val, ok := hardhatMeta.Sources[sourceKey]; ok {
+			if val, ok := hardhatMeta.Sources[contract.SourcePath]; ok {
 				contract.Source = val.Content
 			}
 
