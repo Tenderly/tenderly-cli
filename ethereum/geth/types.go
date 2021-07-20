@@ -27,6 +27,7 @@ type Block struct {
 	ValueDifficulty    *hexutil.Big   `json:"difficulty"`
 	ValueGasLimit      *hexutil.Big   `json:"gasLimit"`
 	ValuesTransactions []*Transaction `json:"transactions"`
+	ValueBaseFeePerGas *hexutil.Big   `json:"baseFeePerGas"`
 }
 
 func (b Block) Number() types.Number {
@@ -66,23 +67,28 @@ func (b Block) Transactions() []types.Transaction {
 	return transactions
 }
 
+func (b *Block) BaseFeePerGas() *hexutil.Big {
+	return b.ValueBaseFeePerGas
+}
+
 type BlockHeader struct {
-	ValueNumber      types.Number   `json:"number"`
-	ValueBlockHash   common.Hash    `json:"hash"`
-	ValueStateRoot   common.Hash    `json:"stateRoot"`
-	ValueParentHash  common.Hash    `json:"parentHash"`
-	ValueUncleHash   common.Hash    `json:"sha3Uncles"`
-	ValueTxHash      common.Hash    `json:"transactionsRoot"`
-	ValueReceiptHash common.Hash    `json:"receiptsRoot"`
-	ValueBloom       hexutil.Bytes  `json:"logsBloom"`
-	ValueTimestamp   *hexutil.Big   `json:"timestamp"`
-	ValueDifficulty  *hexutil.Big   `json:"difficulty"`
-	ValueGasLimit    *hexutil.Big   `json:"gasLimit"`
-	ValueGasUsed     *hexutil.Big   `json:"gasUsed"`
-	ValueCoinbase    common.Address `json:"miner"`
-	ValueExtraData   hexutil.Bytes  `json:"extraData"`
-	ValueMixDigest   common.Hash    `json:"mixDigest"`
-	ValueNonce       hexutil.Bytes  `json:"nonce"`
+	ValueNumber        types.Number   `json:"number"`
+	ValueBlockHash     common.Hash    `json:"hash"`
+	ValueStateRoot     common.Hash    `json:"stateRoot"`
+	ValueParentHash    common.Hash    `json:"parentHash"`
+	ValueUncleHash     common.Hash    `json:"sha3Uncles"`
+	ValueTxHash        common.Hash    `json:"transactionsRoot"`
+	ValueReceiptHash   common.Hash    `json:"receiptsRoot"`
+	ValueBloom         hexutil.Bytes  `json:"logsBloom"`
+	ValueTimestamp     *hexutil.Big   `json:"timestamp"`
+	ValueDifficulty    *hexutil.Big   `json:"difficulty"`
+	ValueGasLimit      *hexutil.Big   `json:"gasLimit"`
+	ValueGasUsed       *hexutil.Big   `json:"gasUsed"`
+	ValueCoinbase      common.Address `json:"miner"`
+	ValueExtraData     hexutil.Bytes  `json:"extraData"`
+	ValueMixDigest     common.Hash    `json:"mixDigest"`
+	ValueNonce         hexutil.Bytes  `json:"nonce"`
+	ValueBaseFeePerGas *hexutil.Big   `json:"baseFeePerGas"`
 }
 
 func (b *BlockHeader) Number() types.Number {
@@ -157,6 +163,10 @@ func (b *BlockHeader) Nonce() [8]byte {
 	return arr
 }
 
+func (b *BlockHeader) BaseFeePerGas() *hexutil.Big {
+	return b.ValueBaseFeePerGas
+}
+
 type AccessTuple struct {
 	ValueAddress     common.Address `json:"address"`
 	ValueStorageKeys []common.Hash  `json:"storageKeys"`
@@ -177,6 +187,8 @@ type Transaction struct {
 	ValueInput       hexutil.Bytes   `json:"input"`
 	ValueValue       *hexutil.Big    `json:"value"`
 	ValueGas         *hexutil.Big    `json:"gas"`
+	ValueGasTipCap   *hexutil.Big    `json:"maxPriorityFeePerGas"`
+	ValueGasFeeCap   *hexutil.Big    `json:"maxFeePerGas"`
 	ValueGasPrice    *hexutil.Big    `json:"gasPrice"`
 	ValueBlockNumber *hexutil.Big    `json:"blockNumber"`
 	ValueBlockHash   *common.Hash    `json:"blockHash"`
@@ -211,6 +223,14 @@ func (t *Transaction) Value() *hexutil.Big {
 
 func (t *Transaction) Gas() *hexutil.Big {
 	return t.ValueGas
+}
+
+func (t *Transaction) GasTipCap() *hexutil.Big {
+	return t.ValueGasTipCap
+}
+
+func (t *Transaction) GasFeeCap() *hexutil.Big {
+	return t.ValueGasFeeCap
 }
 
 func (t *Transaction) GasPrice() *hexutil.Big {
@@ -273,6 +293,7 @@ type TransactionReceipt struct {
 
 	TGasUsed           *hexutil.Big    `json:"gasUsed"`
 	TCumulativeGasUsed *hexutil.Big    `json:"cumulativeGasUsed"`
+	TEffectiveGasPrice hexutil.Uint64  `json:"effectiveGasPrice"`
 	TContractAddress   *common.Address `json:"contractAddress"`
 
 	TStatus    string        `json:"status"` // Can be null, if null do a check anyways. 0x0 fail, 0x1 success
@@ -315,6 +336,10 @@ func (t *TransactionReceipt) GasUsed() *hexutil.Big {
 
 func (t *TransactionReceipt) CumulativeGasUsed() *hexutil.Big {
 	return t.TCumulativeGasUsed
+}
+
+func (t *TransactionReceipt) EffectiveGasPrice() hexutil.Uint64 {
+	return t.TEffectiveGasPrice
 }
 
 func (t *TransactionReceipt) ContractAddress() *common.Address {

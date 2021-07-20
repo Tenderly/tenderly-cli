@@ -60,6 +60,7 @@ type Block interface {
 	Timestamp() time.Time
 	Difficulty() *hexutil.Big
 	GasLimit() *hexutil.Big
+	BaseFeePerGas() *hexutil.Big
 }
 
 type BlockHeader interface {
@@ -80,6 +81,7 @@ type BlockHeader interface {
 	ExtraData() hexutil.Bytes
 	MixDigest() common.Hash
 	Nonce() [8]byte
+	BaseFeePerGas() *hexutil.Big
 }
 
 type AccessTuple interface {
@@ -98,6 +100,8 @@ type Transaction interface {
 	Input() hexutil.Bytes
 	Value() *hexutil.Big
 	Gas() *hexutil.Big
+	GasTipCap() *hexutil.Big
+	GasFeeCap() *hexutil.Big
 	GasPrice() *hexutil.Big
 	Nonce() *hexutil.Big
 
@@ -121,6 +125,7 @@ type TransactionReceipt interface {
 
 	GasUsed() *hexutil.Big
 	CumulativeGasUsed() *hexutil.Big
+	EffectiveGasPrice() hexutil.Uint64
 	ContractAddress() *common.Address
 
 	Status() string

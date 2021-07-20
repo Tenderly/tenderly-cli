@@ -145,16 +145,7 @@ func (p Processor) applyTransactions(blockHash common.Hash, txs []tenderlyTypes.
 func (p Processor) applyTransaction(tx tenderlyTypes.Transaction, stateDB *state.StateDB,
 	header types.Header, author *common.Address,
 ) (*model.TransactionState, error) {
-	var accessList []types.AccessTuple
-	for _, v := range tx.AccessList() {
-		accessList = append(accessList, types.AccessTuple{
-			Address:     v.Address(),
-			StorageKeys: v.StorageKeys(),
-		})
-	}
-	message := types.NewMessage(tx.From(), tx.To(), tx.Nonce().ToInt().Uint64(),
-		tx.Value().ToInt(), tx.Gas().ToInt().Uint64(),
-		tx.GasPrice().ToInt(), tx.Input(), accessList, false)
+	message := newMessage(tx)
 
 	var engine consensus.Engine
 	if p.chainConfig.Clique != nil {
@@ -181,6 +172,29 @@ func (p Processor) applyTransaction(tx tenderlyTypes.Transaction, stateDB *state
 		StateObjects: stateObjects(stateDB),
 		Headers:      headers(chain),
 	}, nil
+}
+
+func newMessage(tx tenderlyTypes.Transaction) types.Message {
+	var accessList []types.AccessTuple
+	for _, v := range tx.AccessList() {
+		accessList = append(accessList, types.AccessTuple{
+			Address:     v.Address(),
+			StorageKeys: v.StorageKeys(),
+		})
+	}
+
+	gasFeeCap := tx.GasFeeCap().ToInt()
+	if gasFeeCap == nil {
+		gasFeeCap = tx.GasPrice().ToInt()
+	}
+	gasTipCap := tx.GasTipCap().ToInt()
+	if gasTipCap == nil {
+		gasTipCap = tx.GasPrice().ToInt()
+	}
+
+	return types.NewMessage(tx.From(), tx.To(), tx.Nonce().ToInt().Uint64(),
+		tx.Value().ToInt(), tx.Gas().ToInt().Uint64(), tx.GasFeeCap().ToInt(), tx.GasTipCap().ToInt(),
+		tx.GasPrice().ToInt(), tx.Input(), accessList, false)
 }
 
 func stateObjects(stateDB *state.StateDB) (stateObjects []*model.StateObject) {
