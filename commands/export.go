@@ -467,6 +467,7 @@ func GetNetwork(networkId string) *config.ExportNetwork {
 			PetersburgBlock:     0,
 			IstanbulBlock:       0,
 			BerlinBlock:         0,
+			//LondonBlock:         0,
 		}
 	}
 
