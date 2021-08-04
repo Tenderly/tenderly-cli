@@ -193,8 +193,8 @@ func newMessage(tx tenderlyTypes.Transaction) types.Message {
 	}
 
 	return types.NewMessage(tx.From(), tx.To(), tx.Nonce().ToInt().Uint64(),
-		tx.Value().ToInt(), tx.Gas().ToInt().Uint64(), tx.GasFeeCap().ToInt(), tx.GasTipCap().ToInt(),
-		tx.GasPrice().ToInt(), tx.Input(), accessList, false)
+		tx.Value().ToInt(), tx.Gas().ToInt().Uint64(), tx.GasPrice().ToInt(), gasFeeCap, gasTipCap,
+		tx.Input(), accessList, false)
 }
 
 func stateObjects(stateDB *state.StateDB) (stateObjects []*model.StateObject) {
