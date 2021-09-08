@@ -100,7 +100,7 @@ var DefaultChainConfig = &ChainConfig{
 	PetersburgBlock:     0,
 	IstanbulBlock:       0,
 	BerlinBlock:         0,
-	//LondonBlock:         0,
+	LondonBlock:         0,
 }
 
 func (c *ChainConfig) Config() (*params.ChainConfig, error) {

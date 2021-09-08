@@ -209,7 +209,7 @@ exports: # running tenderly export will export local transaction to the provided
       petersburg_block: 0 # (default 0)
       istanbul_block: 0 # (default 0)
       berlin_block: 0 # (default 0)
-      london_block: 0 # (default null)
+      london_block: 0 # (default 0)
 
   my-company-network:
     project_slug: company-account/my-other-project
