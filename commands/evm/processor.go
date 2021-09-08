@@ -77,6 +77,13 @@ func (p *Processor) processTransactions(ethBlock tenderlyTypes.Block, ti int64, 
 		author = &coinbase
 	}
 
+	if p.chainConfig.IsLondon(ethBlock.Number().Big()) && blockHeader.BaseFeePerGas() == nil {
+		return nil, userError.NewUserError(
+			errors.Wrap(err, "missing block base fee"),
+			fmt.Sprintf("Missing block base fee parameter for block %d, london hard fork is probabbly not activated.", ethBlock.Number().Big()),
+		)
+	}
+
 	header := types.Header{
 		Number:      blockHeader.Number().Big(),
 		ParentHash:  blockHeader.ParentHash(),
