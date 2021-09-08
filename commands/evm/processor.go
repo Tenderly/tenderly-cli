@@ -93,6 +93,7 @@ func (p *Processor) processTransactions(ethBlock tenderlyTypes.Block, ti int64, 
 		Extra:       blockHeader.ExtraData(),
 		MixDigest:   blockHeader.MixDigest(),
 		Nonce:       blockHeader.Nonce(),
+		BaseFee:     blockHeader.BaseFeePerGas().ToInt(),
 	}
 
 	return p.applyTransactions(ethBlock.Hash(), ethBlock.Transactions()[:ti+1], stateDB, header, author, force)

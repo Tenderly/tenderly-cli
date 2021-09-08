@@ -33,6 +33,7 @@ func newChain(header *types.Header, client *ethereum.Client, cachedHeaders map[i
 		Extra:       header.Extra,
 		MixDigest:   header.MixDigest,
 		Nonce:       header.Nonce,
+		BaseFee:     header.BaseFee,
 	}
 	if engine != nil {
 		h.Coinbase, _ = engine.Author(header)
@@ -78,13 +79,22 @@ func (c *Chain) GetHeader(hash common.Hash, number uint64) *types.Header {
 	}
 
 	header := &types.Header{
-		ParentHash: blockHeader.ParentHash(),
-		Root:       blockHeader.StateRoot(),
-		Number:     blockHeader.Number().Big(),
-		Time:       blockHeader.Time().ToInt().Uint64(),
-		Difficulty: blockHeader.Difficulty().ToInt(),
-		GasLimit:   blockHeader.GasLimit().ToInt().Uint64(),
-		Coinbase:   blockHeader.Coinbase(),
+		ParentHash:  blockHeader.ParentHash(),
+		UncleHash:   blockHeader.UncleHash(),
+		Root:        blockHeader.StateRoot(),
+		TxHash:      blockHeader.TxHash(),
+		ReceiptHash: blockHeader.ReceiptHash(),
+		Bloom:       blockHeader.Bloom(),
+		Number:      blockHeader.Number().Big(),
+		Time:        blockHeader.Time().ToInt().Uint64(),
+		Difficulty:  blockHeader.Difficulty().ToInt(),
+		GasLimit:    blockHeader.GasLimit().ToInt().Uint64(),
+		GasUsed:     blockHeader.GasUsed().ToInt().Uint64(),
+		Coinbase:    blockHeader.Coinbase(),
+		Extra:       blockHeader.ExtraData(),
+		MixDigest:   blockHeader.MixDigest(),
+		Nonce:       blockHeader.Nonce(),
+		BaseFee:     blockHeader.BaseFeePerGas().ToInt(),
 	}
 
 	if c.engine != nil {
