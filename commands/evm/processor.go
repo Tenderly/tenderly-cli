@@ -229,14 +229,28 @@ func headers(chain *Chain) (headers []*model.Header) {
 		gasLimit := make([]byte, 8)
 		binary.LittleEndian.PutUint64(gasLimit, header.GasLimit)
 
+		var baseFee []byte
+		if header.BaseFee != nil {
+			baseFee = header.BaseFee.Bytes()
+		}
+
 		headers = append(headers, &model.Header{
-			Number:     header.Number.Int64(),
-			Root:       header.Root.Bytes(),
-			ParentHash: header.ParentHash.Bytes(),
-			Timestamp:  int64(header.Time),
-			Difficulty: header.Difficulty.Bytes(),
-			Coinbase:   header.Coinbase.Bytes(),
-			GasLimit:   gasLimit,
+			Number:      header.Number.Int64(),
+			ReceiptHash: header.ReceiptHash.Bytes(),
+			ParentHash:  header.ParentHash.Bytes(),
+			Root:        header.Root.Bytes(),
+			UncleHash:   header.UncleHash.Bytes(),
+			GasLimit:    gasLimit,
+			TxHash:      header.TxHash.Bytes(),
+			Timestamp:   int64(header.Time),
+			Difficulty:  header.Difficulty.Bytes(),
+			Coinbase:    header.Coinbase.Bytes(),
+			Bloom:       header.Bloom.Bytes(),
+			GasUsed:     header.GasUsed,
+			Extra:       header.Extra,
+			MixDigest:   header.MixDigest.Bytes(),
+			Nonce:       header.Nonce[:],
+			BaseFee:     baseFee,
 		})
 	}
 
