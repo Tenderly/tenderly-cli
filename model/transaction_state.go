@@ -1,13 +1,22 @@
 package model
 
 type Header struct {
-	Number     int64  `json:"number"`
-	ParentHash []byte `json:"parentHash"`
-	Root       []byte `json:"root"`
-	GasLimit   []byte `json:"gasLimit"`
-	Timestamp  int64  `json:"timestamp"`
-	Difficulty []byte `json:"difficulty"`
-	Coinbase   []byte `json:"coinbase"`
+	Number      int64  `json:"number"`
+	ReceiptHash []byte `json:"receiptHash"`
+	ParentHash  []byte `json:"parentHash"`
+	Root        []byte `json:"root"`
+	UncleHash   []byte `json:"uncleHash"`
+	GasLimit    []byte `json:"gasLimit"`
+	TxHash      []byte `json:"txHash"`
+	Timestamp   int64  `json:"timestamp"`
+	Difficulty  []byte `json:"difficulty"`
+	Coinbase    []byte `json:"coinbase"`
+	Bloom       []byte `json:"bloom"`
+	GasUsed     uint64 `json:"gasUsed"`
+	Extra       []byte `json:"extra"`
+	MixDigest   []byte `json:"mixDigest"`
+	Nonce       []byte `json:"nonce"`
+	BaseFee     []byte `json:"baseFee"`
 }
 
 type Data struct {
