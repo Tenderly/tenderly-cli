@@ -229,6 +229,11 @@ func headers(chain *Chain) (headers []*model.Header) {
 		gasLimit := make([]byte, 8)
 		binary.LittleEndian.PutUint64(gasLimit, header.GasLimit)
 
+		var baseFee []byte
+		if header.BaseFee != nil {
+			baseFee = header.BaseFee.Bytes()
+		}
+
 		headers = append(headers, &model.Header{
 			Number:      header.Number.Int64(),
 			ReceiptHash: header.ReceiptHash.Bytes(),
@@ -245,7 +250,7 @@ func headers(chain *Chain) (headers []*model.Header) {
 			Extra:       header.Extra,
 			MixDigest:   header.MixDigest.Bytes(),
 			Nonce:       header.Nonce[:],
-			BaseFee:     header.BaseFee.Bytes(),
+			BaseFee:     baseFee,
 		})
 	}
 
