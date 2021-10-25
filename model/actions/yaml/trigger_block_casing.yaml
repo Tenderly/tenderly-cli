@@ -1,4 +1,4 @@
 type: block
 block:
-  network: MAINNET
+  network: MAIN
   blocks: 1
