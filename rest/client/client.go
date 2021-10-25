@@ -5,19 +5,31 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/rest/payloads"
-	"github.com/tenderly/tenderly-cli/userError"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
+	"github.com/tenderly/tenderly-cli/userError"
 )
 
 const sessionLimitErrorSlug = "session_limit_exceeded"
 
-func Request(method, path string, body []byte) io.Reader {
+type Method string
+
+const (
+	GetMethod     Method = "GET"
+	HeadMethod    Method = "HEAD"
+	PostMethod    Method = "POST"
+	PutMethod     Method = "PUT"
+	DeleteMethod  Method = "DELETE"
+	OptionsMethod Method = "OPTIONS"
+)
+
+func Request(method Method, path string, body []byte) io.Reader {
 	apiBase := "https://api.tenderly.co"
 	if alternativeApiBase := config.MaybeGetString("api_base"); len(alternativeApiBase) != 0 {
 		apiBase = alternativeApiBase
@@ -25,7 +37,7 @@ func Request(method, path string, body []byte) io.Reader {
 
 	requestUrl := fmt.Sprintf("%s/%s", apiBase, path)
 	req, err := http.NewRequest(
-		method,
+		string(method),
 		requestUrl,
 		bytes.NewReader(body),
 	)
@@ -59,7 +71,7 @@ func Request(method, path string, body []byte) io.Reader {
 				})
 			} else {
 				reader := Request(
-					"POST",
+					PostMethod,
 					urlPath,
 					body,
 				)

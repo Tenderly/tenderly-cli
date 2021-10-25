@@ -2,18 +2,19 @@ package commands
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
-	"os"
 )
 
 func CheckLogin() {
 	if !config.IsLoggedIn() {
 		logrus.Error("In order to use the Tenderly CLI, you need to login first.\n\n",
-			"Please use the ", colorizer.Bold(colorizer.Green("tenderly login")), " command to get started.")
+			"Please use the ", Colorizer.Bold(Colorizer.Green("tenderly login")), " command to get started.")
 		os.Exit(1)
 	}
 }
@@ -55,8 +56,8 @@ func DetectedProjectMessage(
 	projectDirectories := truffle.FindDirectories()
 	projectsLen := len(projectDirectories)
 	if printLoginSuccess {
-		logrus.Info(colorizer.Sprintf("Now that you are successfully logged in, you can use the %s command to initialize a new project.",
-			colorizer.Bold(colorizer.Green("tenderly init")),
+		logrus.Info(Colorizer.Sprintf("Now that you are successfully logged in, you can use the %s command to initialize a new project.",
+			Colorizer.Bold(Colorizer.Green("tenderly init")),
 		))
 	}
 
@@ -67,9 +68,9 @@ func DetectedProjectMessage(
 	format := fmt.Sprintf("\t%s", commandFmt)
 
 	projectWord := "project"
-	initializationSentence := colorizer.Sprintf("You can %s it by running the following command:\n\n%s",
+	initializationSentence := Colorizer.Sprintf("You can %s it by running the following command:\n\n%s",
 		action,
-		colorizer.Bold(fmt.Sprintf(format, projectDirectories[0])),
+		Colorizer.Bold(fmt.Sprintf(format, projectDirectories[0])),
 	)
 	if projectsLen > 1 {
 		projectWord = "projects"
@@ -90,7 +91,7 @@ func DetectedProjectMessage(
 
 	format = fmt.Sprintf("\t%s", commandFmt)
 	for _, project := range projectDirectories {
-		logrus.Info(colorizer.Bold(fmt.Sprintf(format, project)))
+		logrus.Info(Colorizer.Bold(fmt.Sprintf(format, project)))
 	}
 	logrus.Println()
 }
@@ -98,13 +99,13 @@ func DetectedProjectMessage(
 func WrongFolderMessage(action string, commandFmt string) {
 	logrus.Info("Couldn't detect provider directory structure. This can be caused by:")
 	logrus.Println()
-	logrus.Info(colorizer.Sprintf("\t• The directory is not set correctly. "+
+	logrus.Info(Colorizer.Sprintf("\t• The directory is not set correctly. "+
 		"If this is the case, either check if you are in the right directory or pass an alternative directory by using the %s flag.",
-		colorizer.Bold(colorizer.Green("--project-dir")),
+		Colorizer.Bold(Colorizer.Green("--project-dir")),
 	))
-	logrus.Info(colorizer.Sprintf("\t• Tenderly is having trouble reading the directory correctly. "+
+	logrus.Info(Colorizer.Sprintf("\t• Tenderly is having trouble reading the directory correctly. "+
 		"If you think this is the case, rerun this command with the %s flag.",
-		colorizer.Bold(colorizer.Green("--force")),
+		Colorizer.Bold(Colorizer.Green("--force")),
 	))
 
 	DetectedProjectMessage(

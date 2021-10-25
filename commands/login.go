@@ -3,13 +3,14 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"os"
+	"regexp"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/userError"
-	"os"
-	"regexp"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -32,7 +33,7 @@ func init() {
 	loginCmd.PersistentFlags().StringVar(&providedAccessKey, "access-key", "", "The access key generated in your Tenderly dashboard.")
 	loginCmd.PersistentFlags().StringVar(&providedAuthenticationMethod, "authentication-method", "", "Pick the authentication method. Possible values are email or access-key.")
 	loginCmd.PersistentFlags().BoolVar(&forceLogin, "force", false, "Don't check if you are already logged in.")
-	rootCmd.AddCommand(loginCmd)
+	RootCmd.AddCommand(loginCmd)
 }
 
 var loginCmd = &cobra.Command{
@@ -51,10 +52,10 @@ var loginCmd = &cobra.Command{
 				alreadyLoggedIn = config.GetString(config.AccountID)
 			}
 
-			logrus.Info(colorizer.Sprintf("It seems that you are already logged in with the account %s. "+
+			logrus.Info(Colorizer.Sprintf("It seems that you are already logged in with the account %s. "+
 				"If this is not you or you want to login with a different account rerun this command with the %s flag.",
-				colorizer.Bold(colorizer.Green(alreadyLoggedIn)),
-				colorizer.Bold(colorizer.Green("--force")),
+				Colorizer.Bold(Colorizer.Green(alreadyLoggedIn)),
+				Colorizer.Bold(Colorizer.Green("--force")),
 			))
 			os.Exit(0)
 		}
@@ -63,7 +64,7 @@ var loginCmd = &cobra.Command{
 			promptAuthenticationMethod()
 		}
 
-		rest := newRest()
+		rest := NewRest()
 		var key string
 		var keyId string
 
@@ -74,11 +75,11 @@ var loginCmd = &cobra.Command{
 		} else {
 			userError.LogErrorf("unsupported authentication method: %s", userError.NewUserError(
 				fmt.Errorf("non-supported authentication method: %s", providedAuthenticationMethod),
-				colorizer.Sprintf(
+				Colorizer.Sprintf(
 					"The %s can either be %s or %s",
-					colorizer.Bold(colorizer.Green("--authentication-method")),
-					colorizer.Bold(colorizer.Green("email")),
-					colorizer.Bold(colorizer.Green("access-key")),
+					Colorizer.Bold(Colorizer.Green("--authentication-method")),
+					Colorizer.Bold(Colorizer.Green("email")),
+					Colorizer.Bold(Colorizer.Green("access-key")),
 				),
 			))
 			os.Exit(1)
@@ -96,7 +97,7 @@ var loginCmd = &cobra.Command{
 			if providedAuthenticationMethod == "access-key" {
 				userError.LogErrorf("cannot fetch user info: %s", userError.NewUserError(
 					err,
-					fmt.Sprintf("%s", colorizer.Red("Couldn't fetch user information. This can happen if your access key is not valid. Please try again.")),
+					fmt.Sprintf("%s", Colorizer.Red("Couldn't fetch user information. This can happen if your access key is not valid. Please try again.")),
 				))
 				os.Exit(1)
 			}
@@ -138,9 +139,9 @@ func promptAuthenticationMethod() {
 		Label: "Select authentication method",
 		Items: []string{
 			"Email",
-			colorizer.Sprintf(
+			Colorizer.Sprintf(
 				"Access key can be generated at %s",
-				colorizer.Bold(colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
+				Colorizer.Bold(Colorizer.Green("https://dashboard.tenderly.co/account/authorization")),
 			),
 		},
 	}

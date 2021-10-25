@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"os"
 	"os/user"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/tenderly/tenderly-cli/model/actions"
 	"github.com/tenderly/tenderly-cli/userError"
 
 	"github.com/spf13/viper"
@@ -28,8 +30,8 @@ const (
 
 	OrganizationName = "org_name"
 
-	Exports = "exports"
-
+	Exports  = "exports"
+	Actions  = "actions"
 	Projects = "projects"
 )
 
@@ -100,7 +102,7 @@ var DefaultChainConfig = &ChainConfig{
 	PetersburgBlock:     0,
 	IstanbulBlock:       0,
 	BerlinBlock:         0,
-	LondonBlock:         0,
+	//LondonBlock:         0,
 }
 
 func (c *ChainConfig) Config() (*params.ChainConfig, error) {
@@ -290,7 +292,7 @@ func IsProjectInit() bool {
 	return getString(ProjectSlug) != "" || len(MaybeGetMap(Projects)) > 0
 }
 
-func IsNetworkConfigured(network string) bool {
+func IsExportNetworkConfigured(network string) bool {
 	if _, ok := getStringMapString(Exports)[network]; ok {
 		return true
 	}
@@ -336,6 +338,32 @@ func WriteExportNetwork(networkId string, network *ExportNetwork) error {
 	return WriteProjectConfig()
 }
 
+func IsAnyActionsInit() bool {
+	actions := projectConfig.GetStringMap(Actions)
+	return len(actions) > 0
+}
+
+func IsActionsInit(projectSlug string) bool {
+	actions := projectConfig.GetStringMap(Actions)
+	_, exists := actions[projectSlug]
+	return exists
+}
+
+func MustWriteActionsInit(projectSlug string, projectActions *actions.ProjectActions) {
+	actions := projectConfig.GetStringMap(Actions)
+	actions[projectSlug] = projectActions
+
+	projectConfig.Set(Actions, actions)
+	err := WriteProjectConfig()
+	if err != nil {
+		userError.LogErrorf(
+			"write project config: %s",
+			userError.NewUserError(err, "Couldn't write project config file"),
+		)
+		os.Exit(1)
+	}
+}
+
 func SetProjectConfig(key string, value interface{}) {
 	projectConfig.Set(key, value)
 }
@@ -357,6 +385,10 @@ func WriteProjectConfig() error {
 	}
 
 	return nil
+}
+
+func ReadProjectConfig() ([]byte, error) {
+	return ioutil.ReadFile(filepath.Join(ProjectDirectory, fmt.Sprintf("%s.yaml", ProjectConfigName)))
 }
 
 func SetGlobalConfig(key string, value interface{}) {

@@ -1,0 +1,6 @@
+type: block
+block:
+  network:
+    - main
+    - kovan
+  blocks: 1

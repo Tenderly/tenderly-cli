@@ -1,9 +1,14 @@
 package main
 
 import (
-	"github.com/tenderly/tenderly-cli/commands"
 	"math/rand"
 	"time"
+
+	"github.com/tenderly/tenderly-cli/commands"
+	// DO NOT DELETE THESE IMPORTS
+	// THIS IS HOW WE SUBSCRIBE NESTED COMMANDS
+	_ "github.com/tenderly/tenderly-cli/commands/actions"
+	_ "github.com/tenderly/tenderly-cli/commands/export"
 )
 
 var (

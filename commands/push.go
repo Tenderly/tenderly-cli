@@ -26,19 +26,19 @@ func init() {
 	pushCmd.PersistentFlags().StringVar(&deploymentTag, "tag", "", "Optional tag used for filtering and referencing pushed contracts")
 	pushCmd.PersistentFlags().StringVar(&pushNetworks, "networks", "", "A comma separated list of networks to push")
 	pushCmd.PersistentFlags().StringVar(&pushProjectSlug, "project-slug", "", "The slug of a project you wish to push")
-	rootCmd.AddCommand(pushCmd)
+	RootCmd.AddCommand(pushCmd)
 }
 
 var pushCmd = &cobra.Command{
 	Use:   "push",
 	Short: "Pushes the contracts to the configured project. After the contracts are pushed they are actively monitored by Tenderly",
 	Run: func(cmd *cobra.Command, args []string) {
-		rest := newRest()
+		rest := NewRest()
 		CheckLogin()
 
 		if !config.IsProjectInit() {
 			logrus.Error("You need to initiate the project first.\n\n",
-				"You can do this by using the ", colorizer.Bold(colorizer.Green("tenderly init")), " command.")
+				"You can do this by using the ", Colorizer.Bold(Colorizer.Green("tenderly init")), " command.")
 			os.Exit(1)
 		}
 
@@ -56,24 +56,24 @@ var pushCmd = &cobra.Command{
 }
 
 func uploadContracts(rest *rest.Rest) error {
-	initProvider()
-	CheckProvider(deploymentProvider)
+	InitProvider()
+	CheckProvider(DeploymentProvider)
 
-	logrus.Info(fmt.Sprintf("Analyzing %s configuration...", deploymentProvider.GetProviderName()))
+	logrus.Info(fmt.Sprintf("Analyzing %s configuration...", DeploymentProvider.GetProviderName()))
 
-	providerConfig, err := deploymentProvider.MustGetConfig()
+	providerConfig, err := DeploymentProvider.MustGetConfig()
 	if err != nil {
 		return err
 	}
 
-	networkIDs := extractNetworkIDs(pushNetworks)
+	networkIDs := ExtractNetworkIDs(pushNetworks)
 
 	projectConfigurations, err := getProjectConfiguration()
 	if err != nil {
 		return userError.NewUserError(
 			errors.Wrap(err, "unable to get project configuration"),
-			colorizer.Sprintf("Failed reading project configuration. For more info please rerun this command with the %s flag.",
-				colorizer.Bold(colorizer.Green("--debug")),
+			Colorizer.Sprintf("Failed reading project configuration. For more info please rerun this command with the %s flag.",
+				Colorizer.Bold(Colorizer.Green("--debug")),
 			),
 		)
 	}
@@ -83,8 +83,8 @@ func uploadContracts(rest *rest.Rest) error {
 		if !exists {
 			return userError.NewUserError(
 				errors.Wrap(err, "cannot find project configuration via slug"),
-				colorizer.Sprintf("Failed reading project configuration. Couldn't find project with slug: %s",
-					colorizer.Bold(colorizer.Red(pushProjectSlug)),
+				Colorizer.Sprintf("Failed reading project configuration. Couldn't find project with slug: %s",
+					Colorizer.Bold(Colorizer.Red(pushProjectSlug)),
 				),
 			)
 		}
@@ -97,50 +97,50 @@ func uploadContracts(rest *rest.Rest) error {
 	pushErrors := make(map[string]*userError.UserError)
 
 	for projectSlug, projectConfiguration := range projectConfigurations {
-		logrus.Info(colorizer.Sprintf(
+		logrus.Info(Colorizer.Sprintf(
 			"Pushing Smart Contracts for project: %s",
-			colorizer.Bold(colorizer.Green(projectSlug)),
+			Colorizer.Bold(Colorizer.Green(projectSlug)),
 		))
 
 		providedNetworksIDs := append(networkIDs, projectConfiguration.Networks...)
-		contracts, numberOfContractsWithANetwork, err := deploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
+		contracts, numberOfContractsWithANetwork, err := DeploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), providedNetworksIDs)
 		if err != nil {
 			return userError.NewUserError(
 				errors.Wrap(err, "unable to get provider contracts"),
-				fmt.Sprintf("Couldn't read %s build files at: %s", deploymentProvider.GetProviderName(), providerConfig.AbsoluteBuildDirectoryPath()),
+				fmt.Sprintf("Couldn't read %s build files at: %s", DeploymentProvider.GetProviderName(), providerConfig.AbsoluteBuildDirectoryPath()),
 			)
 		}
 
 		if len(contracts) == 0 {
 			return userError.NewUserError(
 				fmt.Errorf("no contracts found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
-				colorizer.Sprintf("No contracts detected in build directory: %s. "+
+				Colorizer.Sprintf("No contracts detected in build directory: %s. "+
 					"This can happen when no contracts have been migrated yet or the %s hasn't been run yet.",
-					colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
-					colorizer.Bold(colorizer.Green("truffle compile")),
+					Colorizer.Bold(Colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
+					Colorizer.Bold(Colorizer.Green("truffle compile")),
 				),
 			)
 		}
 		if numberOfContractsWithANetwork == 0 {
-			if deploymentProvider.GetProviderName() == providers.OpenZeppelinDeploymentProvider {
+			if DeploymentProvider.GetProviderName() == providers.OpenZeppelinDeploymentProvider {
 				pushErrors[projectSlug] = userError.NewUserError(
 					fmt.Errorf("no contracts with a netowrk found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
-					colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.\n"+
+					Colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.\n"+
 						"There is currently an issue with exporting networks for regular contracts.\nThe OpenZeppelin team has come up with a workaround,"+
 						"so make sure you run %s before running %s\n"+
 						"For more information refer to: %s",
-						colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
-						colorizer.Bold(colorizer.Green("npx oz add ContractName")),
-						colorizer.Bold(colorizer.Green("npx oz deploy")),
-						colorizer.Bold(colorizer.Green("https://github.com/OpenZeppelin/openzeppelin-sdk/issues/1555#issuecomment-644536123")),
+						Colorizer.Bold(Colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
+						Colorizer.Bold(Colorizer.Green("npx oz add ContractName")),
+						Colorizer.Bold(Colorizer.Green("npx oz deploy")),
+						Colorizer.Bold(Colorizer.Green("https://github.com/OpenZeppelin/openzeppelin-sdk/issues/1555#issuecomment-644536123")),
 					),
 				)
 				continue
 			}
 			pushErrors[projectSlug] = userError.NewUserError(
 				fmt.Errorf("no contracts with a netowrk found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
-				colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
-					colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
+				Colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
+					Colorizer.Bold(Colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
 				),
 			)
 			continue
@@ -201,11 +201,11 @@ func uploadContracts(rest *rest.Rest) error {
 						}
 					}
 					if !found {
-						nonPushedContracts = append(nonPushedContracts, colorizer.Sprintf(
+						nonPushedContracts = append(nonPushedContracts, Colorizer.Sprintf(
 							"• %s on network %s with address %s",
-							colorizer.Bold(colorizer.Red(contract.Name)),
-							colorizer.Bold(colorizer.Red(networkId)),
-							colorizer.Bold(colorizer.Red(network.Address)),
+							Colorizer.Bold(Colorizer.Red(contract.Name)),
+							Colorizer.Bold(Colorizer.Red(networkId)),
+							Colorizer.Bold(Colorizer.Red(network.Address)),
 						))
 					}
 				}
@@ -228,10 +228,10 @@ func uploadContracts(rest *rest.Rest) error {
 			projectSlug = projectInfo[1]
 		}
 
-		logrus.Info(colorizer.Sprintf(
+		logrus.Info(Colorizer.Sprintf(
 			"Successfully pushed Smart Contracts for project %s. You can view your contracts at %s\n",
-			colorizer.Bold(colorizer.Green(projectSlug)),
-			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.co/%s/%s/contracts", username, projectSlug))),
+			Colorizer.Bold(Colorizer.Green(projectSlug)),
+			Colorizer.Bold(Colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.co/%s/%s/contracts", username, projectSlug))),
 		))
 	}
 

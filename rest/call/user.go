@@ -18,7 +18,7 @@ func NewUserCalls() *UserCalls {
 
 func (rest *UserCalls) Principal() (*model.Principal, error) {
 	var principalResponse payloads.PrincipalResponse
-	response := client.Request("GET", "api/v1/principal", nil)
+	response := client.Request(client.GetMethod, "api/v1/principal", nil)
 
 	err := json.NewDecoder(response).Decode(&principalResponse)
 	if err != nil {

@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
+	actions2 "github.com/tenderly/tenderly-cli/rest/payloads/generated/actions"
 )
 
 type AuthRoutes interface {
@@ -34,6 +35,11 @@ type NetworkRoutes interface {
 	GetPublicNetworks() (*payloads.NetworksResponse, error)
 }
 
+type ActionRoutes interface {
+	Validate(request actions2.ValidateRequest, projectSlug string) (*actions2.ValidateResponse, error)
+	Publish(request actions2.PublishRequest, projectSlug string) (*actions2.PublishResponse, error)
+}
+
 type Rest struct {
 	Auth     AuthRoutes
 	User     UserRoutes
@@ -41,6 +47,7 @@ type Rest struct {
 	Contract ContractRoutes
 	Export   ExportRoutes
 	Networks NetworkRoutes
+	Actions  ActionRoutes
 }
 
 func NewRest(
@@ -50,6 +57,7 @@ func NewRest(
 	contract ContractRoutes,
 	export ExportRoutes,
 	networks NetworkRoutes,
+	actions ActionRoutes,
 ) *Rest {
 	return &Rest{
 		Auth:     auth,
@@ -58,5 +66,6 @@ func NewRest(
 		Contract: contract,
 		Export:   export,
 		Networks: networks,
+		Actions:  actions,
 	}
 }

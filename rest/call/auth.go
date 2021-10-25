@@ -23,7 +23,7 @@ func (rest *AuthCalls) Register(request payloads.RegisterRequest) (*payloads.Tok
 
 	return extractToken(
 		client.Request(
-			"POST",
+			client.PostMethod,
 			"register",
 			data,
 		),
@@ -38,7 +38,7 @@ func (rest *AuthCalls) Login(request payloads.LoginRequest) (*payloads.TokenResp
 
 	return extractToken(
 		client.Request(
-			"POST",
+			client.PostMethod,
 			"login/token",
 			data,
 		),
@@ -48,7 +48,7 @@ func (rest *AuthCalls) Login(request payloads.LoginRequest) (*payloads.TokenResp
 func (rest *AuthCalls) Logout(accountId string, tokenId string) error {
 	return extractLogutResp(
 		client.Request(
-			"DELETE",
+			client.DeleteMethod,
 			fmt.Sprintf("api/v1/account/%s/token/%s", accountId, tokenId),
 			nil,
 		),

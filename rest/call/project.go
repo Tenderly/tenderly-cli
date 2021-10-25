@@ -26,7 +26,7 @@ func (rest *ProjectCalls) CreateProject(request payloads.ProjectRequest) (*paylo
 	var projectResponse payloads.ProjectResponse
 
 	response := client.Request(
-		"POST",
+		client.PostMethod,
 		"api/v1/account/"+config.GetString(config.AccountID)+"/project",
 		projectJson,
 	)
@@ -42,7 +42,7 @@ func (rest *ProjectCalls) CreateProject(request payloads.ProjectRequest) (*paylo
 func (rest *ProjectCalls) GetProject(accountId, id string) (*model.Project, error) {
 	var project *model.Project
 	response := client.Request(
-		"GET",
+		client.GetMethod,
 		"api/v1/account/"+accountId+"/project/"+id,
 		nil,
 	)
@@ -54,7 +54,7 @@ func (rest *ProjectCalls) GetProject(accountId, id string) (*model.Project, erro
 func (rest *ProjectCalls) GetProjects(accountId string) (*payloads.GetProjectsResponse, error) {
 	var getProjectsResponse payloads.GetProjectsResponse
 	response := client.Request(
-		"GET",
+		client.GetMethod,
 		"api/v1/account/"+accountId+"/projects?withShared=true",
 		nil,
 	)

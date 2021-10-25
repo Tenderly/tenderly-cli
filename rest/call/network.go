@@ -16,7 +16,7 @@ func NewNetworkCalls() *NetworkCalls {
 
 func (rest *NetworkCalls) GetPublicNetworks() (*payloads.NetworksResponse, error) {
 	response := client.Request(
-		"GET",
+		client.GetMethod,
 		"/api/v1/public-networks",
 		nil,
 	)

@@ -140,7 +140,6 @@ type ContractNetwork struct {
 type Node struct {
 	NodeType     string `json:"nodeType"`
 	AbsolutePath string `json:"absolutePath"`
-	File         string `json:"file"`
 }
 
 type ContractAst struct {

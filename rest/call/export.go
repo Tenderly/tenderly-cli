@@ -32,7 +32,7 @@ func (rest *ExportCalls) ExportTransaction(request payloads.ExportTransactionReq
 	var contracts *payloads.ExportTransactionResponse
 
 	response := client.Request(
-		"POST",
+		client.PostMethod,
 		"api/v1/account/"+accountID+"/project/"+projectSlug+"/export",
 		uploadJson,
 	)
