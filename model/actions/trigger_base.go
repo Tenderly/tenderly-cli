@@ -308,7 +308,7 @@ func (n *NetworkField) Validate(ctx ValidatorContext) (response ValidateResponse
 	for _, net := range n.Value.Values {
 		network := n.find(net)
 		if network == nil {
-			response.Error(ctx, MsgNetworkNotSupported, net, Networks)
+			response.Error(ctx, MsgNetworkNotSupported, net)
 		}
 	}
 	return response
@@ -331,12 +331,13 @@ func (n *NetworkField) find(str string) *string {
 		// chain id used
 		return &str
 	}
-	// slug used
-	for _, value := range Networks {
-		if value == str {
-			return &str
-		}
-	}
+	// TODO(marko): Support network slugs
+	// // slug used
+	// for _, value := range Networks {
+	// 	if value == str {
+	// 		return &str
+	// 	}
+	// }
 	return nil
 }
 

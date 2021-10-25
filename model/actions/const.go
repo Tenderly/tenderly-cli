@@ -13,7 +13,6 @@ var (
 	WebhookType        = "webhook"
 	BlockType          = "block"
 	TransactionType    = "transaction"
-	Networks           = []string{"main", "kovan"}
 	Invocations        = []string{"any", "direct", "internal"}
 	InvocationAny      = "any"
 	InvocationDirect   = "direct"
@@ -41,7 +40,7 @@ var (
 
 	MsgTriggerTypeNotSupported             = "trigger type '%s' not supported, supported types %s"
 	MsgTriggerTypeMismatch                 = "trigger type '%s' different from configured trigger"
-	MsgNetworkNotSupported                 = "network '%s' is not supported, supported networks %s"
+	MsgNetworkNotSupported                 = "network '%s' is not supported"
 	MsgStatusNotSupported                  = "status '%s' is not supported, supported statuses %s"
 	MsgAddressDoesNotMatchRegex            = "address '%s' does not match regex %s"
 	MsgSignatureDoesNotMatchRegex          = "signature '%s' does not match regex '%s'"
