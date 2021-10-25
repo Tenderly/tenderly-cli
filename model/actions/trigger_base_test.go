@@ -120,7 +120,7 @@ func TestNetworkStr(t *testing.T) {
 	if field.Value.Values == nil {
 		t.Fatal("not parsed correctly")
 	}
-	if field.Value.Values[0] != "mainnet" {
+	if field.Value.Values[0] != "1" {
 		t.Fatal("not parsed correctly")
 	}
 }
@@ -137,10 +137,10 @@ func TestNetworkStrList(t *testing.T) {
 	if field.Value.Values == nil {
 		t.Fatal("not parsed correctly")
 	}
-	if field.Value.Values[0] != "mainnet" {
+	if field.Value.Values[0] != "1" {
 		t.Fatal("not parsed correctly")
 	}
-	if field.Value.Values[1] != "kovan" {
+	if field.Value.Values[1] != "42" {
 		t.Fatal("not parsed correctly")
 	}
 }
@@ -177,7 +177,7 @@ func TestNetworkIntList(t *testing.T) {
 	if field.Value.Values[0] != "1" {
 		t.Fatal("not parsed correctly")
 	}
-	if field.Value.Values[1] != "3" {
+	if field.Value.Values[1] != "42" {
 		t.Fatal("not parsed correctly")
 	}
 }

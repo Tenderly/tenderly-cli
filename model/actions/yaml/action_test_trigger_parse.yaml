@@ -4,7 +4,7 @@ trigger:
   transaction:
     status: pending
     filters:
-      - network: kovan
+      - network: 42
         contract:
           address: 0xd34cc8798a5e7476c510afef2044f69c7ba838a2e245573e21f27b9dd594eb5e
         function:

@@ -6,7 +6,7 @@ transaction:
     - confirmed10
 #    - reorganized
   filters:
-    - network: main
+    - network: 1
       status:
         - success
         - fail
@@ -64,8 +64,8 @@ transaction:
 #            value:
 #              lte: 100
     - network:
-        - main
-        - kovan
+        - 1
+        - 42
       status: success
       from:
         - 0x7ebB3Dca1C281b23D5B73175f10cA5A0a309B01F

@@ -20,7 +20,7 @@ func TestParse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if spec.TriggerParsed.Transaction.Filters[0].Network.ToRequest()[0] != "kovan" {
+	if spec.TriggerParsed.Transaction.Filters[0].Network.ToRequest()[0] != "42" {
 		t.Fatal("incorrectly parsed")
 	}
 }
