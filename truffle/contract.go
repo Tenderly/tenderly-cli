@@ -83,7 +83,7 @@ func (dp *DeploymentProvider) GetContracts(
 				absPath = strings.Replace(absPath, "\\", ":\\", 1)
 			}
 
-			if !sources[absPath] {
+			if !sources[absPath] && node.AbsolutePath == node.File {
 				sources[absPath] = false
 			}
 		}
