@@ -1,0 +1,6 @@
+type: block
+block:
+  network:
+    - 1
+    - 42
+  blocks: 1
