@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(whoamiCmd)
+	RootCmd.AddCommand(whoamiCmd)
 }
 
 var whoamiCmd = &cobra.Command{
@@ -18,7 +18,7 @@ var whoamiCmd = &cobra.Command{
 	Short: "Who am I?",
 	Run: func(cmd *cobra.Command, args []string) {
 		CheckLogin()
-		rest := newRest()
+		rest := NewRest()
 
 		principal, err := rest.User.Principal()
 		if err != nil {
@@ -32,16 +32,16 @@ var whoamiCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		logrus.Infof("ID: %s", colorizer.Bold(colorizer.Green(principal.ID)))
+		logrus.Infof("ID: %s", Colorizer.Bold(Colorizer.Green(principal.ID)))
 		if principal.Type == model.UserPrincipalType {
-			logrus.Infof("Email: %s", colorizer.Bold(colorizer.Green(principal.User.Email)))
+			logrus.Infof("Email: %s", Colorizer.Bold(Colorizer.Green(principal.User.Email)))
 		}
 		if principal.Type == model.OrganizationPrincipalType {
-			logrus.Infof("Organization name: %s", colorizer.Bold(colorizer.Green(principal.Organization.Name)))
+			logrus.Infof("Organization name: %s", Colorizer.Bold(Colorizer.Green(principal.Organization.Name)))
 		}
 
 		if len(principal.Username) != 0 {
-			logrus.Infof("Username: %s", colorizer.Bold(colorizer.Green(principal.Username)))
+			logrus.Infof("Username: %s", Colorizer.Bold(Colorizer.Green(principal.Username)))
 		}
 	},
 }

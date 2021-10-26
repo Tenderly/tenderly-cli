@@ -20,6 +20,7 @@ func NewDeploymentProvider() *DeploymentProvider {
 		call.NewContractCalls(),
 		call.NewExportCalls(),
 		call.NewNetworkCalls(),
+		call.NewActionCalls(),
 	)
 
 	networks, err := rest.Networks.GetPublicNetworks()

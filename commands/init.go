@@ -23,7 +23,7 @@ func init() {
 	initCmd.PersistentFlags().BoolVar(&reInit, "re-init", false, "Force initializes the project if it was already initialized.")
 	initCmd.PersistentFlags().BoolVar(&forceInit, "force", false, "Don't check if the project directory contains the Truffle directory structure. "+
 		"If not provided assumes the current working directory.")
-	rootCmd.AddCommand(initCmd)
+	RootCmd.AddCommand(initCmd)
 }
 
 var initCmd = &cobra.Command{
@@ -31,27 +31,27 @@ var initCmd = &cobra.Command{
 	Short: "Initialize Tenderly CLI",
 	Long:  "User authentication, project creation, contract uploading",
 	Run: func(cmd *cobra.Command, args []string) {
-		rest := newRest()
+		rest := NewRest()
 
 		deploymentProviderName := ""
 
 		if !forceInit {
-			initProvider()
-			CheckProvider(deploymentProvider)
-			deploymentProviderName = deploymentProvider.GetProviderName().String()
+			InitProvider()
+			CheckProvider(DeploymentProvider)
+			deploymentProviderName = DeploymentProvider.GetProviderName().String()
 		}
 
 		CheckLogin()
 
 		if config.IsProjectInit() && !reInit {
-			logrus.Info(colorizer.Sprintf("The project is already initialized. If you want to set up the project again, rerun this command with the %s flag.",
-				colorizer.Bold(colorizer.Green("--re-init")),
+			logrus.Info(Colorizer.Sprintf("The project is already initialized. If you want to set up the project again, rerun this command with the %s flag.",
+				Colorizer.Bold(Colorizer.Green("--re-init")),
 			))
 			os.Exit(1)
 		}
 
 		if !forceInit &&
-			(deploymentProvider == nil || !deploymentProvider.CheckIfProviderStructure(config.ProjectDirectory)) {
+			(DeploymentProvider == nil || !DeploymentProvider.CheckIfProviderStructure(config.ProjectDirectory)) {
 			WrongFolderMessage("initialize", "cd %s; tenderly init")
 			os.Exit(1)
 		}
@@ -82,10 +82,10 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		project := getProjectFromFlag(projectName, projectsResponse.Projects, rest)
+		project := GetProjectFromFlag(projectName, projectsResponse.Projects, rest)
 
 		if project == nil {
-			project = promptProjectSelect(projectsResponse.Projects, rest)
+			project = PromptProjectSelect(projectsResponse.Projects, rest)
 		}
 
 		projectSlug := project.Slug
@@ -98,11 +98,11 @@ var initCmd = &cobra.Command{
 		config.SetProjectConfig(config.Provider, deploymentProviderName)
 		WriteProjectConfig()
 
-		logrus.Info(colorizer.Sprintf("Project successfully initialized. "+
+		logrus.Info(Colorizer.Sprintf("Project successfully initialized. "+
 			"You can change the project information by editing the %s file or by rerunning %s with the %s flag.",
-			colorizer.Bold(colorizer.Green("tenderly.yaml")),
-			colorizer.Bold(colorizer.Green("tenderly init")),
-			colorizer.Bold(colorizer.Green("--re-init")),
+			Colorizer.Bold(Colorizer.Green("tenderly.yaml")),
+			Colorizer.Bold(Colorizer.Green("tenderly init")),
+			Colorizer.Bold(Colorizer.Green("--re-init")),
 		))
 	},
 }

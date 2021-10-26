@@ -3,18 +3,18 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/logrusorgru/aurora"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/userError"
-	"os"
 )
 
 var debugMode bool
 var resetProvider bool
 var outputMode string
-var colorizer aurora.Aurora
 
 type TenderlyStandardFormatter struct {
 }
@@ -28,12 +28,12 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	initLog()
 
-	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Turn on debug level logging.")
-	rootCmd.PersistentFlags().BoolVar(&resetProvider, "reset-provider", false, "Clear set deployment provider. If not provided, will use provider from tenderly.yaml")
-	rootCmd.PersistentFlags().StringVar(&outputMode, "output", "text", "Which output mode to use: text or json. If not provided, text output will be used.")
-	rootCmd.PersistentFlags().StringVar(&config.GlobalConfigName, "global-config", "config", "Global configuration file name (without the extension)")
-	rootCmd.PersistentFlags().StringVar(&config.ProjectConfigName, "project-config", "tenderly", "Project configuration file name (without the extension)")
-	rootCmd.PersistentFlags().StringVar(&config.ProjectDirectory,
+	RootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Turn on debug level logging.")
+	RootCmd.PersistentFlags().BoolVar(&resetProvider, "reset-provider", false, "Clear set deployment provider. If not provided, will use provider from tenderly.yaml")
+	RootCmd.PersistentFlags().StringVar(&outputMode, "output", "text", "Which output mode to use: text or json. If not provided, text output will be used.")
+	RootCmd.PersistentFlags().StringVar(&config.GlobalConfigName, "global-config", "config", "Global configuration file name (without the extension)")
+	RootCmd.PersistentFlags().StringVar(&config.ProjectConfigName, "project-config", "tenderly", "Project configuration file name (without the extension)")
+	RootCmd.PersistentFlags().StringVar(&config.ProjectDirectory,
 		"project-dir", ".",
 		"The directory in which your Truffle project resides. If not provided assumes the current working directory.",
 	)
@@ -50,7 +50,7 @@ func Execute() {
 			os.Exit(1)
 		}
 	}()
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		initLog()
 		userError.LogErrorf("command failed with error: %s", userError.NewUserError(
 			err,
@@ -63,7 +63,8 @@ func Execute() {
 	}
 }
 
-var rootCmd = &cobra.Command{
+var Colorizer aurora.Aurora
+var RootCmd = &cobra.Command{
 	Use:   "tenderly",
 	Short: "Tenderly CLI is a suite of development tools for smart contracts.",
 	Long: "Tenderly CLI is a suite of development tools for smart contracts which allows your to monitor and debug them on any network.\n\n" +
@@ -76,7 +77,7 @@ func initConfig() {
 }
 
 func initLog() {
-	colorizer = aurora.NewAurora(false)
+	Colorizer = aurora.NewAurora(false)
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	if debugMode {
 		logrus.SetLevel(logrus.DebugLevel)
@@ -84,12 +85,12 @@ func initLog() {
 	}
 
 	if outputMode == "text" {
-		colorizer = aurora.NewAurora(true)
+		Colorizer = aurora.NewAurora(true)
 		logrus.SetFormatter(&TenderlyStandardFormatter{})
 	}
 }
 
 func printHelp() {
-	rootCmd.Execute()
+	RootCmd.Execute()
 	os.Exit(0)
 }

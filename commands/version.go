@@ -10,7 +10,7 @@ import (
 var CurrentCLIVersion string
 
 func init() {
-	rootCmd.AddCommand(versionCmd)
+	RootCmd.AddCommand(versionCmd)
 }
 
 var versionCmd = &cobra.Command{

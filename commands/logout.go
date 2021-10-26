@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(logoutCmd)
+	RootCmd.AddCommand(logoutCmd)
 }
 
 var logoutCmd = &cobra.Command{
@@ -16,12 +16,12 @@ var logoutCmd = &cobra.Command{
 	Short: "Use this command to logout of the currently logged in Tenderly account",
 	Run: func(cmd *cobra.Command, args []string) {
 		if !config.IsLoggedIn() {
-			logrus.Info(colorizer.Sprintf("It seems that you are not logged in, in order to logout you need to " +
+			logrus.Info(Colorizer.Sprintf("It seems that you are not logged in, in order to logout you need to " +
 				"be loged in first."))
 			return
 		}
 
-		rest := newRest()
+		rest := NewRest()
 		emailLogout(rest)
 
 		config.SetGlobalConfig(config.Token, "")
@@ -33,7 +33,7 @@ var logoutCmd = &cobra.Command{
 		config.SetGlobalConfig(config.AccountID, "")
 		WriteGlobalConfig()
 		logrus.Info("Successfully logged out.\n\n",
-			"If you want to login again, use the ", colorizer.Bold(colorizer.Green("tenderly login")), " command.")
+			"If you want to login again, use the ", Colorizer.Bold(Colorizer.Green("tenderly login")), " command.")
 	},
 }
 

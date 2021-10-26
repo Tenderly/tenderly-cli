@@ -1,4 +1,4 @@
-package commands
+package export
 
 import (
 	"fmt"
@@ -14,9 +14,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/tenderly/tenderly-cli/commands/evm"
+	"github.com/tenderly/tenderly-cli/commands"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/ethereum"
+	evm2 "github.com/tenderly/tenderly-cli/ethereum/evm"
 	"github.com/tenderly/tenderly-cli/ethereum/types"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/providers"
@@ -43,122 +44,19 @@ func init() {
 	exportCmd.PersistentFlags().StringVar(&protocol, "protocol", "", "Specify protocol for rpc node.")
 	exportCmd.PersistentFlags().BoolVar(&reExport, "re-init", false, "Force initializes an exported network if it was already initialized.")
 	exportCmd.PersistentFlags().BoolVar(&forceExport, "force", false, "Forces transaction export without gas cost validation")
-	exportCmd.AddCommand(exportInitCmd)
-	rootCmd.AddCommand(exportCmd)
-}
-
-var exportInitCmd = &cobra.Command{
-	Use:   "init",
-	Short: "Export init is a helper subcommand for creating exported network configuration",
-	Run: func(cmd *cobra.Command, args []string) {
-		CheckLogin()
-
-		if exportNetwork == "" {
-			exportNetwork = promptExportNetwork()
-		}
-
-		if config.IsNetworkConfigured(exportNetwork) && !reExport {
-			logrus.Info(colorizer.Sprintf("The network %s is already configured. If you want to set up the network again, rerun this command with the %s flag.",
-				colorizer.Bold(colorizer.Green(exportNetwork)),
-				colorizer.Bold(colorizer.Green("--re-init")),
-			))
-			os.Exit(0)
-		}
-
-		if config.IsNetworkConfigured(exportNetwork) {
-			network = GetNetwork(exportNetwork)
-		} else {
-			network = &config.ExportNetwork{}
-		}
-
-		rest := newRest()
-
-		networks, err := rest.Networks.GetPublicNetworks()
-		if err != nil {
-			userError.LogErrorf("failed fetching public networks: %s",
-				userError.NewUserError(
-					err,
-					"Fetching public networks failed. This can happen if you are running an older version of the Tenderly CLI.",
-				),
-			)
-
-			CheckVersion(true, true)
-
-			os.Exit(1)
-		}
-
-		accountID := config.GetString(config.AccountID)
-
-		projectsResponse, err := rest.Project.GetProjects(accountID)
-		if err != nil {
-			userError.LogErrorf("failed fetching projects: %s",
-				userError.NewUserError(
-					err,
-					"Fetching projects for account failed. This can happen if you are running an older version of the Tenderly CLI.",
-				),
-			)
-
-			CheckVersion(true, true)
-
-			os.Exit(1)
-		}
-		if projectsResponse.Error != nil {
-			userError.LogErrorf("get projects call: %s", projectsResponse.Error)
-			os.Exit(1)
-		}
-
-		project := getProjectFromFlag(exportProjectName, projectsResponse.Projects, rest)
-
-		if project == nil {
-			project = promptProjectSelect(projectsResponse.Projects, rest)
-		}
-		if project != nil {
-			slug := project.Slug
-			if project.OwnerInfo != nil {
-				slug = fmt.Sprintf("%s/%s", project.OwnerInfo.Username, slug)
-			}
-			network.ProjectSlug = slug
-		}
-
-		if rpcAddress == "" {
-			rpcAddress = promptRpcAddress()
-		}
-		if network.RpcAddress != rpcAddress {
-			network.RpcAddress = rpcAddress
-		}
-
-		if forkedNetwork == "" {
-			networkNames := []string{"None"}
-			for _, network := range *networks {
-				networkNames = append(networkNames, network.Name)
-			}
-			forkedNetwork = promptForkedNetwork(networkNames)
-		}
-		if network.ForkedNetwork != forkedNetwork {
-			network.ForkedNetwork = forkedNetwork
-		}
-
-		err = config.WriteExportNetwork(exportNetwork, network)
-		if err != nil {
-			userError.LogErrorf(
-				"write project config: %s",
-				userError.NewUserError(err, "Couldn't write project config file"),
-			)
-			os.Exit(1)
-		}
-	},
+	commands.RootCmd.AddCommand(exportCmd)
 }
 
 var exportCmd = &cobra.Command{
 	Use:   "export",
 	Short: "Exports local transaction to Tenderly for debugging purposes.",
 	Args: func(cmd *cobra.Command, args []string) error {
-		initProvider()
-		CheckProvider(deploymentProvider)
-		CheckLogin()
+		commands.InitProvider()
+		commands.CheckProvider(commands.DeploymentProvider)
+		commands.CheckLogin()
 
 		if len(args) == 0 {
-			logrus.Error(colorizer.Red("Please provide the hash of the transaction you want to export to Tenderly."))
+			logrus.Error(commands.Colorizer.Red("Please provide the hash of the transaction you want to export to Tenderly."))
 			os.Exit(1)
 		}
 
@@ -166,7 +64,7 @@ var exportCmd = &cobra.Command{
 
 		_, err := hexutil.Decode(args[0])
 		if err != nil || !txRegexp.MatchString(args[0]) {
-			logrus.Error(colorizer.Red("Invalid transaction hash provided."))
+			logrus.Error(commands.Colorizer.Red("Invalid transaction hash provided."))
 			os.Exit(1)
 		}
 
@@ -177,7 +75,7 @@ var exportCmd = &cobra.Command{
 		network = getExportNetwork()
 
 		hash = args[0]
-		rest := newRest()
+		rest := commands.NewRest()
 
 		if network.ProjectSlug == "" {
 			logrus.Error("Missing project slug in network configuration")
@@ -241,14 +139,14 @@ var exportCmd = &cobra.Command{
 
 		var exportedContracts []string
 		for _, contract := range resp.Contracts {
-			exportedContracts = append(exportedContracts, colorizer.Sprintf(
+			exportedContracts = append(exportedContracts, commands.Colorizer.Sprintf(
 				"\t• %s with address %s",
-				colorizer.Bold(colorizer.Green(contract.Name)),
-				colorizer.Bold(colorizer.Green(contract.Address)),
+				commands.Colorizer.Bold(commands.Colorizer.Green(contract.Name)),
+				commands.Colorizer.Bold(commands.Colorizer.Green(contract.Address)),
 			))
 		}
 
-		logrus.Infof("Successfully exported transaction with hash %s", colorizer.Bold(colorizer.Green(hash)))
+		logrus.Infof("Successfully exported transaction with hash %s", commands.Colorizer.Bold(commands.Colorizer.Green(hash)))
 
 		if len(exportedContracts) != 0 {
 			logrus.Infof("Using contracts: \n%s",
@@ -264,7 +162,7 @@ var exportCmd = &cobra.Command{
 		}
 
 		logrus.Infof("You can view your transaction at %s",
-			colorizer.Bold(colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.co/%s/%s/local-transactions/%s", username, network.ProjectSlug, resp.Export.ID))),
+			commands.Colorizer.Bold(commands.Colorizer.Green(fmt.Sprintf("https://dashboard.tenderly.co/%s/%s/local-transactions/%s", username, network.ProjectSlug, resp.Export.ID))),
 		)
 	},
 }
@@ -275,7 +173,7 @@ func getExportNetwork() *config.ExportNetwork {
 	logrus.Info("Collecting network information...\n")
 
 	if exportProjectName != "" {
-		rest := newRest()
+		rest := commands.NewRest()
 
 		accountID := config.GetString(config.AccountID)
 
@@ -288,7 +186,7 @@ func getExportNetwork() *config.ExportNetwork {
 				),
 			)
 
-			CheckVersion(true, true)
+			commands.CheckVersion(true, true)
 
 			os.Exit(1)
 		}
@@ -297,7 +195,7 @@ func getExportNetwork() *config.ExportNetwork {
 			os.Exit(1)
 		}
 
-		project := getProjectFromFlag(exportProjectName, projectsResponse.Projects, rest)
+		project := commands.GetProjectFromFlag(exportProjectName, projectsResponse.Projects, rest)
 
 		if project == nil {
 			userError.LogErrorf("get projects call: %s", projectsResponse.Error)
@@ -327,8 +225,8 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 	if err != nil {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "unable to dial rpc server"),
-			colorizer.Sprintf("Make sure that rpc server is running at: %s.",
-				colorizer.Bold(colorizer.Red(network.RpcAddress)),
+			commands.Colorizer.Sprintf("Make sure that rpc server is running at: %s.",
+				commands.Colorizer.Bold(commands.Colorizer.Red(network.RpcAddress)),
 			),
 		)
 	}
@@ -337,7 +235,7 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 	if err != nil {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "unable to get network id"),
-			colorizer.Sprintf("Unable to get network id from rpc node."),
+			commands.Colorizer.Sprintf("Unable to get network id from rpc node."),
 		)
 	}
 
@@ -346,7 +244,7 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 	if !ok {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "unable to decode network id"),
-			colorizer.Sprintf("Unable to decode network id from rpc node."),
+			commands.Colorizer.Sprintf("Unable to decode network id from rpc node."),
 		)
 	}
 
@@ -354,19 +252,19 @@ func transactionWithState(hash string, network *config.ExportNetwork) (types.Tra
 	if err != nil {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "unable to find transaction"),
-			colorizer.Sprintf("Transaction with hash %s not found.",
-				colorizer.Bold(colorizer.Red(hash)),
+			commands.Colorizer.Sprintf("Transaction with hash %s not found.",
+				commands.Colorizer.Bold(commands.Colorizer.Red(hash)),
 			),
 		)
 	}
 
-	state, err := evm.NewProcessor(client, network.ChainConfig).ProcessTransaction(hash, forceExport)
+	state, err := evm2.NewProcessor(client, network.ChainConfig).ProcessTransaction(hash, forceExport)
 	if err != nil {
 		return nil, nil, "", userError.NewUserError(
 			errors.Wrap(err, "error processing transaction"),
-			colorizer.Sprintf(
+			commands.Colorizer.Sprintf(
 				"Transaction processing failed. To see more info about this error, please run this command with the %s flag.",
-				colorizer.Bold(colorizer.Red("--debug")),
+				commands.Colorizer.Bold(commands.Colorizer.Red("--debug")),
 			),
 		)
 	}
@@ -380,14 +278,14 @@ func contractsWithConfig(
 ) ([]providers.Contract, *payloads.Config, error) {
 	logrus.Info("Collecting contracts...")
 
-	providerConfig, err := deploymentProvider.MustGetConfig()
+	providerConfig, err := commands.DeploymentProvider.MustGetConfig()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	contracts, _, err := deploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
+	contracts, _, err := commands.DeploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), []string{networkId}, objects...)
 
-	configPayload := GetConfigPayload(providerConfig)
+	configPayload := commands.GetConfigPayload(providerConfig)
 
 	return contracts, configPayload, nil
 }
@@ -426,7 +324,7 @@ func GetNetwork(networkId string) *config.ExportNetwork {
 	if networkId == "" {
 		if len(networks) == 0 {
 			logrus.Error("You need to set up at least one exported network first.\n\n",
-				"You can do this by using the ", colorizer.Bold(colorizer.Green("tenderly export init")), " command.")
+				"You can do this by using the ", commands.Colorizer.Bold(commands.Colorizer.Green("tenderly export init")), " command.")
 			os.Exit(1)
 		} else {
 			if len(networks) == 1 {
@@ -434,9 +332,9 @@ func GetNetwork(networkId string) *config.ExportNetwork {
 					network.Name = networkId
 				}
 			} else {
-				logrus.Error(colorizer.Sprintf(
+				logrus.Error(commands.Colorizer.Sprintf(
 					"You have multiple exported network configured. Please use the %s flag to specify on which network was the transaction mined.",
-					colorizer.Bold(colorizer.Green("--export-network")),
+					commands.Colorizer.Bold(commands.Colorizer.Green("--export-network")),
 				))
 				os.Exit(1)
 			}
@@ -446,9 +344,9 @@ func GetNetwork(networkId string) *config.ExportNetwork {
 	}
 
 	if network == nil {
-		logrus.Error(colorizer.Sprintf("Couldn't find network %s in the configuration file. Please use the %s command to set up a new network.",
-			colorizer.Bold(colorizer.Red(networkId)),
-			colorizer.Bold(colorizer.Green("tenderly export init")),
+		logrus.Error(commands.Colorizer.Sprintf("Couldn't find network %s in the configuration file. Please use the %s command to set up a new network.",
+			commands.Colorizer.Bold(commands.Colorizer.Red(networkId)),
+			commands.Colorizer.Bold(commands.Colorizer.Green("tenderly export init")),
 		))
 		os.Exit(1)
 	}
@@ -476,9 +374,9 @@ func GetNetwork(networkId string) *config.ExportNetwork {
 		userError.LogErrorf("unable to read chain_config",
 			userError.NewUserError(
 				err,
-				colorizer.Sprintf(
+				commands.Colorizer.Sprintf(
 					"Failed parsing exported networks chain configuration. To see more info about this error, please run this command with the %s flag.",
-					colorizer.Bold(colorizer.Red("--debug")),
+					commands.Colorizer.Bold(commands.Colorizer.Red("--debug")),
 				),
 			),
 		)
