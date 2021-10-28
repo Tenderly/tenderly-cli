@@ -8,11 +8,12 @@ import (
 
 var (
 	RuntimeV1          = "v1"
-	TriggerTypes       = []string{"periodic", "webhook", "block", "transaction"}
+	TriggerTypes       = []string{"periodic", "webhook", "block", "transaction", "alert"}
 	PeriodicType       = "periodic"
 	WebhookType        = "webhook"
 	BlockType          = "block"
 	TransactionType    = "transaction"
+	AlertType          = "alert"
 	Invocations        = []string{"any", "direct", "internal"}
 	InvocationAny      = "any"
 	InvocationDirect   = "direct"

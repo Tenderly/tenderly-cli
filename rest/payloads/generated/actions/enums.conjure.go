@@ -489,12 +489,13 @@ const (
 	TriggerType_WEBHOOK     TriggerType_Value = "WEBHOOK"
 	TriggerType_TRANSACTION TriggerType_Value = "TRANSACTION"
 	TriggerType_BLOCK       TriggerType_Value = "BLOCK"
+	TriggerType_ALERT       TriggerType_Value = "ALERT"
 	TriggerType_UNKNOWN     TriggerType_Value = "UNKNOWN"
 )
 
 // TriggerType_Values returns all known variants of TriggerType.
 func TriggerType_Values() []TriggerType_Value {
-	return []TriggerType_Value{TriggerType_PERIODIC, TriggerType_WEBHOOK, TriggerType_TRANSACTION, TriggerType_BLOCK}
+	return []TriggerType_Value{TriggerType_PERIODIC, TriggerType_WEBHOOK, TriggerType_TRANSACTION, TriggerType_BLOCK, TriggerType_ALERT}
 }
 
 func New_TriggerType(value TriggerType_Value) TriggerType {
@@ -504,7 +505,7 @@ func New_TriggerType(value TriggerType_Value) TriggerType {
 // IsUnknown returns false for all known variants of TriggerType and true otherwise.
 func (e TriggerType) IsUnknown() bool {
 	switch e.val {
-	case TriggerType_PERIODIC, TriggerType_WEBHOOK, TriggerType_TRANSACTION, TriggerType_BLOCK:
+	case TriggerType_PERIODIC, TriggerType_WEBHOOK, TriggerType_TRANSACTION, TriggerType_BLOCK, TriggerType_ALERT:
 		return false
 	}
 	return true
@@ -537,6 +538,8 @@ func (e *TriggerType) UnmarshalText(data []byte) error {
 		*e = New_TriggerType(TriggerType_TRANSACTION)
 	case "BLOCK":
 		*e = New_TriggerType(TriggerType_BLOCK)
+	case "ALERT":
+		*e = New_TriggerType(TriggerType_ALERT)
 	}
 	return nil
 }

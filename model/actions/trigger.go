@@ -12,6 +12,7 @@ type Trigger struct {
 	Webhook     *WebhookTrigger     `json:"webhook" yaml:"webhook,omitempty"`
 	Block       *BlockTrigger       `json:"block" yaml:"block,omitempty"`
 	Transaction *TransactionTrigger `json:"transaction" yaml:"transaction,omitempty"`
+	Alert       *AlertTrigger       `json:"alert" yaml:"alert,omitempty"`
 }
 
 func (a Trigger) Validate(ctx ValidatorContext) (response ValidateResponse) {
@@ -77,6 +78,10 @@ func (a Trigger) ToRequest() *actions.Trigger {
 		val := a.Transaction.ToRequest()
 		return &val
 	}
+	if a.Alert != nil {
+		val := a.Alert.ToRequest()
+		return &val
+	}
 	return nil
 }
 
@@ -90,6 +95,8 @@ func (a Trigger) ToRequestType() actions.TriggerType {
 		return actions.New_TriggerType(actions.TriggerType_BLOCK)
 	case TransactionType:
 		return actions.New_TriggerType(actions.TriggerType_TRANSACTION)
+	case AlertType:
+		return actions.New_TriggerType(actions.TriggerType_ALERT)
 	}
 	panic("unsupported trigger type")
 }

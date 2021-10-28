@@ -53,6 +53,7 @@ type TriggerUnparsed struct {
 	Webhook     interface{} `json:"webhook,omitempty" yaml:"webhook,omitempty"`
 	Periodic    interface{} `json:"periodic,omitempty" yaml:"periodic,omitempty"`
 	Transaction interface{} `json:"transaction,omitempty" yaml:"transaction,omitempty"`
+	Alert       interface{} `json:"alert,omitempty" yaml:"alert,omitempty"`
 }
 
 func (a *ActionSpec) Parse() error {
