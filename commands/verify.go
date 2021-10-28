@@ -21,20 +21,20 @@ var verifyNetworks string
 
 func init() {
 	verifyCmd.PersistentFlags().StringVar(&verifyNetworks, "networks", "", "A comma separated list of networks to verify")
-	rootCmd.AddCommand(verifyCmd)
+	RootCmd.AddCommand(verifyCmd)
 }
 
 var verifyCmd = &cobra.Command{
 	Use:   "verify",
 	Short: "Verifies all project contracts on Tenderly",
 	Run: func(cmd *cobra.Command, args []string) {
-		rest := newRest()
+		rest := NewRest()
 
-		initProvider()
-		CheckProvider(deploymentProvider)
+		InitProvider()
+		CheckProvider(DeploymentProvider)
 		CheckLogin()
 
-		if !deploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !forceInit {
+		if !DeploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !forceInit {
 			WrongFolderMessage("verify", "cd %s; tenderly verify")
 			os.Exit(1)
 		}
@@ -55,14 +55,14 @@ var verifyCmd = &cobra.Command{
 func verifyContracts(rest *rest.Rest) error {
 	logrus.Info("Analyzing provider configuration...")
 
-	providerConfig, err := deploymentProvider.MustGetConfig()
+	providerConfig, err := DeploymentProvider.MustGetConfig()
 	if err != nil {
 		return err
 	}
 
-	networkIDs := extractNetworkIDs(verifyNetworks)
+	networkIDs := ExtractNetworkIDs(verifyNetworks)
 
-	contracts, numberOfContractsWithANetwork, err := deploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), networkIDs)
+	contracts, numberOfContractsWithANetwork, err := DeploymentProvider.GetContracts(providerConfig.AbsoluteBuildDirectoryPath(), networkIDs)
 	if err != nil {
 		return userError.NewUserError(
 			errors.Wrap(err, "unable to get provider contracts"),
@@ -73,32 +73,32 @@ func verifyContracts(rest *rest.Rest) error {
 	if len(contracts) == 0 {
 		return userError.NewUserError(
 			fmt.Errorf("no contracts found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
-			colorizer.Sprintf("No contracts detected in build directory: %s. "+
+			Colorizer.Sprintf("No contracts detected in build directory: %s. "+
 				"This can happen when no contracts have been migrated yet or the %s hasn't been run yet.",
-				colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
-				colorizer.Bold(colorizer.Green("truffle compile")),
+				Colorizer.Bold(Colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
+				Colorizer.Bold(Colorizer.Green("truffle compile")),
 			),
 		)
 	}
 	if numberOfContractsWithANetwork == 0 {
-		if deploymentProvider.GetProviderName() == providers.OpenZeppelinDeploymentProvider {
+		if DeploymentProvider.GetProviderName() == providers.OpenZeppelinDeploymentProvider {
 			return userError.NewUserError(
 				fmt.Errorf("no contracts with a netowork found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
-				colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.\n"+
+				Colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.\n"+
 					"There is currently an issue with exporting networks for regular contracts.\n The OpenZeppelin team has come up with a workaround,"+
 					"so make sure you run %s before running %s\n"+
 					"For more information refer to: %s",
-					colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
-					colorizer.Bold(colorizer.Green("npx oz add ContractName")),
-					colorizer.Bold(colorizer.Green("npx oz deploy")),
-					colorizer.Bold(colorizer.Green("https://github.com/OpenZeppelin/openzeppelin-sdk/issues/1555#issuecomment-644536123")),
+					Colorizer.Bold(Colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
+					Colorizer.Bold(Colorizer.Green("npx oz add ContractName")),
+					Colorizer.Bold(Colorizer.Green("npx oz deploy")),
+					Colorizer.Bold(Colorizer.Green("https://github.com/OpenZeppelin/openzeppelin-sdk/issues/1555#issuecomment-644536123")),
 				),
 			)
 		}
 		return userError.NewUserError(
 			fmt.Errorf("no contracts with a netowork found in build dir: %s", providerConfig.AbsoluteBuildDirectoryPath()),
-			colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
-				colorizer.Bold(colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
+			Colorizer.Sprintf("No migrated contracts detected in build directory: %s. This can happen when no contracts have been migrated yet.",
+				Colorizer.Bold(Colorizer.Red(providerConfig.AbsoluteBuildDirectoryPath())),
 			),
 		)
 	}
@@ -155,11 +155,11 @@ func verifyContracts(rest *rest.Rest) error {
 					}
 				}
 				if !found {
-					nonPushedContracts = append(nonPushedContracts, colorizer.Sprintf(
+					nonPushedContracts = append(nonPushedContracts, Colorizer.Sprintf(
 						"• %s on network %s with address %s",
-						colorizer.Bold(colorizer.Red(contract.Name)),
-						colorizer.Bold(colorizer.Red(networkId)),
-						colorizer.Bold(colorizer.Red(network.Address)),
+						Colorizer.Bold(Colorizer.Red(contract.Name)),
+						Colorizer.Bold(Colorizer.Red(networkId)),
+						Colorizer.Bold(Colorizer.Red(network.Address)),
 					))
 				}
 			}

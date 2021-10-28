@@ -1,11 +1,12 @@
 package hardhat
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/call"
-	"strconv"
-	"strings"
 )
 
 type DeploymentProvider struct {
@@ -20,6 +21,7 @@ func NewDeploymentProvider() *DeploymentProvider {
 		call.NewContractCalls(),
 		call.NewExportCalls(),
 		call.NewNetworkCalls(),
+		call.NewActionCalls(),
 	)
 
 	networks, err := rest.Networks.GetPublicNetworks()

@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"os"
 	"os/user"
@@ -28,8 +29,8 @@ const (
 
 	OrganizationName = "org_name"
 
-	Exports = "exports"
-
+	Exports  = "exports"
+	Actions  = "actions"
 	Projects = "projects"
 )
 
@@ -336,6 +337,17 @@ func WriteExportNetwork(networkId string, network *ExportNetwork) error {
 	return WriteProjectConfig()
 }
 
+func IsAnyActionsInit() bool {
+	actions := projectConfig.GetStringMap(Actions)
+	return len(actions) > 0
+}
+
+func IsActionsInit(projectSlug string) bool {
+	actions := projectConfig.GetStringMap(Actions)
+	_, exists := actions[projectSlug]
+	return exists
+}
+
 func SetProjectConfig(key string, value interface{}) {
 	projectConfig.Set(key, value)
 }
@@ -386,6 +398,11 @@ func WriteGlobalConfig() error {
 	}
 
 	return nil
+}
+
+// ReadProjectConfig is necessary because viper reader doesn't respect custom unmarshaler
+func ReadProjectConfig() ([]byte, error) {
+	return ioutil.ReadFile(filepath.Join(ProjectDirectory, fmt.Sprintf("%s.yaml", ProjectConfigName)))
 }
 
 func getString(key string) string {

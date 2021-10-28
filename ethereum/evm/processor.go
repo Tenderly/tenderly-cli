@@ -12,8 +12,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/pkg/errors"
-	"github.com/tenderly/tenderly-cli/commands/state"
 	"github.com/tenderly/tenderly-cli/ethereum"
+	state2 "github.com/tenderly/tenderly-cli/ethereum/state"
 	tenderlyTypes "github.com/tenderly/tenderly-cli/ethereum/types"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/userError"
@@ -61,7 +61,7 @@ func (p *Processor) ProcessTransaction(hash string, force bool) (*model.Transact
 }
 
 func (p *Processor) processTransactions(ethBlock tenderlyTypes.Block, ti int64, force bool) (*model.TransactionState, error) {
-	stateDB := state.NewState(p.client, ethBlock.Number().Value())
+	stateDB := state2.NewState(p.client, ethBlock.Number().Value())
 
 	blockHeader, err := p.client.GetBlockByHash(ethBlock.Hash().String())
 	if err != nil {
@@ -107,7 +107,7 @@ func (p *Processor) processTransactions(ethBlock tenderlyTypes.Block, ti int64, 
 }
 
 func (p Processor) applyTransactions(blockHash common.Hash, txs []tenderlyTypes.Transaction,
-	stateDB *state.StateDB, header types.Header, author *common.Address, force bool,
+	stateDB *state2.StateDB, header types.Header, author *common.Address, force bool,
 ) (*model.TransactionState, error) {
 	var txState *model.TransactionState
 	for ti := 0; ti < len(txs); ti++ {
@@ -150,7 +150,7 @@ func (p Processor) applyTransactions(blockHash common.Hash, txs []tenderlyTypes.
 	return txState, nil
 }
 
-func (p Processor) applyTransaction(tx tenderlyTypes.Transaction, stateDB *state.StateDB,
+func (p Processor) applyTransaction(tx tenderlyTypes.Transaction, stateDB *state2.StateDB,
 	header types.Header, author *common.Address,
 ) (*model.TransactionState, error) {
 	message := newMessage(tx)
@@ -205,7 +205,7 @@ func newMessage(tx tenderlyTypes.Transaction) types.Message {
 		tx.Input(), accessList, false)
 }
 
-func stateObjects(stateDB *state.StateDB) (stateObjects []*model.StateObject) {
+func stateObjects(stateDB *state2.StateDB) (stateObjects []*model.StateObject) {
 	for _, stateObject := range stateDB.GetStateObjects() {
 		if stateObject.Used() {
 			stateObjects = append(stateObjects, &model.StateObject{

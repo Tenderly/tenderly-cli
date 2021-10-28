@@ -1,8 +1,11 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/brownie"
 	"github.com/tenderly/tenderly-cli/buidler"
@@ -11,9 +14,6 @@ import (
 	"github.com/tenderly/tenderly-cli/openzeppelin"
 	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/truffle"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/tenderly/tenderly-cli/model"
@@ -23,7 +23,7 @@ import (
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
-func newRest() *rest.Rest {
+func NewRest() *rest.Rest {
 	return rest.NewRest(
 		call.NewAuthCalls(),
 		call.NewUserCalls(),
@@ -31,12 +31,13 @@ func newRest() *rest.Rest {
 		call.NewContractCalls(),
 		call.NewExportCalls(),
 		call.NewNetworkCalls(),
+		call.NewActionCalls(),
 	)
 }
 
-var deploymentProvider providers.DeploymentProvider
+var DeploymentProvider providers.DeploymentProvider
 
-func extractNetworkIDs(networkIDs string) []string {
+func ExtractNetworkIDs(networkIDs string) []string {
 	if networkIDs == "" {
 		return nil
 	}
@@ -51,29 +52,7 @@ func extractNetworkIDs(networkIDs string) []string {
 	)
 }
 
-func promptExportNetwork() string {
-	prompt := promptui.Prompt{
-		Label: "Choose the name for the exported network",
-		Validate: func(input string) error {
-			if len(input) == 0 {
-				return errors.New("please enter the exported network name")
-			}
-
-			return nil
-		},
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		userError.LogErrorf("prompt export network failed: %s", err)
-		os.Exit(1)
-	}
-
-	return result
-}
-
-func getProjectFromFlag(projectName string, projects []*model.Project, rest *rest.Rest) *model.Project {
+func GetProjectFromFlag(projectName string, projects []*model.Project, rest *rest.Rest) *model.Project {
 	if projectName == "" {
 		return nil
 	}
@@ -112,7 +91,7 @@ func getProjectFromFlag(projectName string, projects []*model.Project, rest *res
 	return projectResponse.Project
 }
 
-func promptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Project {
+func PromptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Project {
 	var projectNames []string
 	projectNames = append(projectNames, "Create new project")
 	for _, project := range projects {
@@ -174,61 +153,7 @@ func promptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Proj
 	return projects[index-1]
 }
 
-func promptRpcAddress() string {
-	prompt := promptui.Prompt{
-		Label: "Enter rpc address (default: 127.0.0.1:8545)",
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		userError.LogErrorf("prompt rpc address failed: %s", err)
-		os.Exit(1)
-	}
-
-	if result == "" {
-		result = "127.0.0.1:8545"
-	}
-
-	return result
-}
-
-func promptForkedNetwork(forkedNetworkNames []string) string {
-	promptNetworks := promptui.Select{
-		Label: "If you are forking a public network, please define which one",
-		Items: forkedNetworkNames,
-	}
-
-	index, _, err := promptNetworks.Run()
-
-	if err != nil {
-		userError.LogErrorf("prompt forked network failed: %s", err)
-		os.Exit(1)
-	}
-
-	if index == 0 {
-		return ""
-	}
-
-	return forkedNetworkNames[index]
-}
-
-func promptProviderSelect(deploymentProviders []providers.DeploymentProviderName) providers.DeploymentProviderName {
-	promptProviders := promptui.Select{
-		Label: "Select Provider",
-		Items: deploymentProviders,
-	}
-
-	index, _, err := promptProviders.Run()
-	if err != nil {
-		userError.LogErrorf("prompt provider failed: %s", err)
-		os.Exit(1)
-	}
-
-	return deploymentProviders[index]
-}
-
-func initProvider() {
+func InitProvider() {
 	trufflePath := filepath.Join(config.ProjectDirectory, providers.NewTruffleConfigFile)
 	openZeppelinPath := filepath.Join(config.ProjectDirectory, providers.OpenzeppelinConfigFile)
 	oldTrufflePath := filepath.Join(config.ProjectDirectory, providers.OldTruffleConfigFile)
@@ -276,7 +201,7 @@ func initProvider() {
 		_, err := os.Stat(openZeppelinPath)
 
 		if err == nil {
-			deploymentProvider = openzeppelin.NewDeploymentProvider()
+			DeploymentProvider = openzeppelin.NewDeploymentProvider()
 			return
 		}
 
@@ -294,9 +219,9 @@ func initProvider() {
 		_, err := os.Stat(buidlerPath)
 
 		if err == nil {
-			deploymentProvider = buidler.NewDeploymentProvider()
+			DeploymentProvider = buidler.NewDeploymentProvider()
 
-			if deploymentProvider == nil {
+			if DeploymentProvider == nil {
 				logrus.Error("Error initializing buidler")
 			}
 
@@ -317,9 +242,9 @@ func initProvider() {
 		_, err := os.Stat(hardhatPath)
 
 		if err == nil {
-			deploymentProvider = hardhat.NewDeploymentProvider()
+			DeploymentProvider = hardhat.NewDeploymentProvider()
 
-			if deploymentProvider == nil {
+			if DeploymentProvider == nil {
 				logrus.Error("Error initializing hardhat")
 			}
 
@@ -338,9 +263,9 @@ func initProvider() {
 		_, err := os.Stat(hardhatPathTs)
 
 		if err == nil {
-			deploymentProvider = hardhat.NewDeploymentProvider()
+			DeploymentProvider = hardhat.NewDeploymentProvider()
 
-			if deploymentProvider == nil {
+			if DeploymentProvider == nil {
 				logrus.Error("Error initializing hardhat")
 			}
 
@@ -358,7 +283,7 @@ func initProvider() {
 	if provider == providers.BrownieDeploymentProvider || provider == "" {
 		_, err := os.Stat(browniePath)
 		if err == nil {
-			deploymentProvider = brownie.NewDeploymentProvider()
+			DeploymentProvider = brownie.NewDeploymentProvider()
 			return
 		}
 
@@ -373,7 +298,7 @@ func initProvider() {
 	_, err := os.Stat(trufflePath)
 
 	if err == nil {
-		deploymentProvider = truffle.NewDeploymentProvider()
+		DeploymentProvider = truffle.NewDeploymentProvider()
 		return
 	}
 
@@ -392,7 +317,7 @@ func initProvider() {
 	_, err = os.Stat(oldTrufflePath)
 
 	if err == nil {
-		deploymentProvider = truffle.NewDeploymentProvider()
+		DeploymentProvider = truffle.NewDeploymentProvider()
 		return
 	}
 
@@ -400,6 +325,21 @@ func initProvider() {
 		fmt.Sprintf("unable to fetch config\n%s",
 			"Couldn't read old Truffle config file"),
 	)
+}
+
+func promptProviderSelect(deploymentProviders []providers.DeploymentProviderName) providers.DeploymentProviderName {
+	promptProviders := promptui.Select{
+		Label: "Select Provider",
+		Items: deploymentProviders,
+	}
+
+	index, _, err := promptProviders.Run()
+	if err != nil {
+		userError.LogErrorf("prompt provider failed: %s", err)
+		os.Exit(1)
+	}
+
+	return deploymentProviders[index]
 }
 
 func GetConfigPayload(providerConfig *providers.Config) *payloads.Config {
