@@ -85,7 +85,7 @@ var initCmd = &cobra.Command{
 		project := GetProjectFromFlag(projectName, projectsResponse.Projects, rest)
 
 		if project == nil {
-			project = PromptProjectSelect(projectsResponse.Projects, rest)
+			project = PromptProjectSelect(projectsResponse.Projects, rest, true)
 		}
 
 		projectSlug := project.Slug

@@ -10,8 +10,10 @@ require (
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/ethereum/go-ethereum v1.10.8
 	github.com/flynn/json5 v0.0.0-20160717195620-7620272ed633
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-kit/kit v0.9.0 // indirect
+	github.com/google/go-github/v37 v37.0.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/go-version v1.2.0
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
@@ -24,6 +26,7 @@ require (
 	github.com/palantir/pkg/safeyaml v1.0.1
 	github.com/pkg/errors v0.9.1
 	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f // indirect
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1

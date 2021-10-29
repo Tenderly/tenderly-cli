@@ -6,9 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/brownie"
 	"github.com/tenderly/tenderly-cli/buidler"
+	"github.com/tenderly/tenderly-cli/commands/util"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/hardhat"
 	"github.com/tenderly/tenderly-cli/openzeppelin"
@@ -91,9 +93,11 @@ func GetProjectFromFlag(projectName string, projects []*model.Project, rest *res
 	return projectResponse.Project
 }
 
-func PromptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Project {
+func PromptProjectSelect(projects []*model.Project, rest *rest.Rest, createNewOption bool) *model.Project {
 	var projectNames []string
-	projectNames = append(projectNames, "Create new project")
+	if createNewOption {
+		projectNames = append(projectNames, "Create new project")
+	}
 	for _, project := range projects {
 		var label string
 		if !project.IsShared {
@@ -117,6 +121,10 @@ func PromptProjectSelect(projects []*model.Project, rest *rest.Rest) *model.Proj
 	if err != nil {
 		userError.LogErrorf("prompt project failed: %s", err)
 		os.Exit(1)
+	}
+
+	if !createNewOption {
+		return projects[index]
 	}
 
 	if index == 0 {
@@ -371,4 +379,38 @@ func GetConfigPayload(providerConfig *providers.Config) *payloads.Config {
 	}
 
 	return nil
+}
+
+func PromptNewDirectory(forMessage string, defaultPath string) string {
+	prompt := promptui.Prompt{
+		Label: fmt.Sprintf("Enter directory for %s (default: %s)", forMessage, defaultPath),
+		Validate: func(input string) error {
+			if input == "" {
+				input = defaultPath
+			}
+
+			if strings.Contains(input, "..") {
+				return errors.New("\"..\" is restricted")
+			}
+			if util.ExistFile(input) {
+				return errors.New("directory is a file")
+			}
+			if util.ExistDir(input) {
+				return errors.New("directory already exists")
+			}
+
+			return nil
+		},
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		userError.LogErrorf("prompt new directory failed: %s", err)
+		os.Exit(1)
+	}
+
+	if result == "" {
+		return defaultPath
+	}
+	return result
 }

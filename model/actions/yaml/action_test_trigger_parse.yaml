@@ -1,0 +1,16 @@
+function: src:hello
+trigger:
+  type: transaction
+  transaction:
+    status: pending
+    filters:
+      - network: 42
+        contract:
+          address: 0xd34cc8798a5e7476c510afef2044f69c7ba838a2e245573e21f27b9dd594eb5e
+        function:
+          name: _field
+          parameter:
+            key: abc
+            value:
+              key: abc
+              value: abc

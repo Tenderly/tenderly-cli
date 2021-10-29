@@ -1,0 +1,105 @@
+type: transaction
+transaction:
+  status:
+#    - pending
+    - mined
+    - confirmed10
+#    - reorganized
+  filters:
+    - network: 1
+      status:
+        - success
+        - fail
+      from: 0xf63c48626f874bf5604D3Ba9f4A85d5cE58f8019
+      to:
+        - 0x003b3625cDcb5958E9709F4Ba8E340Cb0783DeaE
+        - 0x26997bd8473E0Dd0b37eB1711B7c1eE2354d78e4
+      value:
+        gte: 100
+        lte: 1000
+      gasLimit:
+        - lt: 100
+        - gt: 1000
+      gasUsed:
+        eq: 9999
+      fee:
+        - lte: 100
+        - gte: 1000
+      contract:
+        address: 0x13253c152f4D724D15D7B064DE106A739551dA5F
+#      ethBalance:
+#        - account:
+#            address: 0x5c2637BdE17f459B8CbfC39c31D0b42A3B1ED820
+#          value:
+#            lte: 100
+#        - value:
+#            gte: 1000000
+      function:
+        - signature: 0x1D6D560f
+        - name: myFunction
+        - name: myParameterFunction
+#          parameter:
+#            key: _arg1
+#            value:
+#              key: myKey
+#              value:
+#                eq: 100
+      eventEmitted:
+        - contract:
+            address: 0xFc4c08972fa997C447982D634b0B48C554d92CEe
+          name: _myEvent
+        - name: transferEvent
+#          parameter:
+#            key: amount
+#            value:
+#              gte: 1000000
+#      stateChanged:
+#        - field: myStringField
+#          value: ExpectedNewValue
+#        - contract:
+#            address: 0x5fa999A9816C708b5Bb57eF433E3c5C35AB5f9A5
+#          field: myMapField
+#          previousValue:
+#            key: internalCnt
+#            value:
+#              lte: 100
+    - network:
+        - 1
+        - 42
+      status: success
+      from:
+        - 0x7ebB3Dca1C281b23D5B73175f10cA5A0a309B01F
+        - 0xD3a02149A236b2547Cc3C897Fb41C1a962f881AE
+      to: 0x0Cbe67328489D64efF3fF42814eb8eE8bd948bCE
+      value:
+        - lt: 100
+        - gt: 1000
+      gasLimit:
+        lt: 1000
+      gasUsed:
+        - lte: 100
+        - gte: 100
+      fee:
+        eq: 100
+#      ethBalance:
+#        contract:
+#          address: 0x1D6D560f9BA5506Cf815706700d77497bc63Cca6
+#          invocation: direct
+#        value:
+#          eq: 1000000
+#      function:
+#        contract:
+#          address: 0x6118f6F2D9eCe75ad7537B4ba1B9397Bc6e3bAF6
+#          invocation: any
+#        signature: 0x1D6D560f
+      eventEmitted:
+        contract:
+          address: 0xC02d30F6209c3198dA6787B77a37d32d8c9e6cd6
+        id: 0x4C6a36806CA675b60616B8ad1eeF9094a1daFcE7
+#      stateChanged:
+#        contract:
+#          address: 0x8E2e537701E1d22c7eF6a02394Ee3dc61beBA1e5
+#          invocation: internal
+#        key: 0xAE5674FC78b362Da157Ae5ef9596f44f58298E7f
+
+

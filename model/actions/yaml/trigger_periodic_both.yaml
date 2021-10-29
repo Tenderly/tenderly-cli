@@ -1,0 +1,4 @@
+type: periodic
+periodic:
+  interval: 5m
+  cron: "* * * * *"

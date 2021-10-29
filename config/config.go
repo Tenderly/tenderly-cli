@@ -11,6 +11,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/tenderly/tenderly-cli/model/actions"
 	"github.com/tenderly/tenderly-cli/userError"
 
 	"github.com/spf13/viper"
@@ -338,14 +339,29 @@ func WriteExportNetwork(networkId string, network *ExportNetwork) error {
 }
 
 func IsAnyActionsInit() bool {
-	actions := projectConfig.GetStringMap(Actions)
-	return len(actions) > 0
+	act := projectConfig.GetStringMap(Actions)
+	return len(act) > 0
 }
 
 func IsActionsInit(projectSlug string) bool {
-	actions := projectConfig.GetStringMap(Actions)
-	_, exists := actions[projectSlug]
+	act := projectConfig.GetStringMap(Actions)
+	_, exists := act[projectSlug]
 	return exists
+}
+
+func MustWriteActionsInit(projectSlug string, projectActions *actions.ProjectActions) {
+	act := projectConfig.GetStringMap(Actions)
+	act[projectSlug] = projectActions
+
+	projectConfig.Set(Actions, act)
+	err := WriteProjectConfig()
+	if err != nil {
+		userError.LogErrorf(
+			"write project config: %s",
+			userError.NewUserError(err, "Couldn't write project config file"),
+		)
+		os.Exit(1)
+	}
 }
 
 func SetProjectConfig(key string, value interface{}) {
