@@ -28,7 +28,7 @@ func (t *PeriodicTrigger) Validate(ctx ValidatorContext) (response ValidateRespo
 		// Set cron
 		cron, ok := IntervalToCron[lower]
 		if !ok {
-			response.Error(ctx, MsgIntervalNotSupported, t.Interval, Intervals)
+			response.Error(ctx, MsgIntervalNotSupported, *t.Interval, Intervals)
 		} else {
 			t.Cron = &cron
 		}
