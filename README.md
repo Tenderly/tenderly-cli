@@ -154,7 +154,7 @@ tenderly export init
 
 ### Export
 
-The `export` command can be used to access all of the tooling available at https://dashboard.tenderly.co/ but for local transactions.
+The `export` command can be used to access transaction debugging tooling available at https://dashboard.tenderly.co/ but for local transactions.
 
 
 Use the
