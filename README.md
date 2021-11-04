@@ -247,7 +247,7 @@ tenderly version
 
 ### Who am I?
 
-The `whomai` command prints out basic information about the currently logged in account
+The `whoami` command prints out basic information about the currently logged in account
 
 ```
 tenderly whoami
