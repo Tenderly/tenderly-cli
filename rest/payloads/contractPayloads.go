@@ -16,9 +16,27 @@ type UploadContractsResponse struct {
 }
 
 type Config struct {
-	OptimizationsUsed  *bool   `json:"optimizations_used,omitempty"`
-	OptimizationsCount *int    `json:"optimizations_count,omitempty"`
-	EvmVersion         *string `json:"evm_version,omitempty"`
+	OptimizationsUsed  *bool          `json:"optimizations_used,omitempty"`
+	OptimizationsCount *int           `json:"optimizations_count,omitempty"`
+	EvmVersion         *string        `json:"evm_version,omitempty"`
+	Details            *ConfigDetails `json:"details,omitempty"`
+}
+
+type ConfigDetails struct {
+	Peephole          *bool       `json:"peephole,omitempty"`
+	JumpdestRemover   *bool       `json:"jumpdestRemover,omitempty"`
+	OrderLiterals     *bool       `json:"orderLiterals,omitempty"`
+	Deduplicate       *bool       `json:"deduplicate,omitempty"`
+	Cse               *bool       `json:"cse,omitempty"`
+	ConstantOptimizer *bool       `json:"constantOptimizer,omitempty"`
+	Yul               *bool       `json:"yul,omitempty"`
+	Inliner           *bool       `json:"inliner,omitempty"`
+	YulDetails        *YulDetails `json:"yulDetails,omitempty"`
+}
+
+type YulDetails struct {
+	StackAllocation *bool   `json:"stackAllocation,omitempty"`
+	OptimizerSteps  *string `json:"optimizerSteps,omitempty"`
 }
 
 func ParseNewTruffleConfig(compilers map[string]providers.Compiler) *Config {
@@ -41,6 +59,24 @@ func ParseNewTruffleConfig(compilers map[string]providers.Compiler) *Config {
 	if compiler.Settings.Optimizer != nil {
 		payload.OptimizationsUsed = compiler.Settings.Optimizer.Enabled
 		payload.OptimizationsCount = compiler.Settings.Optimizer.Runs
+		if compiler.Settings.Optimizer.Details != nil {
+			payload.Details = &ConfigDetails{
+				Peephole:          compiler.Settings.Optimizer.Details.Peephole,
+				JumpdestRemover:   compiler.Settings.Optimizer.Details.JumpdestRemover,
+				OrderLiterals:     compiler.Settings.Optimizer.Details.OrderLiterals,
+				Deduplicate:       compiler.Settings.Optimizer.Details.Deduplicate,
+				Cse:               compiler.Settings.Optimizer.Details.Cse,
+				ConstantOptimizer: compiler.Settings.Optimizer.Details.ConstantOptimizer,
+				Yul:               compiler.Settings.Optimizer.Details.Yul,
+				Inliner:           compiler.Settings.Optimizer.Details.Inliner,
+			}
+			if compiler.Settings.Optimizer.Details.YulDetails != nil {
+				payload.Details.YulDetails = &YulDetails{
+					StackAllocation: compiler.Settings.Optimizer.Details.YulDetails.StackAllocation,
+					OptimizerSteps:  compiler.Settings.Optimizer.Details.YulDetails.OptimizerSteps,
+				}
+			}
+		}
 	}
 
 	return &payload
@@ -73,6 +109,24 @@ func ParseSolcConfigWithOptimizer(compilers map[string]providers.Compiler) *Conf
 	if compiler.Optimizer != nil {
 		payload.OptimizationsUsed = compiler.Optimizer.Enabled
 		payload.OptimizationsCount = compiler.Optimizer.Runs
+		if compiler.Optimizer.Details != nil {
+			payload.Details = &ConfigDetails{
+				Peephole:          compiler.Settings.Optimizer.Details.Peephole,
+				JumpdestRemover:   compiler.Settings.Optimizer.Details.JumpdestRemover,
+				OrderLiterals:     compiler.Settings.Optimizer.Details.OrderLiterals,
+				Deduplicate:       compiler.Settings.Optimizer.Details.Deduplicate,
+				Cse:               compiler.Settings.Optimizer.Details.Cse,
+				ConstantOptimizer: compiler.Settings.Optimizer.Details.ConstantOptimizer,
+				Yul:               compiler.Settings.Optimizer.Details.Yul,
+				Inliner:           compiler.Settings.Optimizer.Details.Inliner,
+			}
+			if compiler.Optimizer.Details.YulDetails != nil {
+				payload.Details.YulDetails = &YulDetails{
+					StackAllocation: compiler.Settings.Optimizer.Details.YulDetails.StackAllocation,
+					OptimizerSteps:  compiler.Settings.Optimizer.Details.YulDetails.OptimizerSteps,
+				}
+			}
+		}
 	}
 
 	return &payload
@@ -92,6 +146,24 @@ func ParseSolcConfigWithSettings(compilers map[string]providers.Compiler) *Confi
 	if compiler.Settings != nil && compiler.Settings.Optimizer != nil {
 		payload.OptimizationsUsed = compiler.Settings.Optimizer.Enabled
 		payload.OptimizationsCount = compiler.Settings.Optimizer.Runs
+		if compiler.Settings.Optimizer.Details != nil {
+			payload.Details = &ConfigDetails{
+				Peephole:          compiler.Settings.Optimizer.Details.Peephole,
+				JumpdestRemover:   compiler.Settings.Optimizer.Details.JumpdestRemover,
+				OrderLiterals:     compiler.Settings.Optimizer.Details.OrderLiterals,
+				Deduplicate:       compiler.Settings.Optimizer.Details.Deduplicate,
+				Cse:               compiler.Settings.Optimizer.Details.Cse,
+				ConstantOptimizer: compiler.Settings.Optimizer.Details.ConstantOptimizer,
+				Yul:               compiler.Settings.Optimizer.Details.Yul,
+				Inliner:           compiler.Settings.Optimizer.Details.Inliner,
+			}
+			if compiler.Settings.Optimizer.Details.YulDetails != nil {
+				payload.Details.YulDetails = &YulDetails{
+					StackAllocation: compiler.Settings.Optimizer.Details.YulDetails.StackAllocation,
+					OptimizerSteps:  compiler.Settings.Optimizer.Details.YulDetails.OptimizerSteps,
+				}
+			}
+		}
 	}
 
 	return &payload

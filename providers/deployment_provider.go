@@ -3,11 +3,12 @@ package providers
 import (
 	"encoding/hex"
 	"fmt"
+	"path/filepath"
+	"time"
+
 	"github.com/tenderly/tenderly-cli/ethereum"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/stacktrace"
-	"path/filepath"
-	"time"
 )
 
 type DeploymentProvider interface {
@@ -100,8 +101,26 @@ type CompilerSettings struct {
 }
 
 type Optimizer struct {
-	Enabled *bool `json:"enabled"`
-	Runs    *int  `json:"runs"`
+	Enabled *bool             `json:"enabled"`
+	Runs    *int              `json:"runs"`
+	Details *OptimizerDetails `json:"details,omitempty"`
+}
+
+type OptimizerDetails struct {
+	Peephole          *bool       `json:"peephole,omitempty"`
+	JumpdestRemover   *bool       `json:"jumpdestRemover,omitempty"`
+	OrderLiterals     *bool       `json:"orderLiterals,omitempty"`
+	Deduplicate       *bool       `json:"deduplicate,omitempty"`
+	Cse               *bool       `json:"cse,omitempty"`
+	ConstantOptimizer *bool       `json:"constantOptimizer,omitempty"`
+	Yul               *bool       `json:"yul,omitempty"`
+	Inliner           *bool       `json:"inliner,omitempty"`
+	YulDetails        *YulDetails `json:"yulDetails,omitempty"`
+}
+
+type YulDetails struct {
+	StackAllocation *bool   `json:"stackAllocation,omitempty"`
+	OptimizerSteps  *string `json:"optimizerSteps,omitempty"`
 }
 
 type Contract struct {
