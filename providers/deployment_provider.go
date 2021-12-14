@@ -107,20 +107,20 @@ type Optimizer struct {
 }
 
 type OptimizerDetails struct {
-	Peephole          bool        `json:"peephole,omitempty"`
-	JumpdestRemover   bool        `json:"jumpdestRemover,omitempty"`
-	OrderLiterals     bool        `json:"orderLiterals,omitempty"`
-	Deduplicate       bool        `json:"deduplicate,omitempty"`
-	Cse               bool        `json:"cse,omitempty"`
-	ConstantOptimizer bool        `json:"constantOptimizer,omitempty"`
-	Yul               bool        `json:"yul,omitempty"`
+	Peephole          *bool       `json:"peephole,omitempty"`
+	JumpdestRemover   *bool       `json:"jumpdestRemover,omitempty"`
+	OrderLiterals     *bool       `json:"orderLiterals,omitempty"`
+	Deduplicate       *bool       `json:"deduplicate,omitempty"`
+	Cse               *bool       `json:"cse,omitempty"`
+	ConstantOptimizer *bool       `json:"constantOptimizer,omitempty"`
+	Yul               *bool       `json:"yul,omitempty"`
 	Inliner           *bool       `json:"inliner,omitempty"`
 	YulDetails        *YulDetails `json:"yulDetails,omitempty"`
 }
 
 type YulDetails struct {
-	StackAllocation bool   `json:"stackAllocation,omitempty"`
-	OptimizerSteps  string `json:"optimizerSteps,omitempty"`
+	StackAllocation *bool   `json:"stackAllocation,omitempty"`
+	OptimizerSteps  *string `json:"optimizerSteps,omitempty"`
 }
 
 type Contract struct {
