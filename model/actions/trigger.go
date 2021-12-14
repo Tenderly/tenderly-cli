@@ -31,7 +31,7 @@ func (a Trigger) Validate(ctx ValidatorContext) (response ValidateResponse) {
 	}
 
 	// This handles just type
-	if a.Periodic == nil && a.Webhook == nil && a.Block == nil && a.Transaction == nil {
+	if a.Periodic == nil && a.Webhook == nil && a.Block == nil && a.Transaction == nil && a.Alert == nil {
 		return response
 	}
 
@@ -56,6 +56,11 @@ func (a Trigger) Validate(ctx ValidatorContext) (response ValidateResponse) {
 			return response.Error(ctx, MsgTriggerTypeMismatch, a.Type)
 		}
 		return response.Merge(a.Transaction.Validate(ctx.With(a.Type)))
+	case AlertType:
+		if a.Alert == nil {
+			return response.Error(ctx, MsgTriggerTypeMismatch, a.Type)
+		}
+		return response.Merge(a.Alert.Validate(ctx.With(a.Type)))
 	}
 
 	panic("Unhandled type in Trigger Validate")
