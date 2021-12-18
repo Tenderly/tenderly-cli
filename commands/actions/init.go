@@ -19,7 +19,7 @@ import (
 
 const (
 	TypescriptActionsDependency        = "@tenderly/actions"
-	TypescriptActionsDependencyVersion = "^0.0.4"
+	TypescriptActionsDependencyVersion = "^0.0.5"
 	LanguageJavaScript                 = "javascript"
 	LanguageTypeScript                 = "typescript"
 )
