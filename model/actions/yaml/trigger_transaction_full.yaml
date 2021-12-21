@@ -49,6 +49,10 @@ transaction:
             address: 0xFc4c08972fa997C447982D634b0B48C554d92CEe
           name: _myEvent
         - name: transferEvent
+      logEmitted:
+        startsWith:
+          - 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+          - 0x0000000000000000000000000000000000000000000000000000000000000000
 #          parameter:
 #            key: amount
 #            value:
@@ -96,6 +100,11 @@ transaction:
         contract:
           address: 0xC02d30F6209c3198dA6787B77a37d32d8c9e6cd6
         id: 0x4C6a36806CA675b60616B8ad1eeF9094a1daFcE7
+      logEmitted:
+        - startsWith:
+            - 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+        - startsWith:
+            - 0x0000000000000000000000000000000000000000000000000000000000000000
 #      stateChanged:
 #        contract:
 #          address: 0x8E2e537701E1d22c7eF6a02394Ee3dc61beBA1e5

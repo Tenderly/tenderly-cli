@@ -69,4 +69,8 @@ var (
 	MsgTxStatusNotSupported                = "transaction status '%s' not supported, supported %s"
 	MsgStatusRequired                      = "'status' must have at least one element"
 	MsgFiltersRequired                     = "'filters' must have at least one element"
+	MsgStartsWithEmpty                     = "'startsWith' must have at least one element"
+	MsgStartsWithInvalid                   = "'startsWith' element must be hex encoded and start with 0x"
+	MsgHexValueEmpty                       = "expected non-empty hex value"
+	MsgHexValueInvalid                     = "hex value must start with 0x, got %s"
 )

@@ -252,7 +252,6 @@ func (r *EventEmittedValue) ToRequest() actions.EventEmittedFilter {
 }
 
 func (r *EventEmittedValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
-
 	// Modify
 	if r.Id != nil {
 		id := strings.ToLower(strings.TrimSpace(*r.Id))
@@ -318,6 +317,74 @@ func (e *EventEmittedField) UnmarshalJSON(bytes []byte) error {
 
 func (e *EventEmittedField) ToRequest() (response []actions.EventEmittedFilter) {
 	for _, value := range e.Values {
+		response = append(response, value.ToRequest())
+	}
+	return response
+}
+
+type LogEmittedValue struct {
+	StartsWith []Hex `yaml:"startsWith" json:"startsWith"`
+}
+
+func (l *LogEmittedValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
+	if len(l.StartsWith) == 0 {
+		return response.Error(ctx, MsgStartsWithEmpty)
+	}
+	for i, with := range l.StartsWith {
+		nextCtx := ctx
+		if len(l.StartsWith) > 1 {
+			nextCtx = ctx.With(strconv.Itoa(i))
+		}
+		response.Merge(with.Validate(nextCtx))
+	}
+	return response
+}
+
+func (l *LogEmittedValue) ToRequest() actions.LogEmittedFilter {
+	topicsStartsWith := make([]string, len(l.StartsWith))
+	for i, with := range l.StartsWith {
+		topicsStartsWith[i] = with.Value
+	}
+	return actions.LogEmittedFilter{
+		TopicsStartsWith: topicsStartsWith,
+	}
+}
+
+type LogEmittedField struct {
+	Values []LogEmittedValue
+}
+
+func (l *LogEmittedField) Validate(ctx ValidatorContext) (response ValidateResponse) {
+	for i, value := range l.Values {
+		nextCtx := ctx
+		if len(l.Values) > 1 {
+			nextCtx = ctx.With(strconv.Itoa(i))
+		}
+		response.Merge(value.Validate(nextCtx))
+	}
+	return response
+}
+
+func (l *LogEmittedField) UnmarshalJSON(bytes []byte) error {
+	var maybeSingle LogEmittedValue
+	errSingle := json.Unmarshal(bytes, &maybeSingle)
+	if errSingle == nil {
+		l.Values = []LogEmittedValue{maybeSingle}
+		return nil
+	}
+
+	var maybeList []LogEmittedValue
+	errList := json.Unmarshal(bytes, &maybeList)
+	if errList == nil {
+		l.Values = maybeList
+		return nil
+	}
+
+	return errors.New("Failed to unmarshal 'logEmitted' field")
+}
+
+func (l *LogEmittedField) ToRequest() (response []actions.LogEmittedFilter) {
+	for _, value := range l.Values {
 		response = append(response, value.ToRequest())
 	}
 	return response
@@ -452,6 +519,7 @@ type TransactionFilter struct {
 
 	Function     *FunctionField     `yaml:"function" json:"function"`
 	EventEmitted *EventEmittedField `yaml:"eventEmitted" json:"eventEmitted"`
+	LogEmitted   *LogEmittedField   `yaml:"logEmitted" json:"logEmitted"`
 
 	EthBalance   *EthBalanceField   `yaml:"ethBalance" json:"ethBalance"`
 	StateChanged *StateChangedField `yaml:"stateChanged" json:"stateChanged"`
@@ -487,6 +555,9 @@ func (t *TransactionFilter) ToRequest() (response actions.Filter) {
 	}
 	if t.EventEmitted != nil {
 		response.EventEmitted = t.EventEmitted.ToRequest()
+	}
+	if t.LogEmitted != nil {
+		response.LogEmmitted = t.LogEmitted.ToRequest()
 	}
 
 	// TODO(marko): Support eth balance and state changed
@@ -550,6 +621,9 @@ func (t *TransactionFilter) Validate(ctx ValidatorContext) (response ValidateRes
 	}
 	if t.EventEmitted != nil {
 		response.Merge(t.EventEmitted.Validate(ctx.With("eventEmitted")))
+	}
+	if t.LogEmitted != nil {
+		response.Merge(t.LogEmitted.Validate(ctx.With("logEmitted")))
 	}
 	if t.StateChanged != nil {
 		response.Merge(t.StateChanged.Validate(ctx.With("stateChanged")))
