@@ -12,25 +12,27 @@ import (
 
 // Payload is sent to user function.
 type Payload struct {
-	typ         string
-	periodic    *PeriodicPayload
-	webhook     *WebhookPayload
-	block       *BlockPayload
-	transaction *TransactionPayload
-	alert       *AlertPayload
+	typ               string
+	periodic          *PeriodicPayload
+	webhook           *WebhookPayload
+	block             *BlockPayload
+	transaction       *TransactionPayload
+	transactionSimple *TransactionPayload
+	alert             *AlertPayload
 }
 
 type payloadDeserializer struct {
-	Type        string              `json:"type"`
-	Periodic    *PeriodicPayload    `json:"periodic"`
-	Webhook     *WebhookPayload     `json:"webhook"`
-	Block       *BlockPayload       `json:"block"`
-	Transaction *TransactionPayload `json:"transaction"`
-	Alert       *AlertPayload       `json:"alert"`
+	Type              string              `json:"type"`
+	Periodic          *PeriodicPayload    `json:"periodic"`
+	Webhook           *WebhookPayload     `json:"webhook"`
+	Block             *BlockPayload       `json:"block"`
+	Transaction       *TransactionPayload `json:"transaction"`
+	TransactionSimple *TransactionPayload `json:"transactionSimple"`
+	Alert             *AlertPayload       `json:"alert"`
 }
 
 func (u *payloadDeserializer) toStruct() Payload {
-	return Payload{typ: u.Type, periodic: u.Periodic, webhook: u.Webhook, block: u.Block, transaction: u.Transaction, alert: u.Alert}
+	return Payload{typ: u.Type, periodic: u.Periodic, webhook: u.Webhook, block: u.Block, transaction: u.Transaction, transactionSimple: u.TransactionSimple, alert: u.Alert}
 }
 
 func (u *Payload) toSerializer() (interface{}, error) {
@@ -57,6 +59,11 @@ func (u *Payload) toSerializer() (interface{}, error) {
 			Type        string             `json:"type"`
 			Transaction TransactionPayload `json:"transaction"`
 		}{Type: "transaction", Transaction: *u.transaction}, nil
+	case "transactionSimple":
+		return struct {
+			Type              string             `json:"type"`
+			TransactionSimple TransactionPayload `json:"transactionSimple"`
+		}{Type: "transactionSimple", TransactionSimple: *u.transactionSimple}, nil
 	case "alert":
 		return struct {
 			Type  string       `json:"type"`
@@ -113,6 +120,8 @@ func (u *Payload) Accept(v PayloadVisitor) error {
 		return v.VisitBlock(*u.block)
 	case "transaction":
 		return v.VisitTransaction(*u.transaction)
+	case "transactionSimple":
+		return v.VisitTransactionSimple(*u.transactionSimple)
 	case "alert":
 		return v.VisitAlert(*u.alert)
 	}
@@ -123,6 +132,7 @@ type PayloadVisitor interface {
 	VisitWebhook(v WebhookPayload) error
 	VisitBlock(v BlockPayload) error
 	VisitTransaction(v TransactionPayload) error
+	VisitTransactionSimple(v TransactionPayload) error
 	VisitAlert(v AlertPayload) error
 	VisitUnknown(typeName string) error
 }
@@ -142,6 +152,8 @@ func (u *Payload) AcceptWithContext(ctx context.Context, v PayloadVisitorWithCon
 		return v.VisitBlockWithContext(ctx, *u.block)
 	case "transaction":
 		return v.VisitTransactionWithContext(ctx, *u.transaction)
+	case "transactionSimple":
+		return v.VisitTransactionSimpleWithContext(ctx, *u.transactionSimple)
 	case "alert":
 		return v.VisitAlertWithContext(ctx, *u.alert)
 	}
@@ -152,6 +164,7 @@ type PayloadVisitorWithContext interface {
 	VisitWebhookWithContext(ctx context.Context, v WebhookPayload) error
 	VisitBlockWithContext(ctx context.Context, v BlockPayload) error
 	VisitTransactionWithContext(ctx context.Context, v TransactionPayload) error
+	VisitTransactionSimpleWithContext(ctx context.Context, v TransactionPayload) error
 	VisitAlertWithContext(ctx context.Context, v AlertPayload) error
 	VisitUnknownWithContext(ctx context.Context, typeName string) error
 }
@@ -172,31 +185,37 @@ func NewPayloadFromTransaction(v TransactionPayload) Payload {
 	return Payload{typ: "transaction", transaction: &v}
 }
 
+func NewPayloadFromTransactionSimple(v TransactionPayload) Payload {
+	return Payload{typ: "transactionSimple", transactionSimple: &v}
+}
+
 func NewPayloadFromAlert(v AlertPayload) Payload {
 	return Payload{typ: "alert", alert: &v}
 }
 
 // Payload summary is exposed in dashboard, in list views.
 type PayloadSummary struct {
-	typ         string
-	periodic    *PeriodicPayloadSummary
-	webhook     *WebhookPayloadSummary
-	block       *BlockPayloadSummary
-	transaction *TransactionPayloadSummary
-	alert       *AlertPayloadSummary
+	typ               string
+	periodic          *PeriodicPayloadSummary
+	webhook           *WebhookPayloadSummary
+	block             *BlockPayloadSummary
+	transaction       *TransactionPayloadSummary
+	transactionSimple *TransactionPayloadSummary
+	alert             *AlertPayloadSummary
 }
 
 type payloadSummaryDeserializer struct {
-	Type        string                     `json:"type"`
-	Periodic    *PeriodicPayloadSummary    `json:"periodic"`
-	Webhook     *WebhookPayloadSummary     `json:"webhook"`
-	Block       *BlockPayloadSummary       `json:"block"`
-	Transaction *TransactionPayloadSummary `json:"transaction"`
-	Alert       *AlertPayloadSummary       `json:"alert"`
+	Type              string                     `json:"type"`
+	Periodic          *PeriodicPayloadSummary    `json:"periodic"`
+	Webhook           *WebhookPayloadSummary     `json:"webhook"`
+	Block             *BlockPayloadSummary       `json:"block"`
+	Transaction       *TransactionPayloadSummary `json:"transaction"`
+	TransactionSimple *TransactionPayloadSummary `json:"transactionSimple"`
+	Alert             *AlertPayloadSummary       `json:"alert"`
 }
 
 func (u *payloadSummaryDeserializer) toStruct() PayloadSummary {
-	return PayloadSummary{typ: u.Type, periodic: u.Periodic, webhook: u.Webhook, block: u.Block, transaction: u.Transaction, alert: u.Alert}
+	return PayloadSummary{typ: u.Type, periodic: u.Periodic, webhook: u.Webhook, block: u.Block, transaction: u.Transaction, transactionSimple: u.TransactionSimple, alert: u.Alert}
 }
 
 func (u *PayloadSummary) toSerializer() (interface{}, error) {
@@ -223,6 +242,11 @@ func (u *PayloadSummary) toSerializer() (interface{}, error) {
 			Type        string                    `json:"type"`
 			Transaction TransactionPayloadSummary `json:"transaction"`
 		}{Type: "transaction", Transaction: *u.transaction}, nil
+	case "transactionSimple":
+		return struct {
+			Type              string                    `json:"type"`
+			TransactionSimple TransactionPayloadSummary `json:"transactionSimple"`
+		}{Type: "transactionSimple", TransactionSimple: *u.transactionSimple}, nil
 	case "alert":
 		return struct {
 			Type  string              `json:"type"`
@@ -279,6 +303,8 @@ func (u *PayloadSummary) Accept(v PayloadSummaryVisitor) error {
 		return v.VisitBlock(*u.block)
 	case "transaction":
 		return v.VisitTransaction(*u.transaction)
+	case "transactionSimple":
+		return v.VisitTransactionSimple(*u.transactionSimple)
 	case "alert":
 		return v.VisitAlert(*u.alert)
 	}
@@ -289,6 +315,7 @@ type PayloadSummaryVisitor interface {
 	VisitWebhook(v WebhookPayloadSummary) error
 	VisitBlock(v BlockPayloadSummary) error
 	VisitTransaction(v TransactionPayloadSummary) error
+	VisitTransactionSimple(v TransactionPayloadSummary) error
 	VisitAlert(v AlertPayloadSummary) error
 	VisitUnknown(typeName string) error
 }
@@ -308,6 +335,8 @@ func (u *PayloadSummary) AcceptWithContext(ctx context.Context, v PayloadSummary
 		return v.VisitBlockWithContext(ctx, *u.block)
 	case "transaction":
 		return v.VisitTransactionWithContext(ctx, *u.transaction)
+	case "transactionSimple":
+		return v.VisitTransactionSimpleWithContext(ctx, *u.transactionSimple)
 	case "alert":
 		return v.VisitAlertWithContext(ctx, *u.alert)
 	}
@@ -318,6 +347,7 @@ type PayloadSummaryVisitorWithContext interface {
 	VisitWebhookWithContext(ctx context.Context, v WebhookPayloadSummary) error
 	VisitBlockWithContext(ctx context.Context, v BlockPayloadSummary) error
 	VisitTransactionWithContext(ctx context.Context, v TransactionPayloadSummary) error
+	VisitTransactionSimpleWithContext(ctx context.Context, v TransactionPayloadSummary) error
 	VisitAlertWithContext(ctx context.Context, v AlertPayloadSummary) error
 	VisitUnknownWithContext(ctx context.Context, typeName string) error
 }
@@ -338,31 +368,37 @@ func NewPayloadSummaryFromTransaction(v TransactionPayloadSummary) PayloadSummar
 	return PayloadSummary{typ: "transaction", transaction: &v}
 }
 
+func NewPayloadSummaryFromTransactionSimple(v TransactionPayloadSummary) PayloadSummary {
+	return PayloadSummary{typ: "transactionSimple", transactionSimple: &v}
+}
+
 func NewPayloadSummaryFromAlert(v AlertPayloadSummary) PayloadSummary {
 	return PayloadSummary{typ: "alert", alert: &v}
 }
 
 // Trigger is confired by user. CLI has another trigger representation and does translation.
 type Trigger struct {
-	typ         string
-	periodic    *PeriodicTrigger
-	webhook     *WebhookTrigger
-	block       *BlockTrigger
-	transaction *TransactionTrigger
-	alert       *AlertTrigger
+	typ               string
+	periodic          *PeriodicTrigger
+	webhook           *WebhookTrigger
+	block             *BlockTrigger
+	transaction       *TransactionTrigger
+	transactionSimple *TransactionSimpleTrigger
+	alert             *AlertTrigger
 }
 
 type triggerDeserializer struct {
-	Type        string              `json:"type"`
-	Periodic    *PeriodicTrigger    `json:"periodic"`
-	Webhook     *WebhookTrigger     `json:"webhook"`
-	Block       *BlockTrigger       `json:"block"`
-	Transaction *TransactionTrigger `json:"transaction"`
-	Alert       *AlertTrigger       `json:"alert"`
+	Type              string                    `json:"type"`
+	Periodic          *PeriodicTrigger          `json:"periodic"`
+	Webhook           *WebhookTrigger           `json:"webhook"`
+	Block             *BlockTrigger             `json:"block"`
+	Transaction       *TransactionTrigger       `json:"transaction"`
+	TransactionSimple *TransactionSimpleTrigger `json:"transactionSimple"`
+	Alert             *AlertTrigger             `json:"alert"`
 }
 
 func (u *triggerDeserializer) toStruct() Trigger {
-	return Trigger{typ: u.Type, periodic: u.Periodic, webhook: u.Webhook, block: u.Block, transaction: u.Transaction, alert: u.Alert}
+	return Trigger{typ: u.Type, periodic: u.Periodic, webhook: u.Webhook, block: u.Block, transaction: u.Transaction, transactionSimple: u.TransactionSimple, alert: u.Alert}
 }
 
 func (u *Trigger) toSerializer() (interface{}, error) {
@@ -389,6 +425,11 @@ func (u *Trigger) toSerializer() (interface{}, error) {
 			Type        string             `json:"type"`
 			Transaction TransactionTrigger `json:"transaction"`
 		}{Type: "transaction", Transaction: *u.transaction}, nil
+	case "transactionSimple":
+		return struct {
+			Type              string                   `json:"type"`
+			TransactionSimple TransactionSimpleTrigger `json:"transactionSimple"`
+		}{Type: "transactionSimple", TransactionSimple: *u.transactionSimple}, nil
 	case "alert":
 		return struct {
 			Type  string       `json:"type"`
@@ -445,6 +486,8 @@ func (u *Trigger) Accept(v TriggerVisitor) error {
 		return v.VisitBlock(*u.block)
 	case "transaction":
 		return v.VisitTransaction(*u.transaction)
+	case "transactionSimple":
+		return v.VisitTransactionSimple(*u.transactionSimple)
 	case "alert":
 		return v.VisitAlert(*u.alert)
 	}
@@ -455,6 +498,7 @@ type TriggerVisitor interface {
 	VisitWebhook(v WebhookTrigger) error
 	VisitBlock(v BlockTrigger) error
 	VisitTransaction(v TransactionTrigger) error
+	VisitTransactionSimple(v TransactionSimpleTrigger) error
 	VisitAlert(v AlertTrigger) error
 	VisitUnknown(typeName string) error
 }
@@ -474,6 +518,8 @@ func (u *Trigger) AcceptWithContext(ctx context.Context, v TriggerVisitorWithCon
 		return v.VisitBlockWithContext(ctx, *u.block)
 	case "transaction":
 		return v.VisitTransactionWithContext(ctx, *u.transaction)
+	case "transactionSimple":
+		return v.VisitTransactionSimpleWithContext(ctx, *u.transactionSimple)
 	case "alert":
 		return v.VisitAlertWithContext(ctx, *u.alert)
 	}
@@ -484,6 +530,7 @@ type TriggerVisitorWithContext interface {
 	VisitWebhookWithContext(ctx context.Context, v WebhookTrigger) error
 	VisitBlockWithContext(ctx context.Context, v BlockTrigger) error
 	VisitTransactionWithContext(ctx context.Context, v TransactionTrigger) error
+	VisitTransactionSimpleWithContext(ctx context.Context, v TransactionSimpleTrigger) error
 	VisitAlertWithContext(ctx context.Context, v AlertTrigger) error
 	VisitUnknownWithContext(ctx context.Context, typeName string) error
 }
@@ -502,6 +549,10 @@ func NewTriggerFromBlock(v BlockTrigger) Trigger {
 
 func NewTriggerFromTransaction(v TransactionTrigger) Trigger {
 	return Trigger{typ: "transaction", transaction: &v}
+}
+
+func NewTriggerFromTransactionSimple(v TransactionSimpleTrigger) Trigger {
+	return Trigger{typ: "transactionSimple", transactionSimple: &v}
 }
 
 func NewTriggerFromAlert(v AlertTrigger) Trigger {

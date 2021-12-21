@@ -7,12 +7,13 @@ import (
 )
 
 type Trigger struct {
-	Type        string              `json:"type" yaml:"type"`
-	Periodic    *PeriodicTrigger    `json:"periodic" yaml:"periodic,omitempty"`
-	Webhook     *WebhookTrigger     `json:"webhook" yaml:"webhook,omitempty"`
-	Block       *BlockTrigger       `json:"block" yaml:"block,omitempty"`
-	Transaction *TransactionTrigger `json:"transaction" yaml:"transaction,omitempty"`
-	Alert       *AlertTrigger       `json:"alert" yaml:"alert,omitempty"`
+	Type              string                    `json:"type" yaml:"type"`
+	Periodic          *PeriodicTrigger          `json:"periodic" yaml:"periodic,omitempty"`
+	Webhook           *WebhookTrigger           `json:"webhook" yaml:"webhook,omitempty"`
+	Block             *BlockTrigger             `json:"block" yaml:"block,omitempty"`
+	Transaction       *TransactionTrigger       `json:"transaction" yaml:"transaction,omitempty"`
+	TransactionSimple *TransactionSimpleTrigger `json:"transactionSimple" yaml:"transactionSimple,omitempty"`
+	Alert             *AlertTrigger             `json:"alert" yaml:"alert,omitempty"`
 }
 
 func (a Trigger) Validate(ctx ValidatorContext) (response ValidateResponse) {
@@ -31,7 +32,7 @@ func (a Trigger) Validate(ctx ValidatorContext) (response ValidateResponse) {
 	}
 
 	// This handles just type
-	if a.Periodic == nil && a.Webhook == nil && a.Block == nil && a.Transaction == nil && a.Alert == nil {
+	if a.Periodic == nil && a.Webhook == nil && a.Block == nil && a.Transaction == nil && a.TransactionSimple == nil && a.Alert == nil {
 		return response
 	}
 
@@ -56,6 +57,11 @@ func (a Trigger) Validate(ctx ValidatorContext) (response ValidateResponse) {
 			return response.Error(ctx, MsgTriggerTypeMismatch, a.Type)
 		}
 		return response.Merge(a.Transaction.Validate(ctx.With(a.Type)))
+	case TransactionSimpleType:
+		if a.TransactionSimple == nil {
+			return response.Error(ctx, MsgTriggerTypeMismatch, a.Type)
+		}
+		return response.Merge(a.TransactionSimple.Validate(ctx.With(a.Type)))
 	case AlertType:
 		if a.Alert == nil {
 			return response.Error(ctx, MsgTriggerTypeMismatch, a.Type)
@@ -83,6 +89,10 @@ func (a Trigger) ToRequest() *actions.Trigger {
 		val := a.Transaction.ToRequest()
 		return &val
 	}
+	if a.TransactionSimple != nil {
+		val := a.TransactionSimple.ToRequest()
+		return &val
+	}
 	if a.Alert != nil {
 		val := a.Alert.ToRequest()
 		return &val
@@ -100,6 +110,8 @@ func (a Trigger) ToRequestType() actions.TriggerType {
 		return actions.New_TriggerType(actions.TriggerType_BLOCK)
 	case TransactionType:
 		return actions.New_TriggerType(actions.TriggerType_TRANSACTION)
+	case TransactionSimpleType:
+		return actions.New_TriggerType(actions.TriggerType_TRANSACTION_SIMPLE)
 	case AlertType:
 		return actions.New_TriggerType(actions.TriggerType_ALERT)
 	}

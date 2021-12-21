@@ -48,12 +48,13 @@ type ActionSpec struct {
 }
 
 type TriggerUnparsed struct {
-	Type        string      `json:"type" yaml:"type"`
-	Block       interface{} `json:"block,omitempty" yaml:"block,omitempty"`
-	Webhook     interface{} `json:"webhook,omitempty" yaml:"webhook,omitempty"`
-	Periodic    interface{} `json:"periodic,omitempty" yaml:"periodic,omitempty"`
-	Transaction interface{} `json:"transaction,omitempty" yaml:"transaction,omitempty"`
-	Alert       interface{} `json:"alert,omitempty" yaml:"alert,omitempty"`
+	Type              string      `json:"type" yaml:"type"`
+	Block             interface{} `json:"block,omitempty" yaml:"block,omitempty"`
+	Webhook           interface{} `json:"webhook,omitempty" yaml:"webhook,omitempty"`
+	Periodic          interface{} `json:"periodic,omitempty" yaml:"periodic,omitempty"`
+	Transaction       interface{} `json:"transaction,omitempty" yaml:"transaction,omitempty"`
+	TransactionSimple interface{} `json:"transactionSimple,omitempty" yaml:"transactionSimple,omitempty"`
+	Alert             interface{} `json:"alert,omitempty" yaml:"alert,omitempty"`
 }
 
 func (a *ActionSpec) Parse() error {

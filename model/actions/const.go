@@ -7,17 +7,18 @@ import (
 )
 
 var (
-	RuntimeV1          = "v1"
-	TriggerTypes       = []string{"periodic", "webhook", "block", "transaction", "alert"}
-	PeriodicType       = "periodic"
-	WebhookType        = "webhook"
-	BlockType          = "block"
-	TransactionType    = "transaction"
-	AlertType          = "alert"
-	Invocations        = []string{"any", "direct", "internal"}
-	InvocationAny      = "any"
-	InvocationDirect   = "direct"
-	InvocationInternal = "internal"
+	RuntimeV1             = "v1"
+	TriggerTypes          = []string{"periodic", "webhook", "block", "transaction", "transactionSimple", "alert"}
+	PeriodicType          = "periodic"
+	WebhookType           = "webhook"
+	BlockType             = "block"
+	TransactionType       = "transaction"
+	TransactionSimpleType = "transactionSimple"
+	AlertType             = "alert"
+	Invocations           = []string{"any", "direct", "internal"}
+	InvocationAny         = "any"
+	InvocationDirect      = "direct"
+	InvocationInternal    = "internal"
 
 	Intervals      = []string{"5m", "10m", "15m", "30m", "1h", "3h", "6h", "12h", "1d"}
 	IntervalToCron = map[string]string{
