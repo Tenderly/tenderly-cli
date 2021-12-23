@@ -439,3 +439,35 @@ func (s *TransactionStatus) find(str string) *actions.TransactionStatus {
 	}
 	return nil
 }
+
+type Hex struct {
+	Value string
+}
+
+func (h *Hex) Validate(ctx ValidatorContext) (response ValidateResponse) {
+	if h.Value == "" {
+		return response.Error(ctx, MsgHexValueEmpty)
+	}
+	if !strings.HasPrefix(h.Value, "0x") {
+		return response.Error(ctx, MsgHexValueInvalid, h.Value)
+	}
+	return response
+}
+
+func (h *Hex) UnmarshalJSON(bytes []byte) error {
+	var maybeInt int
+	errInt := json.Unmarshal(bytes, &maybeInt)
+	if errInt == nil {
+		h.Value = hexutil.EncodeUint64(uint64(maybeInt))
+		return nil
+	}
+
+	var maybeString string
+	errStr := json.Unmarshal(bytes, &maybeString)
+	if errStr == nil {
+		h.Value = maybeString
+		return nil
+	}
+
+	return errors.New("Failed to unmarshal hex")
+}

@@ -39,6 +39,9 @@ type Action struct {
 	Stopped bool `json:"stopped" conjure-docs:"True if action trigger is stopped - trigger is ignoring events.\nAction will remain stopped even on new publish / deploy until it is resumed.\n"`
 	// Version that is considered active for this action.
 	Version Version `json:"version" conjure-docs:"Version that is considered active for this action.\n"`
+	// Used to determine if source can be edited via dashboard UI.
+	// If publish is done through the cli, edit shouldn't be allowed.
+	Editable bool `json:"editable" conjure-docs:"Used to determine if source can be edited via dashboard UI.\nIf publish is done through the cli, edit shouldn't be allowed.\n"`
 }
 
 func (o Action) MarshalYAML() (interface{}, error) {
@@ -749,6 +752,7 @@ type Filter struct {
 	To           []ComparableStr      `json:"to"`
 	Function     []FunctionFilter     `json:"function"`
 	EventEmitted []EventEmittedFilter `json:"eventEmitted"`
+	LogEmmitted  []LogEmittedFilter   `json:"logEmmitted"`
 }
 
 func (o Filter) MarshalJSON() ([]byte, error) {
@@ -781,6 +785,9 @@ func (o Filter) MarshalJSON() ([]byte, error) {
 	}
 	if o.EventEmitted == nil {
 		o.EventEmitted = make([]EventEmittedFilter, 0)
+	}
+	if o.LogEmmitted == nil {
+		o.LogEmmitted = make([]LogEmittedFilter, 0)
 	}
 	type FilterAlias Filter
 	return safejson.Marshal(FilterAlias(o))
@@ -822,6 +829,9 @@ func (o *Filter) UnmarshalJSON(data []byte) error {
 	if rawFilter.EventEmitted == nil {
 		rawFilter.EventEmitted = make([]EventEmittedFilter, 0)
 	}
+	if rawFilter.LogEmmitted == nil {
+		rawFilter.LogEmmitted = make([]LogEmittedFilter, 0)
+	}
 	*o = Filter(rawFilter)
 	return nil
 }
@@ -856,6 +866,47 @@ func (o FunctionFilter) MarshalYAML() (interface{}, error) {
 }
 
 func (o *FunctionFilter) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	jsonBytes, err := safeyaml.UnmarshalerToJSONBytes(unmarshal)
+	if err != nil {
+		return err
+	}
+	return safejson.Unmarshal(jsonBytes, *&o)
+}
+
+type LogEmittedFilter struct {
+	TopicsStartsWith []string `json:"topicsStartsWith"`
+}
+
+func (o LogEmittedFilter) MarshalJSON() ([]byte, error) {
+	if o.TopicsStartsWith == nil {
+		o.TopicsStartsWith = make([]string, 0)
+	}
+	type LogEmittedFilterAlias LogEmittedFilter
+	return safejson.Marshal(LogEmittedFilterAlias(o))
+}
+
+func (o *LogEmittedFilter) UnmarshalJSON(data []byte) error {
+	type LogEmittedFilterAlias LogEmittedFilter
+	var rawLogEmittedFilter LogEmittedFilterAlias
+	if err := safejson.Unmarshal(data, &rawLogEmittedFilter); err != nil {
+		return err
+	}
+	if rawLogEmittedFilter.TopicsStartsWith == nil {
+		rawLogEmittedFilter.TopicsStartsWith = make([]string, 0)
+	}
+	*o = LogEmittedFilter(rawLogEmittedFilter)
+	return nil
+}
+
+func (o LogEmittedFilter) MarshalYAML() (interface{}, error) {
+	jsonBytes, err := safejson.Marshal(o)
+	if err != nil {
+		return nil, err
+	}
+	return safeyaml.JSONtoYAMLMapSlice(jsonBytes)
+}
+
+func (o *LogEmittedFilter) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	jsonBytes, err := safeyaml.UnmarshalerToJSONBytes(unmarshal)
 	if err != nil {
 		return err
@@ -1264,13 +1315,80 @@ func (o *TransactionFilter) UnmarshalYAML(unmarshal func(interface{}) error) err
 	return safejson.Unmarshal(jsonBytes, *&o)
 }
 
+type TransactionLog struct {
+	Address string   `json:"address"`
+	Topics  []string `json:"topics"`
+	Data    string   `json:"data"`
+}
+
+func (o TransactionLog) MarshalJSON() ([]byte, error) {
+	if o.Topics == nil {
+		o.Topics = make([]string, 0)
+	}
+	type TransactionLogAlias TransactionLog
+	return safejson.Marshal(TransactionLogAlias(o))
+}
+
+func (o *TransactionLog) UnmarshalJSON(data []byte) error {
+	type TransactionLogAlias TransactionLog
+	var rawTransactionLog TransactionLogAlias
+	if err := safejson.Unmarshal(data, &rawTransactionLog); err != nil {
+		return err
+	}
+	if rawTransactionLog.Topics == nil {
+		rawTransactionLog.Topics = make([]string, 0)
+	}
+	*o = TransactionLog(rawTransactionLog)
+	return nil
+}
+
+func (o TransactionLog) MarshalYAML() (interface{}, error) {
+	jsonBytes, err := safejson.Marshal(o)
+	if err != nil {
+		return nil, err
+	}
+	return safeyaml.JSONtoYAMLMapSlice(jsonBytes)
+}
+
+func (o *TransactionLog) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	jsonBytes, err := safeyaml.UnmarshalerToJSONBytes(unmarshal)
+	if err != nil {
+		return err
+	}
+	return safejson.Unmarshal(jsonBytes, *&o)
+}
+
 type TransactionPayload struct {
-	Network     string  `json:"network"`
-	BlockHash   string  `json:"blockHash"`
-	BlockNumber int     `json:"blockNumber"`
-	Hash        string  `json:"hash"`
-	From        string  `json:"from"`
-	To          *string `json:"to"`
+	Network     string           `json:"network"`
+	BlockHash   string           `json:"blockHash"`
+	BlockNumber int              `json:"blockNumber"`
+	Hash        string           `json:"hash"`
+	From        string           `json:"from"`
+	To          *string          `json:"to"`
+	Logs        []TransactionLog `json:"logs"`
+	// Optional because it is added later so some payloads don't have it.
+	Input *string `json:"input" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+}
+
+func (o TransactionPayload) MarshalJSON() ([]byte, error) {
+	if o.Logs == nil {
+		o.Logs = make([]TransactionLog, 0)
+	}
+	type TransactionPayloadAlias TransactionPayload
+	return safejson.Marshal(TransactionPayloadAlias(o))
+}
+
+func (o *TransactionPayload) UnmarshalJSON(data []byte) error {
+	type TransactionPayloadAlias TransactionPayload
+	var rawTransactionPayload TransactionPayloadAlias
+	if err := safejson.Unmarshal(data, &rawTransactionPayload); err != nil {
+		return err
+	}
+	if rawTransactionPayload.Logs == nil {
+		rawTransactionPayload.Logs = make([]TransactionLog, 0)
+	}
+	*o = TransactionPayload(rawTransactionPayload)
+	return nil
 }
 
 func (o TransactionPayload) MarshalYAML() (interface{}, error) {
@@ -1389,6 +1507,26 @@ func (o ValidateError) MarshalYAML() (interface{}, error) {
 }
 
 func (o *ValidateError) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	jsonBytes, err := safeyaml.UnmarshalerToJSONBytes(unmarshal)
+	if err != nil {
+		return err
+	}
+	return safejson.Unmarshal(jsonBytes, *&o)
+}
+
+type ValidateFileRequest struct {
+	Action ActionSpec `json:"action"`
+}
+
+func (o ValidateFileRequest) MarshalYAML() (interface{}, error) {
+	jsonBytes, err := safejson.Marshal(o)
+	if err != nil {
+		return nil, err
+	}
+	return safeyaml.JSONtoYAMLMapSlice(jsonBytes)
+}
+
+func (o *ValidateFileRequest) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	jsonBytes, err := safeyaml.UnmarshalerToJSONBytes(unmarshal)
 	if err != nil {
 		return err
