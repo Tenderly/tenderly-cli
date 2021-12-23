@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/badoux/checkmail v0.0.0-20181210160741-9661bd69e9ad
+	github.com/bketelsen/crypt v0.0.4 // indirect
 	github.com/briandowns/spinner v1.6.1
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
@@ -28,9 +29,8 @@ require (
 	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f // indirect
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.4.2
-	github.com/spf13/cobra v1.2.1
-	github.com/spf13/viper v1.8.1
+	github.com/spf13/cobra v1.3.0
+	github.com/spf13/viper v1.10.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
-	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
