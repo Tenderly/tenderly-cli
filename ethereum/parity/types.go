@@ -520,8 +520,8 @@ func Walk(vmt *VmTrace) []*VmState {
 type Action struct {
 	CallType        string          `json:"callType"`
 	Hash            *common.Hash    `json:"hash"`
-	ParentHash      *common.Hash    `json:"hash"`
-	TransactionHash *common.Hash    `json:"hash"`
+	ParentHash      *common.Hash    `json:"parent_hash"`
+	TransactionHash *common.Hash    `json:"transaction_hash"`
 	From            common.Address  `json:"from"`
 	To              common.Address  `json:"to"`
 	Input           hexutil.Bytes   `json:"input"`
