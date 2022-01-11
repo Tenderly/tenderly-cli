@@ -3,12 +3,12 @@ package openzeppelin
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/tenderly/tenderly-cli/providers"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/stacktrace"
 )
 
@@ -29,7 +29,7 @@ func (dp *DeploymentProvider) NewContractSource(path string, networkId string, c
 
 func (dp *DeploymentProvider) loadOpenZeppelinContracts(path string) ([]*providers.Contract, error) {
 
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed listing openzeppelin build files: %s", err)
 	}
@@ -40,7 +40,7 @@ func (dp *DeploymentProvider) loadOpenZeppelinContracts(path string) ([]*provide
 			continue
 		}
 
-		data, err := ioutil.ReadFile(filepath.Join(path, file.Name()))
+		data, err := os.ReadFile(filepath.Join(path, file.Name()))
 		if err != nil {
 			return nil, fmt.Errorf("failed reading openzeppelin build files: %s", err)
 		}

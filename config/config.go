@@ -3,7 +3,6 @@ package config
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"os"
 	"os/user"
@@ -418,7 +417,7 @@ func WriteGlobalConfig() error {
 
 // ReadProjectConfig is necessary because viper reader doesn't respect custom unmarshaler
 func ReadProjectConfig() ([]byte, error) {
-	return ioutil.ReadFile(filepath.Join(ProjectDirectory, fmt.Sprintf("%s.yaml", ProjectConfigName)))
+	return os.ReadFile(filepath.Join(ProjectDirectory, fmt.Sprintf("%s.yaml", ProjectConfigName)))
 }
 
 func getString(key string) string {

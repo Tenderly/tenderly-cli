@@ -2,7 +2,6 @@ package util
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -87,7 +86,7 @@ func ReadFile(path string) string {
 				fmt.Sprintf("Couldn't read file at %s. File does not exist.", path)))
 		os.Exit(1)
 	}
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		userError.LogErrorf(
 			"failed to read file: %s",
@@ -110,7 +109,7 @@ func CreateFileWithContent(path string, content string) {
 				fmt.Sprintf("Couldn't create file at %s. File already exists.", path)))
 		os.Exit(1)
 	}
-	err := ioutil.WriteFile(
+	err := os.WriteFile(
 		path,
 		[]byte(content),
 		os.FileMode(0755),

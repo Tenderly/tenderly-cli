@@ -2,10 +2,7 @@ package commands
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"github.com/tenderly/tenderly-cli/userError"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -15,7 +12,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-version"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/tenderly/tenderly-cli/userError"
 )
 
 type releaseResult struct {
@@ -85,7 +85,7 @@ func CheckVersion(force bool, encounteredError bool) {
 
 	defer response.Body.Close()
 
-	contents, err := ioutil.ReadAll(response.Body)
+	contents, err := io.ReadAll(response.Body)
 	if err != nil {
 		if force && !encounteredError {
 			userError.LogErrorf("failed reading github releases request: %s", userError.NewUserError(
@@ -246,7 +246,7 @@ func getCliMessage(release releaseResult) (string, error) {
 
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return "", errors.Wrap(err, "read cli-message.json")
 	}

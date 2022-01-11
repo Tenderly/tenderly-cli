@@ -3,16 +3,16 @@ package buidler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/pkg/errors"
-	"github.com/tenderly/tenderly-cli/model"
-	"github.com/tenderly/tenderly-cli/providers"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/model"
+	"github.com/tenderly/tenderly-cli/providers"
 )
 
 type BuidlerContract struct {
@@ -36,7 +36,7 @@ func (dp *DeploymentProvider) GetContracts(
 	networkIDs []string,
 	objects ...*model.StateObject,
 ) ([]providers.Contract, int, error) {
-	files, err := ioutil.ReadDir(buildDir)
+	files, err := os.ReadDir(buildDir)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "failed listing build files")
 	}
@@ -63,14 +63,14 @@ func (dp *DeploymentProvider) GetContracts(
 			continue
 		}
 		filePath := filepath.Join(buildDir, file.Name())
-		contractFiles, err := ioutil.ReadDir(filePath)
+		contractFiles, err := os.ReadDir(filePath)
 
 		for _, contractFile := range contractFiles {
 			if contractFile.IsDir() || !strings.HasSuffix(contractFile.Name(), ".json") {
 				continue
 			}
 			contractFilePath := filepath.Join(filePath, contractFile.Name())
-			data, err := ioutil.ReadFile(contractFilePath)
+			data, err := os.ReadFile(contractFilePath)
 
 			if err != nil {
 				return nil, 0, errors.Wrap(err, "failed reading build file")
@@ -195,7 +195,7 @@ func (dp *DeploymentProvider) GetContracts(
 					}
 				}
 
-				source, err := ioutil.ReadFile(localPath)
+				source, err := os.ReadFile(localPath)
 				if err != nil {
 					return nil, 0, errors.Wrap(err, "failed reading contract source file")
 				}
