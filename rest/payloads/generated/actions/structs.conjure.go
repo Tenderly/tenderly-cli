@@ -1368,6 +1368,11 @@ type TransactionPayload struct {
 	Logs        []TransactionLog `json:"logs"`
 	// Optional because it is added later so some payloads don't have it.
 	Input *string `json:"input" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+	// Optional because it is added later so some payloads don't have it.
+	Value *string `json:"value" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+	// Optional because it is added later so some payloads don't have it.
+	Nonce   *string `json:"nonce" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+	AlertId *string `json:"alertId"`
 }
 
 func (o TransactionPayload) MarshalJSON() ([]byte, error) {
@@ -1444,6 +1449,25 @@ func (o TransactionPayloadSummary) MarshalYAML() (interface{}, error) {
 }
 
 func (o *TransactionPayloadSummary) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	jsonBytes, err := safeyaml.UnmarshalerToJSONBytes(unmarshal)
+	if err != nil {
+		return err
+	}
+	return safejson.Unmarshal(jsonBytes, *&o)
+}
+
+type TransactionSimpleTrigger struct {
+}
+
+func (o TransactionSimpleTrigger) MarshalYAML() (interface{}, error) {
+	jsonBytes, err := safejson.Marshal(o)
+	if err != nil {
+		return nil, err
+	}
+	return safeyaml.JSONtoYAMLMapSlice(jsonBytes)
+}
+
+func (o *TransactionSimpleTrigger) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	jsonBytes, err := safeyaml.UnmarshalerToJSONBytes(unmarshal)
 	if err != nil {
 		return err
