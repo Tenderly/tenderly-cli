@@ -2,17 +2,17 @@ package brownie
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/userError"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
 )
 
 type BrownieCompilerSettings struct {
@@ -35,7 +35,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 		browniePath = strings.ReplaceAll(browniePath, `\`, `\\`)
 	}
 
-	data, err := ioutil.ReadFile(browniePath)
+	data, err := os.ReadFile(browniePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "read brownie config")
 	}

@@ -2,7 +2,7 @@ package actions_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"runtime"
 	"strings"
 
@@ -14,7 +14,7 @@ import (
 func MustReadTest(filename string) []byte {
 	_, thisFilename, _, _ := runtime.Caller(0)
 	path := strings.TrimSuffix(thisFilename, "util_test.go") + fmt.Sprintf("yaml/%s.yaml", filename)
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		panic(errors.Wrap(err, fmt.Sprintf("read test case %s", filename)))
 	}

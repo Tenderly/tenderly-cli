@@ -2,7 +2,6 @@ package typescript
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -55,7 +54,7 @@ func DefaultTsConfig() *TsConfig {
 func LoadTsConfig(directory string) (*TsConfig, error) {
 	path := filepath.Join(directory, TsConfigFile)
 
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "read tsconfig")
 	}
@@ -145,7 +144,7 @@ func SaveTsConfig(directory string, config *TsConfig) error {
 
 	// os.FileMode(0755) The owner can read, write, execute.
 	// Everyone else can read and execute but not modify the file.
-	err = ioutil.WriteFile(filepath.Join(directory, TsConfigFile), tsconfig, os.FileMode(0755))
+	err = os.WriteFile(filepath.Join(directory, TsConfigFile), tsconfig, os.FileMode(0755))
 	if err != nil {
 		return errors.Wrap(err, "failed to save tsconfig")
 	}

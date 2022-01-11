@@ -3,7 +3,6 @@ package actions
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,7 +44,7 @@ func (t *Template) Create(ctx context.Context, destinationDir string, args map[s
 		}
 
 		destinationPath := filepath.Join(destinationDir, file)
-		err = ioutil.WriteFile(
+		err = os.WriteFile(
 			destinationPath,
 			[]byte(content),
 			os.FileMode(0755),

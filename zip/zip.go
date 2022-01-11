@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -30,7 +30,7 @@ func Zip(dirPath string, insidePath string) ([]string, []byte, error) {
 			return errors.Wrap(err, fmt.Sprintf("failed to read path %s", path))
 		}
 
-		dat, err := ioutil.ReadFile(path)
+		dat, err := os.ReadFile(path)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("failed reading %s", path))
 		}

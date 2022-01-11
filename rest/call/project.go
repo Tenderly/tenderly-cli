@@ -3,11 +3,12 @@ package call
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/client"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
-	"io/ioutil"
 )
 
 type ProjectCalls struct {
@@ -59,7 +60,7 @@ func (rest *ProjectCalls) GetProjects(accountId string) (*payloads.GetProjectsRe
 		nil,
 	)
 
-	data, err := ioutil.ReadAll(response)
+	data, err := io.ReadAll(response)
 	if err != nil {
 		return nil, err
 	}

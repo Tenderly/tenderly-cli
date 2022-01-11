@@ -3,17 +3,17 @@ package hardhat
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"github.com/tenderly/tenderly-cli/model"
-	"github.com/tenderly/tenderly-cli/providers"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/model"
+	"github.com/tenderly/tenderly-cli/providers"
 )
 
 type HardhatContract struct {
@@ -37,7 +37,7 @@ func (dp *DeploymentProvider) GetContracts(
 	networkIDs []string,
 	objects ...*model.StateObject,
 ) ([]providers.Contract, int, error) {
-	files, err := ioutil.ReadDir(buildDir)
+	files, err := os.ReadDir(buildDir)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "failed listing build files")
 	}
@@ -64,7 +64,7 @@ func (dp *DeploymentProvider) GetContracts(
 			continue
 		}
 		filePath := filepath.Join(buildDir, file.Name())
-		contractFiles, _ := ioutil.ReadDir(filePath)
+		contractFiles, _ := os.ReadDir(filePath)
 
 		successfulRead := true
 		for _, contractFile := range contractFiles {
@@ -72,7 +72,7 @@ func (dp *DeploymentProvider) GetContracts(
 				continue
 			}
 			contractFilePath := filepath.Join(filePath, contractFile.Name())
-			data, err := ioutil.ReadFile(contractFilePath)
+			data, err := os.ReadFile(contractFilePath)
 
 			if err != nil {
 				logrus.Debug(fmt.Sprintf("Failed reading build file at %s with error: %s", contractFilePath, err))
@@ -126,7 +126,7 @@ func (dp *DeploymentProvider) GetContracts(
 				} else {
 					chainIdPath := filepath.Join(filePath, ".chainId")
 
-					chainData, err := ioutil.ReadFile(chainIdPath)
+					chainData, err := os.ReadFile(chainIdPath)
 					if err != nil {
 						logrus.Debug(fmt.Sprintf("Failed reading chainID file at %s with error: %s", chainIdPath, err))
 						successfulRead = false
@@ -236,7 +236,7 @@ func (dp *DeploymentProvider) GetContracts(
 					}
 				}
 
-				source, err := ioutil.ReadFile(localPath)
+				source, err := os.ReadFile(localPath)
 				if err != nil {
 					localPath = filepath.Join("node_modules", currentLocalPath)
 					doesNotExist := providers.CheckIfFileDoesNotExist(localPath)
@@ -244,7 +244,7 @@ func (dp *DeploymentProvider) GetContracts(
 						localPath = providers.GetGlobalPathForModule(currentLocalPath)
 					}
 
-					source, err := ioutil.ReadFile(localPath)
+					source, err := os.ReadFile(localPath)
 					if err != nil {
 						logrus.Debug(fmt.Sprintf("Failed reading contract source file at %s with error: %s", localPath, err))
 						successfulRead = false

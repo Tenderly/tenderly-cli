@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"sync"
 )
@@ -63,7 +62,7 @@ func (conn *httpConnection) Write(msg *Request) error {
 		return fmt.Errorf("write request body: %s", err)
 	}
 
-	req.Body = ioutil.NopCloser(bytes.NewReader(data))
+	req.Body = io.NopCloser(bytes.NewReader(data))
 	req.ContentLength = int64(len(data))
 
 	resp, err := http.DefaultClient.Do(req)

@@ -3,15 +3,15 @@ package brownie
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/providers"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 const (
@@ -28,7 +28,7 @@ func (dp *DeploymentProvider) GetContracts(
 	objects ...*model.StateObject,
 ) ([]providers.Contract, int, error) {
 	contractsPath := filepath.Join(buildDir, BrownieContractDirectoryPath)
-	files, err := ioutil.ReadDir(contractsPath)
+	files, err := os.ReadDir(contractsPath)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "failed listing build files")
 	}
@@ -61,7 +61,7 @@ func (dp *DeploymentProvider) GetContracts(
 			continue
 		}
 		contractFilePath := filepath.Join(contractsPath, contractFile.Name())
-		data, err := ioutil.ReadFile(contractFilePath)
+		data, err := os.ReadFile(contractFilePath)
 		if err != nil {
 			logrus.Debug(fmt.Sprintf("Failed reading build file at %s with error: %s", contractFilePath, err))
 			break
@@ -79,7 +79,7 @@ func (dp *DeploymentProvider) GetContracts(
 
 	deploymentMapFile := filepath.Join(buildDir, BrownieContractDeploymentPath, BrownieContractMapFile)
 
-	data, err := ioutil.ReadFile(deploymentMapFile)
+	data, err := os.ReadFile(deploymentMapFile)
 	if err != nil {
 		logrus.Debug(fmt.Sprintf("Failed reading map file at %s with error: %s", deploymentMapFile, err))
 		return nil, 0, errors.Wrap(err, "failed reading map file")
@@ -127,7 +127,7 @@ func (dp *DeploymentProvider) resolveDependencies(path string, contractMap map[s
 		return errors.Wrap(err, "failed reading dependency files")
 	}
 	if info.IsDir() {
-		files, err := ioutil.ReadDir(path)
+		files, err := os.ReadDir(path)
 		if err != nil {
 			logrus.Debugf("Failed reading dependency at %s", path)
 			return errors.Wrap(err, "failed reading dependency files")
@@ -143,7 +143,7 @@ func (dp *DeploymentProvider) resolveDependencies(path string, contractMap map[s
 		return nil
 	}
 
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		logrus.Debug(fmt.Sprintf("Failed reading build file at %s with error: %s", path, err))
 		return errors.Wrap(err, "failed reading contract")

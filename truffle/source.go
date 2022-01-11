@@ -3,12 +3,12 @@ package truffle
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/tenderly/tenderly-cli/providers"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/tenderly/tenderly-cli/ethereum"
+	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/stacktrace"
 )
 
@@ -29,7 +29,7 @@ func (dp *DeploymentProvider) NewContractSource(path string, networkId string, c
 
 func (dp *DeploymentProvider) loadTruffleContracts(path string) ([]*providers.Contract, error) {
 
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed listing truffle build files: %s", err)
 	}
@@ -40,7 +40,7 @@ func (dp *DeploymentProvider) loadTruffleContracts(path string) ([]*providers.Co
 			continue
 		}
 
-		data, err := ioutil.ReadFile(filepath.Join(path, file.Name()))
+		data, err := os.ReadFile(filepath.Join(path, file.Name()))
 		if err != nil {
 			return nil, fmt.Errorf("failed reading truffle build files: %s", err)
 		}

@@ -2,15 +2,15 @@ package openzeppelin
 
 import (
 	"encoding/json"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/pkg/errors"
-	"github.com/tenderly/tenderly-cli/model"
-	"github.com/tenderly/tenderly-cli/providers"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/model"
+	"github.com/tenderly/tenderly-cli/providers"
 )
 
 func (dp *DeploymentProvider) GetContracts(
@@ -18,7 +18,7 @@ func (dp *DeploymentProvider) GetContracts(
 	networkIDs []string,
 	objects ...*model.StateObject,
 ) ([]providers.Contract, int, error) {
-	files, err := ioutil.ReadDir(buildDir)
+	files, err := os.ReadDir(buildDir)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "failed listing build files")
 	}
@@ -46,7 +46,7 @@ func (dp *DeploymentProvider) GetContracts(
 		}
 
 		filePath := filepath.Join(buildDir, file.Name())
-		data, err := ioutil.ReadFile(filePath)
+		data, err := os.ReadFile(filePath)
 
 		if err != nil {
 			return nil, 0, errors.Wrap(err, "failed reading build file")
@@ -128,7 +128,7 @@ func (dp *DeploymentProvider) GetContracts(
 				}
 			}
 
-			source, err := ioutil.ReadFile(localPath)
+			source, err := os.ReadFile(localPath)
 			if err != nil {
 				return nil, 0, errors.Wrap(err, "failed reading contract source file")
 			}

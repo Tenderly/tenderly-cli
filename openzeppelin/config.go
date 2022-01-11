@@ -3,17 +3,17 @@ package openzeppelin
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/providers"
-	"github.com/tenderly/tenderly-cli/userError"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/sirupsen/logrus"
+	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/providers"
+	"github.com/tenderly/tenderly-cli/userError"
 )
 
 func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
@@ -86,7 +86,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 		return nil, fmt.Errorf("cannot find project.json, tried path: %s, error: %s", openzeppelinProjectPath, err)
 	}
 
-	data, err = ioutil.ReadFile(openzeppelinProjectPath)
+	data, err = os.ReadFile(openzeppelinProjectPath)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read project.json, tried path: %s, error: %s", openzeppelinProjectPath, err)
 	}
