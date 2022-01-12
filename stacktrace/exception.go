@@ -12,8 +12,8 @@ type StackFrame struct {
 	ContractName    string          `json:"name"`
 	Line            int             `json:"line"`
 
-	Code   string `json:"code",firestore:"-"`
-	Op     string `json:"op",firestore:"-"`
+	Code   string `json:"code"`
+	Op     string `json:"op"`
 	Start  int    `json:"start"`
 	Length int    `json:"length"`
 }

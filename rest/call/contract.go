@@ -2,11 +2,12 @@ package call
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/rest/client"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
-	"strings"
 )
 
 type ContractCalls struct {
@@ -16,7 +17,10 @@ func NewContractCalls() *ContractCalls {
 	return &ContractCalls{}
 }
 
-func (rest *ContractCalls) UploadContracts(request payloads.UploadContractsRequest, projectSlug string) (*payloads.UploadContractsResponse, error) {
+func (rest *ContractCalls) UploadContracts(
+	request payloads.UploadContractsRequest,
+	projectSlug string,
+) (*payloads.UploadContractsResponse, error) {
 	uploadJson, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -41,7 +45,9 @@ func (rest *ContractCalls) UploadContracts(request payloads.UploadContractsReque
 	return contracts, err
 }
 
-func (rest *ContractCalls) VerifyContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error) {
+func (rest *ContractCalls) VerifyContracts(
+	request payloads.UploadContractsRequest,
+) (*payloads.UploadContractsResponse, error) {
 	uploadJson, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -68,6 +74,6 @@ func (rest *ContractCalls) GetContracts(id string) ([]*model.Contract, error) {
 		nil,
 	)
 
-	err := json.NewDecoder(response).Decode(contracts)
+	err := json.NewDecoder(response).Decode(&contracts)
 	return contracts, err
 }

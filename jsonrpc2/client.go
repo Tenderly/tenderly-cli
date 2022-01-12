@@ -160,16 +160,15 @@ func (c *Client) CallRequest(res interface{}, req *Request) error {
 func (c *Client) SendRawRequest(req *Request) (*Message, error) {
 	resCh := make(chan *Message, 1)
 	c.setFlying(req.ID, resCh)
-	defer func() {
-		c.deleteFlying(req.ID)
-	}()
+	defer c.deleteFlying(req.ID)
 
 	err := c.conn.Write(req)
 	if err != nil {
 		return nil, fmt.Errorf("write message to socket: %s", err)
 	}
 
-	ctx, _ := context.WithTimeout(context.TODO(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	select {
 	case <-ctx.Done():
 		return nil, fmt.Errorf("request timed out")
@@ -264,7 +263,6 @@ func (c *Client) deleteFlying(id int64) {
 
 func (c *Client) hasSubscription(id string) bool {
 	_, ok := c.subscribers.Load(id)
-
 	return ok
 }
 
@@ -277,7 +275,6 @@ func (c *Client) getSubscription(id string) (chan *Message, bool) {
 	if !ok {
 		return nil, ok
 	}
-
 	return msg.(chan *Message), ok
 }
 
