@@ -440,11 +440,11 @@ func (s *TransactionStatus) find(str string) *actions.TransactionStatus {
 	return nil
 }
 
-type Hex struct {
+type Hex64 struct {
 	Value string
 }
 
-func (h *Hex) Validate(ctx ValidatorContext) (response ValidateResponse) {
+func (h *Hex64) Validate(ctx ValidatorContext) (response ValidateResponse) {
 	if h.Value == "" {
 		return response.Error(ctx, MsgHexValueEmpty)
 	}
@@ -454,20 +454,28 @@ func (h *Hex) Validate(ctx ValidatorContext) (response ValidateResponse) {
 	return response
 }
 
-func (h *Hex) UnmarshalJSON(bytes []byte) error {
-	var maybeInt int
+func (h *Hex64) UnmarshalJSON(bytes []byte) error {
+	var maybeInt int64
 	errInt := json.Unmarshal(bytes, &maybeInt)
 	if errInt == nil {
-		h.Value = hexutil.EncodeUint64(uint64(maybeInt))
+		h.Value = toHex64(hexutil.EncodeUint64(uint64(maybeInt)))
 		return nil
 	}
 
 	var maybeString string
 	errStr := json.Unmarshal(bytes, &maybeString)
 	if errStr == nil {
-		h.Value = maybeString
+		h.Value = toHex64(maybeString)
 		return nil
 	}
 
 	return errors.New("Failed to unmarshal hex")
+}
+
+func toHex64(hex string) string {
+	value := strings.TrimPrefix(hex, "0x")
+	for len(value) < 64 {
+		value = "0" + value
+	}
+	return "0x" + value
 }
