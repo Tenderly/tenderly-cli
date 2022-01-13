@@ -323,7 +323,7 @@ func (e *EventEmittedField) ToRequest() (response []actions.EventEmittedFilter) 
 }
 
 type LogEmittedValue struct {
-	StartsWith []Hex `yaml:"startsWith" json:"startsWith"`
+	StartsWith []Hex64 `yaml:"startsWith" json:"startsWith"`
 }
 
 func (l *LogEmittedValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
