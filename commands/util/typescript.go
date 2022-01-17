@@ -55,7 +55,7 @@ func TsFilesExists(directory string) (bool, error) {
 		return false, err
 	}
 
-	return found, err
+	return found, nil
 }
 
 func MustSavePackageJSON(directory string, config *typescript.PackageJson) {
