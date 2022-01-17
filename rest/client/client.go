@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
@@ -23,7 +24,7 @@ func Request(method, path string, body []byte) io.Reader {
 		apiBase = alternativeApiBase
 	}
 
-	requestUrl := fmt.Sprintf("%s/%s", apiBase, path)
+	requestUrl := fmt.Sprintf("%s/%s", apiBase, strings.TrimPrefix(path, "/"))
 	req, err := http.NewRequest(
 		method,
 		requestUrl,
