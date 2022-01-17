@@ -95,8 +95,20 @@ func buildFunc(cmd *cobra.Command, args []string) {
 	}
 	mustParseAndValidateTriggers(actions)
 
+	existsTsFiles, err := util.TsFilesExists(actions.Sources)
+	if err != nil {
+		logrus.Error(commands.Colorizer.Sprintf("Found error when finding *.ts files, Error: %s", commands.Colorizer.Bold(commands.Colorizer.Red(err))))
+		os.Exit(1)
+	}
+	tsConfigExists := util.TsConfigExists(actions.Sources)
+
+	if existsTsFiles && !tsConfigExists {
+		logrus.Error(commands.Colorizer.Bold(commands.Colorizer.Red(commands.Colorizer.Sprintf("Missing typescript config file in your sources! Sources: %s", actions.Sources))))
+		os.Exit(1)
+	}
+
 	var tsconfig *typescript.TsConfig
-	if util.TsConfigExists(actions.Sources) {
+	if tsConfigExists {
 		tsconfig = util.MustLoadTsConfig(actions.Sources)
 		mustValidateTsconfig(tsconfig)
 	}

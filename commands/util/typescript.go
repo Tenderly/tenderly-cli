@@ -1,6 +1,7 @@
 package util
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 
@@ -32,6 +33,29 @@ func MustLoadTsConfig(directory string) *typescript.TsConfig {
 
 func TsConfigExists(directory string) bool {
 	return ExistFile(filepath.Join(directory, typescript.TsConfigFile))
+}
+
+func TsFilesExists(directory string) (bool, error) {
+	found := false
+	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) == typescript.TsFileExt {
+			found = true
+			// return EOF because we just want to find at least one file with .ts extension
+			return io.EOF
+		}
+		return nil
+	})
+	if err == io.EOF {
+		err = nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	return found, err
 }
 
 func MustSavePackageJSON(directory string, config *typescript.PackageJson) {
