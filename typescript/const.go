@@ -2,6 +2,7 @@ package typescript
 
 const (
 	TsConfigFile        = "tsconfig.json"
+	TsFileExt           = ".ts"
 	GitIgnoreFile       = ".gitignore"
 	PackageJsonFile     = "package.json"
 	PackageJsonLockFile = "package-lock.json"
