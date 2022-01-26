@@ -1,12 +1,11 @@
 package util
 
 import (
-	"io"
-	"os"
-	"path/filepath"
-
+	"fmt"
 	"github.com/tenderly/tenderly-cli/typescript"
 	"github.com/tenderly/tenderly-cli/userError"
+	"os"
+	"path/filepath"
 )
 
 func MustSaveTsConfig(directory string, config *typescript.TsConfig) {
@@ -35,27 +34,12 @@ func TsConfigExists(directory string) bool {
 	return ExistFile(filepath.Join(directory, typescript.TsConfigFile))
 }
 
-func TsFilesExists(directory string) (bool, error) {
-	found := false
-	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		if filepath.Ext(path) == typescript.TsFileExt {
-			found = true
-			// return EOF because we just want to find at least one file with .ts extension
-			return io.EOF
-		}
-		return nil
-	})
-	if err == io.EOF {
-		err = nil
+func IsFileTs(filePath string) bool {
+	if filepath.Ext(filePath) != "" {
+		return filepath.Ext(filePath) == typescript.TsFileExt
 	}
-	if err != nil {
-		return false, err
-	}
-
-	return found, nil
+	filePathWithTsExt := fmt.Sprintf("%s%s", filePath, typescript.TsFileExt)
+	return ExistFile(filePathWithTsExt)
 }
 
 func MustSavePackageJSON(directory string, config *typescript.PackageJson) {
