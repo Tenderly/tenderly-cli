@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -95,18 +96,16 @@ func buildFunc(cmd *cobra.Command, args []string) {
 	}
 	mustParseAndValidateTriggers(actions)
 
-	existsTsFiles, err := util.TsFilesExists(actions.Sources)
-	if err != nil {
-		logrus.Warn("\nError while detecting .ts files in sources")
-	}
 	tsConfigExists := util.TsConfigExists(actions.Sources)
-
-	if existsTsFiles && !tsConfigExists {
+	tsFileExists, tsFile := anyFunctionTsFileExists(actions)
+	if tsFileExists && !tsConfigExists {
+		err := errors.New(fmt.Sprintf("File %s is a typescript file but there is no typescript config file!", tsFile))
 		userError.LogErrorf("missing typescript config file %s",
 			userError.NewUserError(err,
 				commands.Colorizer.Sprintf(
-					"Missing typescript config file in your sources! Sources: %s",
-					commands.Colorizer.Bold(commands.Colorizer.Red(actions.Sources))),
+					"Missing typescript config file in your sources! Sources: %s, File: %s",
+					commands.Colorizer.Bold(commands.Colorizer.Red(actions.Sources)),
+					commands.Colorizer.Bold(commands.Colorizer.Red(tsFile))),
 			),
 		)
 		os.Exit(1)
@@ -355,4 +354,28 @@ func mustValidateTsconfig(tsconfig *typescript.TsConfig) {
 		))
 		os.Exit(1)
 	}
+}
+
+func anyFunctionTsFileExists(actions *actionsModel.ProjectActions) (bool, string) {
+	for _, spec := range actions.Specs {
+		locator := spec.Function
+		internalLocator, err := actionsModel.NewInternalLocator(locator)
+		if err != nil {
+			userError.LogErrorf("invalid locator: %s",
+				userError.NewUserError(
+					err,
+					commands.Colorizer.Sprintf(
+						"Invalid locator format %s.",
+						commands.Colorizer.Bold(commands.Colorizer.Red(locator)),
+					),
+				),
+			)
+			os.Exit(1)
+		}
+		filePath := filepath.Join(actions.Sources, internalLocator.Path)
+		if util.IsFileTs(filePath) {
+			return true, fmt.Sprintf("%s%s", internalLocator.Path, typescript.TsFileExt)
+		}
+	}
+	return false, ""
 }
