@@ -8,7 +8,6 @@ import (
 	// DO NOT DELETE THESE IMPORTS
 	// THIS IS HOW WE SUBSCRIBE NESTED COMMANDS
 	_ "github.com/tenderly/tenderly-cli/commands/actions"
-	_ "github.com/tenderly/tenderly-cli/commands/contract"
 	_ "github.com/tenderly/tenderly-cli/commands/export"
 )
 
