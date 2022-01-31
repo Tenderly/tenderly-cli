@@ -28,6 +28,7 @@ var removeCmd = &cobra.Command{
 	Short: "Remove contracts from configured project.",
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := commands.NewRest()
+
 		err := removeContracts(rest)
 		if err != nil {
 			userError.LogErrorf("unable to remove contracts: %s", err)

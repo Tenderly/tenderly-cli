@@ -41,6 +41,7 @@ var verifyCmd = &cobra.Command{
 		logrus.Info("Verifying your contracts...")
 
 		rest := commands.NewRest()
+
 		err := verifyContracts(rest)
 		if err != nil {
 			userError.LogErrorf("unable to verify contracts: %s", err)
