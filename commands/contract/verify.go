@@ -30,8 +30,6 @@ var verifyCmd = &cobra.Command{
 	Use:   "verify",
 	Short: "Verifies all project contracts on Tenderly",
 	Run: func(cmd *cobra.Command, args []string) {
-		rest := commands.NewRest()
-
 		commands.InitProvider()
 		commands.CheckProvider(commands.DeploymentProvider)
 		commands.CheckLogin()
@@ -40,11 +38,10 @@ var verifyCmd = &cobra.Command{
 			commands.WrongFolderMessage("verify", "cd %s; tenderly verify")
 			os.Exit(1)
 		}
-
 		logrus.Info("Verifying your contracts...")
 
+		rest := commands.NewRest()
 		err := verifyContracts(rest)
-
 		if err != nil {
 			userError.LogErrorf("unable to verify contracts: %s", err)
 			os.Exit(1)
