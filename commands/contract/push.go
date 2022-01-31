@@ -3,7 +3,6 @@ package contract
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -61,7 +60,7 @@ func uploadContracts(rest *rest.Rest) error {
 
 	networkIDs := commands.ExtractNetworkIDs(pushNetworks)
 
-	projectConfigurations, err := getProjectConfiguration()
+	projectConfigurations, err := commands.GetProjectConfiguration()
 	if err != nil {
 		return userError.NewUserError(
 			errors.Wrap(err, "unable to get project configuration"),
@@ -82,7 +81,7 @@ func uploadContracts(rest *rest.Rest) error {
 			)
 		}
 
-		projectConfigurations = map[string]*ProjectConfiguration{
+		projectConfigurations = map[string]*commands.ProjectConfiguration{
 			pushProjectSlug: projectConfiguration,
 		}
 	}
@@ -237,53 +236,4 @@ func uploadContracts(rest *rest.Rest) error {
 	}
 
 	return nil
-}
-
-type ProjectConfiguration struct {
-	Networks []string
-}
-
-type ProjectConfigurationMap map[string]*ProjectConfiguration
-
-func getProjectConfiguration() (ProjectConfigurationMap, error) {
-	configMap := config.MaybeGetMap(config.Projects)
-	if configMap == nil {
-		return nil, nil
-	}
-
-	projectConfigurationMap := make(ProjectConfigurationMap)
-	for projectSlug, projectConfig := range configMap {
-		singleConfigMap, ok := projectConfig.(map[string]interface{})
-		if !ok {
-			projectConfigurationMap[projectSlug] = &ProjectConfiguration{}
-			logrus.Debugf("No configuration provided for project: %s", projectSlug)
-			continue
-		}
-
-		networks, ok := singleConfigMap["networks"].([]interface{})
-		if !ok {
-			logrus.Debugf("failed extracting networks for project: %s", projectSlug)
-			continue
-		}
-
-		projectConfig := &ProjectConfiguration{}
-
-		for _, network := range networks {
-			switch n := network.(type) {
-			case int:
-				projectConfig.Networks = append(projectConfig.Networks, strconv.Itoa(n))
-			case string:
-				projectConfig.Networks = append(projectConfig.Networks, n)
-			}
-		}
-
-		projectConfigurationMap[projectSlug] = projectConfig
-	}
-
-	oldProjectSlug := config.GetString(config.ProjectSlug)
-	if oldProjectSlug != "" && projectConfigurationMap[oldProjectSlug] == nil {
-		projectConfigurationMap[oldProjectSlug] = &ProjectConfiguration{}
-	}
-
-	return projectConfigurationMap, nil
 }
