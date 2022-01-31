@@ -33,7 +33,6 @@ var verifyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		commands.InitProvider()
 		commands.CheckProvider(commands.DeploymentProvider)
-		commands.CheckLogin()
 
 		if !commands.DeploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !commands.ForceInit {
 			commands.WrongFolderMessage("verify", "cd %s; tenderly verify")

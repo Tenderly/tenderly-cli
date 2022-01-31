@@ -36,14 +36,6 @@ var pushCmd = &cobra.Command{
 	Use:   "push",
 	Short: "Pushes the contracts to the configured project. After the contracts are pushed they are actively monitored by Tenderly",
 	Run: func(cmd *cobra.Command, args []string) {
-		commands.CheckLogin()
-		if !config.IsProjectInit() {
-			logrus.Error("You need to initiate the project first.\n\n",
-				"You can do this by using the ", commands.Colorizer.Bold(commands.Colorizer.Green("tenderly init")), " command.")
-			os.Exit(1)
-		}
-		logrus.Info("Setting up your project...")
-
 		rest := commands.NewRest()
 		err := uploadContracts(rest)
 		if err != nil {
