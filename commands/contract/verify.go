@@ -2,17 +2,18 @@ package contract
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/tenderly/tenderly-cli/commands"
-	"github.com/tenderly/tenderly-cli/providers"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/briandowns/spinner"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/tenderly/tenderly-cli/commands"
 	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/userError"
