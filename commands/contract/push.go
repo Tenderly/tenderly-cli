@@ -87,7 +87,6 @@ func uploadContracts(rest *rest.Rest) error {
 	}
 
 	pushErrors := make(map[string]*userError.UserError)
-
 	for projectSlug, projectConfiguration := range projectConfigurations {
 		logrus.Info(commands.Colorizer.Sprintf(
 			"Pushing Smart Contracts for project: %s",

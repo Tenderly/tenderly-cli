@@ -1,8 +1,12 @@
 package contract
 
 import (
+	"fmt"
+	"github.com/briandowns/spinner"
 	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"os"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -13,15 +17,15 @@ import (
 )
 
 var (
-	contractTag string
-	contractID  string
-	projectSlug string
+	removeContractTag string
+	removeContractID  string
+	removeProjectSlug string
 )
 
 func init() {
-	removeCmd.PersistentFlags().StringVar(&contractTag, "tag", "", "Remove all contracts with matched tag from configured project")
-	removeCmd.PersistentFlags().StringVar(&contractID, "id", "", "Remove contract with \"id\"(\"eth:{network_id}:{contract_id}\").")
-	removeCmd.PersistentFlags().StringVar(&projectSlug, "project-slug", "", "The slug of a project you wish to remove contracts")
+	removeCmd.PersistentFlags().StringVar(&removeContractTag, "tag", "", "Remove all contracts with matched tag from configured project")
+	removeCmd.PersistentFlags().StringVar(&removeContractID, "id", "", "Remove contract with \"id\"(\"eth:{network_id}:{contract_id}\").")
+	removeCmd.PersistentFlags().StringVar(&removeProjectSlug, "project-slug", "", "The slug of a project you wish to remove contracts")
 
 	ContractsCmd.AddCommand(removeCmd)
 }
@@ -53,20 +57,90 @@ func removeContracts(rest *rest.Rest) error {
 		)
 	}
 
-	if pushProjectSlug != "" {
-		projectConfiguration, exists := projectConfigurations[pushProjectSlug]
+	if removeProjectSlug != "" {
+		projectConfiguration, exists := projectConfigurations[removeProjectSlug]
 		if !exists {
 			return userError.NewUserError(
 				errors.Wrap(err, "cannot find project configuration via slug"),
 				commands.Colorizer.Sprintf("Failed reading project configuration. Couldn't find project with slug: %s",
-					commands.Colorizer.Bold(commands.Colorizer.Red(pushProjectSlug)),
+					commands.Colorizer.Bold(commands.Colorizer.Red(removeProjectSlug)),
 				),
 			)
 		}
 
 		projectConfigurations = map[string]*commands.ProjectConfiguration{
-			pushProjectSlug: projectConfiguration,
+			removeProjectSlug: projectConfiguration,
 		}
+	}
+
+	pushErrors := make(map[string]*userError.UserError)
+	for projectSlug := range projectConfigurations {
+		logrus.Info(commands.Colorizer.Sprintf(
+			"Removing Smart Contracts for project: %s",
+			commands.Colorizer.Bold(commands.Colorizer.Green(projectSlug)),
+		))
+		s := spinner.New(spinner.CharSets[33], 100*time.Millisecond)
+		s.Start()
+
+		var removeContractsRequest payloads.RemoveContractsRequest
+
+		if removeContractID == "" {
+			contractsResponse, err := rest.Contract.GetContracts(projectSlug)
+			if err != nil {
+				pushErrors[projectSlug] = userError.NewUserError(
+					fmt.Errorf("failed to get contracts: %s", err),
+					fmt.Sprintf("Couldn't get contracts from Project: %s", projectSlug),
+				)
+				continue
+			}
+			if contractsResponse.Error != nil {
+				pushErrors[projectSlug] = userError.NewUserError(
+					fmt.Errorf("api error getting contracts: %s", contractsResponse.Error.Slug),
+					contractsResponse.Error.Message,
+				)
+				continue
+			}
+
+			for _, contract := range contractsResponse.Contracts {
+				if removeContractTag == "" {
+					removeContractsRequest.ContractIDs = append(removeContractsRequest.ContractIDs, contract.ID)
+					continue
+				}
+
+				for _, tag := range contract.Tags {
+					if removeContractTag == tag.Tag {
+						removeContractsRequest.ContractIDs = append(removeContractsRequest.ContractIDs, contract.ID)
+					}
+				}
+			}
+		} else {
+			removeContractsRequest.ContractIDs = append(removeContractsRequest.ContractIDs, removeContractID)
+		}
+
+		removeContractsResponse, err := rest.Contract.RemoveContracts(removeContractsRequest, projectSlug)
+		if err != nil {
+			pushErrors[projectSlug] = userError.NewUserError(
+				fmt.Errorf("failed to remove contracts: %s", err),
+				fmt.Sprintf("Couldn't remove contracts from Project: %s", projectSlug),
+			)
+			continue
+		}
+		if removeContractsResponse.Error != nil {
+			pushErrors[projectSlug] = userError.NewUserError(
+				fmt.Errorf("api error removing contracts: %s", removeContractsResponse.Error.Slug),
+				removeContractsResponse.Error.Message,
+			)
+			continue
+		}
+
+		s.Stop()
+	}
+
+	for projectSlug, pushError := range pushErrors {
+		userError.LogErrorf(fmt.Sprintf("Remove for %s failed with error: ", projectSlug)+"%s", pushError)
+	}
+	if len(pushErrors) > 0 {
+		return userError.NewUserError(errors.New("some project contracts remove failed"), "Some of the project contracts remove were not successful. Please see the list above")
 	}
 
 	return nil
