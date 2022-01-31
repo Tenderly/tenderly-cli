@@ -27,7 +27,7 @@ func init() {
 var verifyCmd = &cobra.Command{
 	Use:        "verify",
 	Short:      "Verifies all project contracts on Tenderly",
-	Deprecated: "tenderly verify has been deprecated, use tenderly contracts verify",
+	Deprecated: "\"tenderly verify\" has been deprecated, use \"tenderly contracts verify\"",
 	Run: func(cmd *cobra.Command, args []string) {
 		rest := NewRest()
 
