@@ -125,7 +125,7 @@ func removeContracts(rest *rest.Rest) error {
 			)
 			continue
 		}
-		if removeContractsResponse.Error != nil {
+		if removeContractsResponse != nil && removeContractsResponse.Error != nil {
 			pushErrors[projectSlug] = userError.NewUserError(
 				fmt.Errorf("api error removing contracts: %s", removeContractsResponse.Error.Slug),
 				removeContractsResponse.Error.Message,

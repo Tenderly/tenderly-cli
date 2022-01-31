@@ -18,7 +18,7 @@ func NewContractCalls() *ContractCalls {
 }
 
 func (rest *ContractCalls) GetContracts(projectSlug string) (*payloads.GetContractsResponse, error) {
-	var contracts *payloads.GetContractsResponse
+	var contracts payloads.GetContractsResponse
 
 	response := client.Request(
 		"GET",
@@ -30,7 +30,7 @@ func (rest *ContractCalls) GetContracts(projectSlug string) (*payloads.GetContra
 	if err != nil {
 		err = json.NewDecoder(response).Decode(&contracts)
 	}
-	return contracts, err
+	return &contracts, err
 }
 
 func (rest *ContractCalls) UploadContracts(
@@ -93,7 +93,11 @@ func (rest *ContractCalls) RemoveContracts(request payloads.RemoveContractsReque
 		removeJson,
 	)
 
-	var res *payloads.RemoveContractsResponse
+	var res payloads.RemoveContractsResponse
 	err = json.NewDecoder(response).Decode(&res)
-	return res, err
+	if err.Error() == "EOF" {
+		return nil, nil
+	}
+
+	return &res, err
 }
