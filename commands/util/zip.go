@@ -40,21 +40,20 @@ func MustZipDir(dirPath string, insidePath string, limitBytes int) []byte {
 	return content
 }
 
-func MustZipAndHashDir(dirPath string, insidePath string, limitBytes int) (*[]byte, *string) {
-	var zipped *[]byte
-	dZip := MustZipDir(dirPath, insidePath, limitBytes)
-	if len(dZip) > 0 {
-		zipped = &dZip
-	}
+func MustZipAndHashDir(dirPath string, insidePath string, limitBytes int) ([]byte, string) {
+	zipped := MustZipDir(dirPath, insidePath, limitBytes)
+
 	hasher := md5.New()
-	hasher.Write(*zipped)
+	hasher.Write(zipped)
 	hash := hex.EncodeToString(hasher.Sum(nil))
-	return zipped, &hash
+
+	return zipped, hash
 }
 
-func ZipAndHashDir(dirPath string, insidePath string, limitBytes int) (*[]byte, *string) {
+func ZipAndHashDir(dirPath, insidePath string, limitBytes int) ([]byte, string) {
 	if !ExistDir(dirPath) {
-		return nil, nil
+		return nil, ""
 	}
+
 	return MustZipAndHashDir(dirPath, insidePath, limitBytes)
 }

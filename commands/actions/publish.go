@@ -199,14 +199,14 @@ func publish(
 		logicZip = nil
 	}
 
+	var (
+		dependenciesZip     []byte
+		dependenciesVersion string
+	)
+
 	dependenciesDir := filepath.Join(actions.Sources, typescript.NodeModulesDir)
-	dependenciesZip, dependenciesVersion := util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
-	if dependenciesExist {
-		dependenciesZip = nil
-	}
-	if dependenciesZip != nil && len(*dependenciesZip) == 0 {
-		dependenciesVersion = nil
-		dependenciesZip = nil
+	if !dependenciesExist {
+		dependenciesZip, dependenciesVersion = util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
 	}
 
 	// TODO(marko): Send package-lock.json in publish request
@@ -214,10 +214,10 @@ func publish(
 		Actions:             actions.ToRequest(sources),
 		Deploy:              deploy,
 		Commitish:           util.GetCommitish(),
-		LogicZip:            logicZip,
-		LogicVersion:        logicVersion,
-		DependenciesZip:     dependenciesZip,
-		DependenciesVersion: dependenciesVersion,
+		LogicZip:            &logicZip,
+		LogicVersion:        &logicVersion,
+		DependenciesZip:     &dependenciesZip,
+		DependenciesVersion: &dependenciesVersion,
 	}
 
 	s := spinner.New(spinner.CharSets[33], 100*time.Millisecond)
@@ -349,10 +349,14 @@ func mustValidate(
 		DependenciesVersion: nil,
 	}
 
-	_, request.LogicVersion = util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
+	_, logicVersion := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
+
+	request.LogicVersion = &logicVersion
 
 	dependenciesDir := filepath.Join(actions.Sources, typescript.NodeModulesDir)
-	_, request.DependenciesVersion = util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
+
+	_, dependenciesVersion := util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
+	request.DependenciesVersion = &dependenciesVersion
 
 	response, err := r.Actions.Validate(request, projectSlug)
 	if err != nil {
