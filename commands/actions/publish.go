@@ -127,7 +127,7 @@ func buildFunc(cmd *cobra.Command, args []string) {
 		mustBuildProject(actions.Sources, tsconfig)
 	}
 
-	sources, logicExist, dependenciesExist = mustValidateAndGetSources(r, actions, projectSlug, actions.Sources)
+	sources = mustValidateAndGetSources(r, actions, projectSlug, actions.Sources)
 	logrus.Info(commands.Colorizer.Green("\nBuild completed."))
 }
 
@@ -194,7 +194,6 @@ func publish(
 			"- %s", commands.Colorizer.Bold(commands.Colorizer.Green(actionName))))
 	}
 
-	// TODO(slobodan): is it more readable/elegant if request.LogicZip is set to nil before this check and overridden here if there are changes?
 	logicZip, logicVersion := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
 	if logicExist {
 		logicZip = nil
@@ -282,7 +281,7 @@ func mustValidateAndGetSources(
 	actions *actionsModel.ProjectActions,
 	projectSlug string,
 	sourcesDir string,
-) (sources map[string]string, logicExist bool, dependenciesExist bool) {
+) map[string]string {
 	logrus.Info("\nValidating actions...")
 
 	validatedSources := make(map[string]string)
@@ -294,8 +293,7 @@ func mustValidateAndGetSources(
 
 	logicExist, dependenciesExist = mustValidate(r, actions, validatedSources, projectSlug)
 
-	// TODO(slobodan): check if named return params are allowed by style guide and if they are increasing readability
-	return validatedSources, logicExist, dependenciesExist
+	return validatedSources
 }
 
 func mustGetSource(sourcesDir string, locator string) string {
@@ -338,12 +336,13 @@ func mustGetSource(sourcesDir string, locator string) string {
 	return content
 }
 
+// Validates sources and returns if source logic exist (LogicFound) and if dependencies logic exist (DependenciesFound)
 func mustValidate(
 	r *rest.Rest,
 	actions *actionsModel.ProjectActions,
 	sources map[string]string,
 	projectSlug string,
-) (logicExist bool, dependenciesExist bool) {
+) (bool, bool) {
 	request := actions2.ValidateRequest{
 		Actions:             actions.ToRequest(sources),
 		LogicVersion:        nil,
@@ -379,7 +378,6 @@ func mustValidate(
 		os.Exit(1)
 	}
 
-	// TODO(slobodan): check if named return params are allowed by style guide and if they are increasing readability
 	return response.LogicFound, response.DependenciesFound
 }
 

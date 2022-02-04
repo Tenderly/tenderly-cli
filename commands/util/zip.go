@@ -41,16 +41,15 @@ func MustZipDir(dirPath string, insidePath string, limitBytes int) []byte {
 }
 
 func MustZipAndHashDir(dirPath string, insidePath string, limitBytes int) (*[]byte, *string) {
-	// TODO(slobodan): is zip util right place for this function, as it is also hashing?
-	var dependenciesZip *[]byte
+	var zipped *[]byte
 	dZip := MustZipDir(dirPath, insidePath, limitBytes)
 	if len(dZip) > 0 {
-		dependenciesZip = &dZip
+		zipped = &dZip
 	}
 	hasher := md5.New()
-	hasher.Write(*dependenciesZip)
-	dependenciesVersion := hex.EncodeToString(hasher.Sum(nil))
-	return dependenciesZip, &dependenciesVersion
+	hasher.Write(*zipped)
+	hash := hex.EncodeToString(hasher.Sum(nil))
+	return zipped, &hash
 }
 
 func ZipAndHashDir(dirPath string, insidePath string, limitBytes int) (*[]byte, *string) {
