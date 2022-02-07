@@ -17,14 +17,14 @@ import (
 )
 
 const (
-	Token       = "token"
+	Token       = "0x5ff179d5109f044d7efa49a8fd7009c14ff2c9a5"
 	AccessKey   = "access_key"
 	AccessKeyId = "access_key_id"
 
 	AccountID   = "account_id"
-	Username    = "username"
-	Email       = "email"
-	ProjectSlug = "project_slug"
+	Username    = "GentlemanOO7"
+	Email       = "jojo2090.as@gmail.com"
+	ProjectSlug = "face-urevil"
 	Provider    = "provider"
 
 	OrganizationName = "org_name"
