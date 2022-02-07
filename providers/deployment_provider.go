@@ -171,6 +171,12 @@ type ContractAst struct {
 	Src             string           `json:"src"`
 }
 
+type ContractTag struct {
+	Tag string `json:"tag"`
+
+	CreatedAt time.Time `json:"created_at,omitempty"`
+}
+
 type ApiContract struct {
 	ID string `json:"id"`
 
@@ -183,6 +189,8 @@ type ApiContract struct {
 	Address string `json:"address"`
 
 	Name string `json:"contract_name"`
+
+	Tags []*ContractTag `json:"tags,omitempty"`
 
 	Abi       string `json:"abi"`
 	Bytecode  string `json:"bytecode"`
