@@ -15,6 +15,19 @@ type UploadContractsResponse struct {
 	Error     *ApiError               `json:"error"`
 }
 
+type GetContractsResponse struct {
+	Contracts []providers.ApiContract `json:"contracts"`
+	Error     *ApiError               `json:"error"`
+}
+
+type RemoveContractsRequest struct {
+	ContractIDs []string `json:"account_ids"`
+}
+
+type RemoveContractsResponse struct {
+	Error *ApiError `json:"error"`
+}
+
 type Config struct {
 	OptimizationsUsed  *bool          `json:"optimizations_used,omitempty"`
 	OptimizationsCount *int           `json:"optimizations_count,omitempty"`

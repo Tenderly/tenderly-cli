@@ -8,6 +8,7 @@ import (
 	"github.com/tenderly/tenderly-cli/truffle"
 	"github.com/tenderly/tenderly-cli/userError"
 	"os"
+	"strconv"
 )
 
 func CheckLogin() {
@@ -112,4 +113,53 @@ func WrongFolderMessage(action string, commandFmt string) {
 		action,
 		commandFmt,
 	)
+}
+
+type ProjectConfiguration struct {
+	Networks []string
+}
+
+type ProjectConfigurationMap map[string]*ProjectConfiguration
+
+func GetProjectConfiguration() (ProjectConfigurationMap, error) {
+	configMap := config.MaybeGetMap(config.Projects)
+	if configMap == nil {
+		return nil, nil
+	}
+
+	projectConfigurationMap := make(ProjectConfigurationMap)
+	for projectSlug, projectConfig := range configMap {
+		singleConfigMap, ok := projectConfig.(map[string]interface{})
+		if !ok {
+			projectConfigurationMap[projectSlug] = &ProjectConfiguration{}
+			logrus.Debugf("No configuration provided for project: %s", projectSlug)
+			continue
+		}
+
+		networks, ok := singleConfigMap["networks"].([]interface{})
+		if !ok {
+			logrus.Debugf("failed extracting networks for project: %s", projectSlug)
+			continue
+		}
+
+		projectConfig := &ProjectConfiguration{}
+
+		for _, network := range networks {
+			switch n := network.(type) {
+			case int:
+				projectConfig.Networks = append(projectConfig.Networks, strconv.Itoa(n))
+			case string:
+				projectConfig.Networks = append(projectConfig.Networks, n)
+			}
+		}
+
+		projectConfigurationMap[projectSlug] = projectConfig
+	}
+
+	oldProjectSlug := config.GetString(config.ProjectSlug)
+	if oldProjectSlug != "" && projectConfigurationMap[oldProjectSlug] == nil {
+		projectConfigurationMap[oldProjectSlug] = &ProjectConfiguration{}
+	}
+
+	return projectConfigurationMap, nil
 }
