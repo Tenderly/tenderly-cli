@@ -23,8 +23,10 @@ type ProjectRoutes interface {
 }
 
 type ContractRoutes interface {
+	GetContracts(projectSlug string) (*payloads.GetContractsResponse, error)
 	UploadContracts(request payloads.UploadContractsRequest, projectSlug string) (*payloads.UploadContractsResponse, error)
 	VerifyContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error)
+	RemoveContracts(request payloads.RemoveContractsRequest, projectSlug string) (*payloads.RemoveContractsResponse, error)
 }
 
 type ExportRoutes interface {

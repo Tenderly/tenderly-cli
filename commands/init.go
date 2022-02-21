@@ -15,13 +15,13 @@ import (
 var projectName string
 var createProject bool
 var reInit bool
-var forceInit bool
+var ForceInit bool
 
 func init() {
 	initCmd.PersistentFlags().StringVar(&projectName, "project", "", "The project used for generating the configuration file.")
 	initCmd.PersistentFlags().BoolVar(&createProject, "create-project", false, "Creates the project provided by the --project flag if it doesn't exist.")
 	initCmd.PersistentFlags().BoolVar(&reInit, "re-init", false, "Force initializes the project if it was already initialized.")
-	initCmd.PersistentFlags().BoolVar(&forceInit, "force", false, "Don't check if the project directory contains the Truffle directory structure. "+
+	initCmd.PersistentFlags().BoolVar(&ForceInit, "force", false, "Don't check if the project directory contains the Truffle directory structure. "+
 		"If not provided assumes the current working directory.")
 	RootCmd.AddCommand(initCmd)
 }
@@ -35,7 +35,7 @@ var initCmd = &cobra.Command{
 
 		deploymentProviderName := ""
 
-		if !forceInit {
+		if !ForceInit {
 			InitProvider()
 			CheckProvider(DeploymentProvider)
 			deploymentProviderName = DeploymentProvider.GetProviderName().String()
@@ -50,7 +50,7 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if !forceInit &&
+		if !ForceInit &&
 			(DeploymentProvider == nil || !DeploymentProvider.CheckIfProviderStructure(config.ProjectDirectory)) {
 			WrongFolderMessage("initialize", "cd %s; tenderly init")
 			os.Exit(1)
