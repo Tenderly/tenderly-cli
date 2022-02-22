@@ -17,7 +17,7 @@ import (
 	"github.com/tenderly/tenderly-cli/config"
 	actionsModel "github.com/tenderly/tenderly-cli/model/actions"
 	"github.com/tenderly/tenderly-cli/rest"
-	actions2 "github.com/tenderly/tenderly-cli/rest/payloads/generated/actions"
+	conjureactions "github.com/tenderly/tenderly-cli/rest/payloads/generated/actions"
 	"github.com/tenderly/tenderly-cli/typescript"
 	"github.com/tenderly/tenderly-cli/userError"
 )
@@ -194,30 +194,26 @@ func publish(
 			"- %s", commands.Colorizer.Bold(commands.Colorizer.Green(actionName))))
 	}
 
-	logicZip, logicVersion := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
+	logicZip, logicHash := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
 	if logicExist {
 		logicZip = nil
 	}
 
-	var (
-		dependenciesZip     []byte
-		dependenciesVersion string
-	)
-
 	dependenciesDir := filepath.Join(actions.Sources, typescript.NodeModulesDir)
-	if !dependenciesExist {
-		dependenciesZip, dependenciesVersion = util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
+	dependenciesZip, dependenciesHash := util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
+	if dependenciesExist {
+		dependenciesZip = nil
 	}
 
 	// TODO(marko): Send package-lock.json in publish request
-	request := actions2.PublishRequest{
+	request := conjureactions.PublishRequest{
 		Actions:             actions.ToRequest(sources),
 		Deploy:              deploy,
 		Commitish:           util.GetCommitish(),
 		LogicZip:            &logicZip,
-		LogicVersion:        &logicVersion,
+		LogicVersion:        &logicHash,
 		DependenciesZip:     &dependenciesZip,
-		DependenciesVersion: &dependenciesVersion,
+		DependenciesVersion: &dependenciesHash,
 	}
 
 	s := spinner.New(spinner.CharSets[33], 100*time.Millisecond)
@@ -343,20 +339,20 @@ func mustValidate(
 	sources map[string]string,
 	projectSlug string,
 ) (bool, bool) {
-	request := actions2.ValidateRequest{
+	request := conjureactions.ValidateRequest{
 		Actions:             actions.ToRequest(sources),
 		LogicVersion:        nil,
 		DependenciesVersion: nil,
 	}
 
-	_, logicVersion := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
+	_, logicHash := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
 
-	request.LogicVersion = &logicVersion
+	request.LogicVersion = &logicHash
 
 	dependenciesDir := filepath.Join(actions.Sources, typescript.NodeModulesDir)
 
-	_, dependenciesVersion := util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
-	request.DependenciesVersion = &dependenciesVersion
+	_, dependenciesHash := util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
+	request.DependenciesVersion = &dependenciesHash
 
 	response, err := r.Actions.Validate(request, projectSlug)
 	if err != nil {
