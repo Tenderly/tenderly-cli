@@ -19,7 +19,7 @@ import (
 
 const (
 	TypescriptActionsDependency        = "@tenderly/actions"
-	TypescriptActionsDependencyVersion = "^0.0.7"
+	TypescriptActionsDependencyVersion = "^0.0.8"
 	LanguageJavaScript                 = "javascript"
 	LanguageTypeScript                 = "typescript"
 )
@@ -39,19 +39,19 @@ var initActionTypescript = `import {
 	ActionFn,
 	Context,
 	Event,
-	BlockEvent
-} from '@tenderly/actions'
+	BlockEvent,
+} from '@tenderly/actions';
 
 export const blockHelloWorldFn: ActionFn = async (context: Context, event: Event) => {
-	let blockEvent = event as BlockEvent
-	console.log(blockEvent)
+	let blockEvent = event as BlockEvent;
+	console.log(blockEvent);
 }
 `
 
 var initActionJavascript = `const blockHelloWorldFn = async (context, event) => {
-	console.log(event)
+	console.log(event);
 }
-module.exports = { blockHelloWorldFn }
+module.exports = { blockHelloWorldFn };
 `
 
 var initDescription = "This is just an example, but you can publish this action."
