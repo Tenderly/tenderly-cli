@@ -2,40 +2,43 @@ package actions
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
 
 	"github.com/briandowns/spinner"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
 	"github.com/tenderly/tenderly-cli/commands"
 	"github.com/tenderly/tenderly-cli/commands/util"
 	"github.com/tenderly/tenderly-cli/config"
 	actionsModel "github.com/tenderly/tenderly-cli/model/actions"
 	"github.com/tenderly/tenderly-cli/rest"
-	actions2 "github.com/tenderly/tenderly-cli/rest/payloads/generated/actions"
+	conjureactions "github.com/tenderly/tenderly-cli/rest/payloads/generated/actions"
 	"github.com/tenderly/tenderly-cli/typescript"
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
 var (
 	zipLimitBytes          = 45 * 1024 * 1024 // 45 MB
-	srcZipped              = "src/"
-	nodeModulesZipped      = "nodejs/node_modules/"
+	srcPathInZip           = "src/"
+	nodeModulesPathInZip   = "nodejs/node_modules/"
 	possibleFileExtensions = []string{"ts", "js"}
 	ActionUrlPattern       = "https://dashboard.tenderly.co/%s/action/%s"
 )
 
 // Set and access from commands
 var (
-	r           *rest.Rest
-	projectSlug string
-	actions     *actionsModel.ProjectActions
-	outDir      string
-	sources     map[string]string
+	r                 *rest.Rest
+	projectSlug       string
+	actions           *actionsModel.ProjectActions
+	outDir            string
+	sources           map[string]string
+	logicExist        bool
+	dependenciesExist bool
 )
 
 func init() {
@@ -173,7 +176,14 @@ func deployFunc(cmd *cobra.Command, args []string) {
 	publish(r, actions, sources, projectSlug, outDir, true)
 }
 
-func publish(r *rest.Rest, actions *actionsModel.ProjectActions, sources map[string]string, projectSlug string, outDir string, deploy bool) {
+func publish(
+	r *rest.Rest,
+	actions *actionsModel.ProjectActions,
+	sources map[string]string,
+	projectSlug string,
+	outDir string,
+	deploy bool,
+) {
 	if !deploy {
 		logrus.Info("\nPublishing actions:")
 	} else {
@@ -184,28 +194,26 @@ func publish(r *rest.Rest, actions *actionsModel.ProjectActions, sources map[str
 			"- %s", commands.Colorizer.Bold(commands.Colorizer.Green(actionName))))
 	}
 
-	sourcesDir := actions.Sources
-	dependenciesDir := filepath.Join(sourcesDir, typescript.NodeModulesDir)
+	logicZip, logicHash := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
+	if logicExist {
+		logicZip = nil
+	}
 
-	logicZip := util.MustZipDir(outDir, srcZipped, zipLimitBytes)
-
-	var dependenciesZip *[]byte
-	if util.ExistDir(dependenciesDir) {
-		dZip := util.MustZipDir(dependenciesDir, nodeModulesZipped, zipLimitBytes)
-		if len(dZip) > 0 {
-			dependenciesZip = &dZip
-		}
+	dependenciesDir := filepath.Join(actions.Sources, typescript.NodeModulesDir)
+	dependenciesZip, dependenciesHash := util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
+	if dependenciesExist {
+		dependenciesZip = nil
 	}
 
 	// TODO(marko): Send package-lock.json in publish request
-	request := actions2.PublishRequest{
+	request := conjureactions.PublishRequest{
 		Actions:             actions.ToRequest(sources),
 		Deploy:              deploy,
 		Commitish:           util.GetCommitish(),
-		LogicZip:            logicZip,
-		LogicVersion:        nil,
-		DependenciesZip:     dependenciesZip,
-		DependenciesVersion: nil,
+		LogicZip:            &logicZip,
+		LogicVersion:        &logicHash,
+		DependenciesZip:     &dependenciesZip,
+		DependenciesVersion: &dependenciesHash,
 	}
 
 	s := spinner.New(spinner.CharSets[33], 100*time.Millisecond)
@@ -254,7 +262,9 @@ func mustBuildProject(sourcesDir string, tsconfig *typescript.TsConfig) {
 			userError.NewUserError(err,
 				commands.Colorizer.Sprintf(
 					"Failed to run: %s.",
-					commands.Colorizer.Bold(commands.Colorizer.Red(fmt.Sprintf("npm --prefix %s run build", sourcesDir))),
+					commands.Colorizer.Bold(
+						commands.Colorizer.Red(fmt.Sprintf("npm --prefix %s run build", sourcesDir)),
+					),
 				),
 			),
 		)
@@ -262,7 +272,12 @@ func mustBuildProject(sourcesDir string, tsconfig *typescript.TsConfig) {
 	}
 }
 
-func mustValidateAndGetSources(r *rest.Rest, actions *actionsModel.ProjectActions, projectSlug string, sourcesDir string) map[string]string {
+func mustValidateAndGetSources(
+	r *rest.Rest,
+	actions *actionsModel.ProjectActions,
+	projectSlug string,
+	sourcesDir string,
+) map[string]string {
 	logrus.Info("\nValidating actions...")
 
 	validatedSources := make(map[string]string)
@@ -272,7 +287,7 @@ func mustValidateAndGetSources(r *rest.Rest, actions *actionsModel.ProjectAction
 		validatedSources[name] = source
 	}
 
-	mustValidate(r, actions, validatedSources, projectSlug)
+	logicExist, dependenciesExist = mustValidate(r, actions, validatedSources, projectSlug)
 
 	return validatedSources
 }
@@ -317,11 +332,27 @@ func mustGetSource(sourcesDir string, locator string) string {
 	return content
 }
 
-func mustValidate(r *rest.Rest, actions *actionsModel.ProjectActions, sources map[string]string, projectSlug string) {
-	// TODO(marko): Send logic & dependencies version in validate request
-	request := actions2.ValidateRequest{
-		Actions: actions.ToRequest(sources),
+// Validates sources and returns if source logic exist (LogicFound) and if dependencies logic exist (DependenciesFound)
+func mustValidate(
+	r *rest.Rest,
+	actions *actionsModel.ProjectActions,
+	sources map[string]string,
+	projectSlug string,
+) (bool, bool) {
+	request := conjureactions.ValidateRequest{
+		Actions:             actions.ToRequest(sources),
+		LogicVersion:        nil,
+		DependenciesVersion: nil,
 	}
+
+	_, logicHash := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
+
+	request.LogicVersion = &logicHash
+
+	dependenciesDir := filepath.Join(actions.Sources, typescript.NodeModulesDir)
+
+	_, dependenciesHash := util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
+	request.DependenciesVersion = &dependenciesHash
 
 	response, err := r.Actions.Validate(request, projectSlug)
 	if err != nil {
@@ -337,13 +368,17 @@ func mustValidate(r *rest.Rest, actions *actionsModel.ProjectActions, sources ma
 
 	if len(response.Errors) > 0 {
 		for name, errs := range response.Errors {
-			logrus.Info(commands.Colorizer.Sprintf("Validation for %s failed with errors:", commands.Colorizer.Yellow(name)))
+			logrus.Info(
+				commands.Colorizer.Sprintf("Validation for %s failed with errors:", commands.Colorizer.Yellow(name)),
+			)
 			for _, e := range errs {
 				logrus.Info(commands.Colorizer.Sprintf("%s: %s", commands.Colorizer.Red(e.Name), e.Message))
 			}
 		}
 		os.Exit(1)
 	}
+
+	return response.LogicFound, response.DependenciesFound
 }
 
 func mustValidateTsconfig(tsconfig *typescript.TsConfig) {

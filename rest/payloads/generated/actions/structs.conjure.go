@@ -1002,12 +1002,12 @@ type PublishRequest struct {
 	Actions map[string]ActionSpec `json:"actions" conjure-docs:"Map from action name to action spec."`
 	// If true, for each action in DEPLOYED state, new version will be deployed.
 	Deploy bool `json:"deploy" conjure-docs:"If true, for each action in DEPLOYED state, new version will be deployed."`
-	// Limitted to 25MB.
-	LogicZip []byte `json:"logicZip" conjure-docs:"Limitted to 25MB."`
+	// Zipped source code. Limited to 25MB. Omitted only if older logic can be reused.
+	LogicZip *[]byte `json:"logicZip" conjure-docs:"Zipped source code. Limited to 25MB. Omitted only if older logic can be reused."`
 	// Used to decide if new logic layer to be published or old can be reused.
 	LogicVersion *string `json:"logicVersion" conjure-docs:"Used to decide if new logic layer to be published or old can be reused."`
-	// Limitted to 25MB.
-	DependenciesZip *[]byte `json:"dependenciesZip" conjure-docs:"Limitted to 25MB."`
+	// Zipped node_modules dependencies. Limited to 25MB.
+	DependenciesZip *[]byte `json:"dependenciesZip" conjure-docs:"Zipped node_modules dependencies. Limited to 25MB."`
 	// Used to decide if new dependencies layer needs to be published or old can be reused.
 	DependenciesVersion *string `json:"dependenciesVersion" conjure-docs:"Used to decide if new dependencies layer needs to be published or old can be reused."`
 	// Content of package-lock.json for example.
@@ -1019,9 +1019,6 @@ type PublishRequest struct {
 func (o PublishRequest) MarshalJSON() ([]byte, error) {
 	if o.Actions == nil {
 		o.Actions = make(map[string]ActionSpec, 0)
-	}
-	if o.LogicZip == nil {
-		o.LogicZip = make([]byte, 0)
 	}
 	type PublishRequestAlias PublishRequest
 	return safejson.Marshal(PublishRequestAlias(o))
@@ -1035,9 +1032,6 @@ func (o *PublishRequest) UnmarshalJSON(data []byte) error {
 	}
 	if rawPublishRequest.Actions == nil {
 		rawPublishRequest.Actions = make(map[string]ActionSpec, 0)
-	}
-	if rawPublishRequest.LogicZip == nil {
-		rawPublishRequest.LogicZip = make([]byte, 0)
 	}
 	*o = PublishRequest(rawPublishRequest)
 	return nil
@@ -1371,8 +1365,20 @@ type TransactionPayload struct {
 	// Optional because it is added later so some payloads don't have it.
 	Value *string `json:"value" conjure-docs:"Optional because it is added later so some payloads don't have it."`
 	// Optional because it is added later so some payloads don't have it.
-	Nonce   *string `json:"nonce" conjure-docs:"Optional because it is added later so some payloads don't have it."`
-	AlertId *string `json:"alertId"`
+	Nonce *string `json:"nonce" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+	// Optional because it is added later so some payloads don't have it.
+	Gas *string `json:"gas" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+	// Optional because it is added later so some payloads don't have it.
+	GasUsed *string `json:"gasUsed" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+	// Optional because it is added later so some payloads don't have it.
+	CumulativeGasUsed *string `json:"cumulativeGasUsed" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+	// Optional because it is added later so some payloads don't have it.
+	GasPrice *string `json:"gasPrice" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+	// Optional because it is added later so some payloads don't have it.
+	GasTipCap *string `json:"gasTipCap" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+	// Optional because it is added later so some payloads don't have it.
+	GasFeeCap *string `json:"gasFeeCap" conjure-docs:"Optional because it is added later so some payloads don't have it."`
+	AlertId   *string `json:"alertId"`
 }
 
 func (o TransactionPayload) MarshalJSON() ([]byte, error) {

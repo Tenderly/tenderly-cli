@@ -1,6 +1,8 @@
 package util
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"os"
 
@@ -36,4 +38,22 @@ func MustZipDir(dirPath string, insidePath string, limitBytes int) []byte {
 	}
 
 	return content
+}
+
+func MustZipAndHashDir(dirPath string, insidePath string, limitBytes int) ([]byte, string) {
+	zipped := MustZipDir(dirPath, insidePath, limitBytes)
+
+	hasher := md5.New()
+	hasher.Write(zipped)
+	hash := hex.EncodeToString(hasher.Sum(nil))
+
+	return zipped, hash
+}
+
+func ZipAndHashDir(dirPath, insidePath string, limitBytes int) ([]byte, string) {
+	if !ExistDir(dirPath) {
+		return nil, ""
+	}
+
+	return MustZipAndHashDir(dirPath, insidePath, limitBytes)
 }
