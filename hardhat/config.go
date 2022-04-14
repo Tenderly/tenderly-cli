@@ -3,27 +3,33 @@ package hardhat
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/providers"
-	"github.com/tenderly/tenderly-cli/userError"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/providers"
+	"github.com/tenderly/tenderly-cli/userError"
 )
 
-type HardhatConfig struct {
+type Wrapper struct {
+	ResolvedConfig Config `json:"resolvedConfig"`
+}
+
+type Config struct {
 	ProjectDirectory string                             `json:"project_directory"`
 	BuildDirectory   string                             `json:"contracts_build_directory"`
 	Networks         map[string]providers.NetworkConfig `json:"networks"`
-	Solidity         HardhatSolidity                    `json:"solidity"`
+	Solidity         Solidity                           `json:"solidity"`
 	ConfigType       string                             `json:"-"`
 	Paths            providers.Paths                    `json:"paths"`
 }
 
-type HardhatSolidity struct {
+type Solidity struct {
 	Compilers []providers.Compiler `json:"compilers"`
 }
 
@@ -91,8 +97,15 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 
-	var hardhatConfig HardhatConfig
-	err = json.Unmarshal([]byte(configString), &hardhatConfig)
+	var hardhatConfig Config
+	var wrapper Wrapper
+
+	if strings.Contains(configString, "resolvedConfig") {
+		err = json.Unmarshal([]byte(configString), &wrapper)
+		hardhatConfig = wrapper.ResolvedConfig
+	} else {
+		err = json.Unmarshal([]byte(configString), &hardhatConfig)
+	}
 	if err != nil {
 		logrus.Debugf("failed unmarshaling config: %s", err)
 		return nil, fmt.Errorf("cannot read %s", configName)
