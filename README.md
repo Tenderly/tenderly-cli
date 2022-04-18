@@ -105,8 +105,8 @@ tenderly init
 
 ### Example how to initialize tenderly project
 
-For `tenderly init` cmd to work you need to have a `deployments` directory inside your project. You can generate that
-one using [hardhat-tenderly](https://github.com/Tenderly/hardhat-tenderly#readme.)
+For Tenderly CLI to work you need to have a `deployments` directory inside your project. You can generate that one
+using [hardhat-tenderly](https://github.com/Tenderly/hardhat-tenderly#readme.)
 
 1. To install hardhat-tenderly run.
 
