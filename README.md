@@ -1,8 +1,9 @@
 # Tenderly CLI
 
- [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/Tenderly/tenderly-cli.svg?label=Latest%20Version)](https://github.com/Tenderly/tenderly-cli)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/Tenderly/tenderly-cli.svg?label=Latest%20Version)](https://github.com/Tenderly/tenderly-cli)
 
-Tenderly CLI is a suite of development tools that allows you to debug, monitor and track the execution of your smart contracts.
+Tenderly CLI is a suite of development tools that allows you to debug, monitor and track the execution of your smart
+contracts.
 
 ## Table of Contents
 
@@ -22,7 +23,7 @@ Tenderly CLI is a suite of development tools that allows you to debug, monitor a
 
 ### macOS
 
-You can install the Tenderly CLI via the [Homebrew package manager](https://brew.sh/): 
+You can install the Tenderly CLI via the [Homebrew package manager](https://brew.sh/):
 
 ```
 brew tap tenderly/tenderly
@@ -45,16 +46,19 @@ curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/inst
 
 ### Windows
 
-Go to the [release page](https://github.com/Tenderly/tenderly-cli/releases), download the latest version and put it somewhere in your `$PATH`.
+Go to the [release page](https://github.com/Tenderly/tenderly-cli/releases), download the latest version and put it
+somewhere in your `$PATH`.
 
 ### Updating
 
 You can check the current version of the CLI by running:
+
 ```
 tenderly version
 ```
 
 To upgrade it via Homebrew:
+
 ```
 brew upgrade tenderly
 ```
@@ -63,7 +67,8 @@ brew upgrade tenderly
 
 ### Login
 
-The `login` command is used to authenticate the Tenderly CLI with your [Tenderly Dashboard](https://dashboard.tenderly.co).
+The `login` command is used to authenticate the Tenderly CLI with
+your [Tenderly Dashboard](https://dashboard.tenderly.co).
 
 ```
 tenderly login
@@ -82,7 +87,8 @@ tenderly login
 
 ### Init
 
-The `init` command is used to connect your local project directory with a project in the [Tenderly Dashboard](https://dashboard.tenderly.co).
+The `init` command is used to connect your local project directory with a project in
+the [Tenderly Dashboard](https://dashboard.tenderly.co).
 
 ```
 tenderly init
@@ -97,12 +103,71 @@ tenderly init
 | --re-init | false | Force initializes the project if it was already initialized |
 | --help | / | Help for init command |
 
+### Example how to initialize tenderly project
+
+For `tenderly init` cmd to work you need to have a `deployments` directory inside your project. You can generate that
+one using [hardhat-tenderly](https://github.com/Tenderly/hardhat-tenderly#readme.)
+
+1. To install hardhat-tenderly run.
+
+```bash
+npm install --save-dev @tenderly/hardhat-tenderly
+```
+
+2. Add the following statement to your `hardhat.config.js`:
+
+```js
+require("@tenderly/hardhat-tenderly");
+```
+
+Or, if you are using typescript:
+
+```js
+import "@tenderly/hardhat-tenderly"
+```
+
+3. Then you need to call it from your scripts (using ethers to deploy a contract):
+
+```js
+const Greeter = await ethers.getContractFactory("Greeter");
+const greeter = await Greeter.deploy("Hello, Hardhat!");
+
+await greeter.deployed()
+
+await hre.tenderly.persistArtifacts({
+    name: "Greeter",
+    address: greeter.address,
+})
+```
+
+`persistArtifacts` accept variadic parameters:
+
+```js
+const contracts = [
+    {
+        name: "Greeter",
+        address: "123"
+    },
+    {
+        name: "Greeter2",
+        address: "456"
+    }
+]
+
+await hre.tenderly.persistArtifacts(...contracts)
+```
+
+4. Run: `npx hardhat compile` to compile contracts
+5. Run: `npx hardhat node --network hardhat` to start a local node
+6. Run: `npx hardhat run scripts/sample-script.js --network localhost` to run a script
+7. And at the end now when `deployments` directory was built you can run `tenderly init`
+
 ### Push
 
 The `push` command is used to add your contracts to the [Tenderly Dashboard](https://dashboard.tenderly.co).
 
-Note that the `push` command is used **only** for adding contracts that are deploy to a public network. For local networks see
-the [export command](#export).
+Note that the `push` command is used **only** for adding contracts that are deploy to a public network. For local
+networks see the [export command](#export).
 
 ```
 tenderly push
@@ -119,19 +184,21 @@ tenderly push
 
 #### Advanced usage
 
-It is possible to push to multiple projects by editing the `tenderly.yaml` file and providing a map of projects and their networks. To do this remove the already provided `project_slug` property and replace it with the `projects` property like the example below;
+It is possible to push to multiple projects by editing the `tenderly.yaml` file and providing a map of projects and
+their networks. To do this remove the already provided `project_slug` property and replace it with the `projects`
+property like the example below;
 
 ```yaml
 projects: # running tenderly push will push the smart contracts to all of the provided projects
   my-cool-project:
     networks:
-    - "1" # mainnet
-    - "42" # kovan
+      - "1" # mainnet
+      - "42" # kovan
   my-other-project:
-    # if the networks property is not provided or is empty the project will be pushed to all of the migrated networks
+  # if the networks property is not provided or is empty the project will be pushed to all of the migrated networks
   company-account/my-other-project:
-    # if you want to push to a shared project provide the full project identifier
-    # the identifier can be found in you Tenderly dashboard under the projects name
+  # if you want to push to a shared project provide the full project identifier
+  # the identifier can be found in you Tenderly dashboard under the projects name
 ```
 
 ### Export init
@@ -154,16 +221,22 @@ tenderly export init
 
 ### Export
 
-The `export` command can be used to access transaction debugging tooling available at https://dashboard.tenderly.co/ but for local transactions.
-
+The `export` command can be used to access transaction debugging tooling available at https://dashboard.tenderly.co/ but
+for local transactions.
 
 Use the
-[Transaction Overview](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1),
-[Human-Readable Stack-Traces](https://dashboard.tenderly.co/tx/main/0x30bc65375b2e2b56f97706bccba9b21bc8763cc81a0262351b3373ce49f60ea7),
-[Debugger](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/debugger),
-[Gas Profiler](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/gas-usage),
-[Decoded Events](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/logs) and [State](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/state-diff)
+[Transaction Overview](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1)
+,
+[Human-Readable Stack-Traces](https://dashboard.tenderly.co/tx/main/0x30bc65375b2e2b56f97706bccba9b21bc8763cc81a0262351b3373ce49f60ea7)
+,
+[Debugger](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/debugger)
+,
+[Gas Profiler](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/gas-usage)
+,
+[Decoded Events](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/logs)
+and [State](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/state-diff)
 to boost your local development productivity.
+
 ```
 tenderly export {{transaction_hash}}
 ```
@@ -235,7 +308,8 @@ tenderly verify
 
 ### Check for updates
 
-The `update-check` command checks if there is a new version of the Tenderly CLI and gives update instructions and changelog information.
+The `update-check` command checks if there is a new version of the Tenderly CLI and gives update instructions and
+changelog information.
 
 ### Version
 
@@ -279,7 +353,8 @@ In addition to command specific flags, the following flags can be passed to any 
 
 ## Report Bugs / Feedback
 
-We look forward to any feedback you want to share with us or if you're stuck with a problem you can contact us at [support@tenderly.co](mailto:support@tenderly.co).
+We look forward to any feedback you want to share with us or if you're stuck with a problem you can contact us
+at [support@tenderly.co](mailto:support@tenderly.co).
 
 You can also join our [Discord server](https://discord.gg/fBvDJYR) or create an Issue in the Github repository.
 
