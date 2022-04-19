@@ -629,7 +629,25 @@ func (t *TransactionFilter) Validate(ctx ValidatorContext) (response ValidateRes
 		response.Merge(t.StateChanged.Validate(ctx.With("stateChanged")))
 	}
 
+	// Constraint check
+	response.Merge(t.ValidateConstraint(ctx))
+
 	return response
+}
+
+func (t *TransactionFilter) ValidateConstraint(ctx ValidatorContext) (response ValidateResponse) {
+	if t.From != nil || t.To != nil || t.Function != nil ||
+		(t.EventEmitted != nil && len(t.EventEmitted.Values) > 0) ||
+		(t.LogEmitted != nil && len(t.LogEmitted.Values) > 0) {
+
+		return response
+	}
+	return response.Error(ctx, MsgTransactionFilterConstraint)
+}
+
+type TransactionTrigger struct {
+	Status  TransactionStatus   `yaml:"status" json:"status"`
+	Filters []TransactionFilter `yaml:"filters" json:"filters"`
 }
 
 func (t *TransactionTrigger) Validate(ctx ValidatorContext) (response ValidateResponse) {
@@ -641,11 +659,6 @@ func (t *TransactionTrigger) Validate(ctx ValidatorContext) (response ValidateRe
 		response.Merge(filter.Validate(ctx.With("filters").With(strconv.Itoa(i))))
 	}
 	return response
-}
-
-type TransactionTrigger struct {
-	Status  TransactionStatus   `yaml:"status" json:"status"`
-	Filters []TransactionFilter `yaml:"filters" json:"filters"`
 }
 
 func (t *TransactionTrigger) ToRequest() actions.Trigger {
