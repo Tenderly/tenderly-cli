@@ -572,6 +572,9 @@ func (t *TransactionFilter) ToRequest() (response actions.Filter) {
 }
 
 func (t *TransactionFilter) Validate(ctx ValidatorContext) (response ValidateResponse) {
+	// Check constraint for minimum transaction filters
+	response.Merge(t.validateConstraint(ctx))
+
 	// Set top level contract on nested fields
 	if t.Contract != nil {
 		if t.EthBalance != nil {
@@ -629,20 +632,22 @@ func (t *TransactionFilter) Validate(ctx ValidatorContext) (response ValidateRes
 		response.Merge(t.StateChanged.Validate(ctx.With("stateChanged")))
 	}
 
-	// Constraint check
-	response.Merge(t.ValidateConstraint(ctx))
-
 	return response
 }
 
-func (t *TransactionFilter) ValidateConstraint(ctx ValidatorContext) (response ValidateResponse) {
-	if t.From != nil || t.To != nil || t.Function != nil ||
-		(t.EventEmitted != nil && len(t.EventEmitted.Values) > 0) ||
-		(t.LogEmitted != nil && len(t.LogEmitted.Values) > 0) {
-
+func (t *TransactionFilter) validateConstraint(ctx ValidatorContext) (response ValidateResponse) {
+	if t.isMinFilterConstraintFulfilled() {
 		return response
 	}
-	return response.Error(ctx, MsgTransactionFilterConstraint)
+	return response.Error(ctx, MsgMinFilterConstraint)
+}
+
+func (t *TransactionFilter) isMinFilterConstraintFulfilled() bool {
+	return (t.From != nil && len(t.From.Values) > 0) ||
+		(t.To != nil && len(t.To.Values) > 0) ||
+		(t.Function != nil && len(t.Function.Values) > 0) ||
+		(t.EventEmitted != nil && len(t.EventEmitted.Values) > 0) ||
+		(t.LogEmitted != nil && len(t.LogEmitted.Values) > 0)
 }
 
 type TransactionTrigger struct {
