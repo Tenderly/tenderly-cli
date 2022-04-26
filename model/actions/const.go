@@ -73,4 +73,5 @@ var (
 	MsgStartsWithInvalid                   = "'startsWith' element must be hex encoded and start with 0x"
 	MsgHexValueEmpty                       = "expected non-empty hex value"
 	MsgHexValueInvalid                     = "hex value must start with 0x, got %s"
+	MsgMinFilterConstraint                 = "constraint for minimum transaction filters must be fulfilled"
 )

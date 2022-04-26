@@ -572,6 +572,9 @@ func (t *TransactionFilter) ToRequest() (response actions.Filter) {
 }
 
 func (t *TransactionFilter) Validate(ctx ValidatorContext) (response ValidateResponse) {
+	// Check constraint for minimum transaction filters
+	response.Merge(t.validateConstraint(ctx))
+
 	// Set top level contract on nested fields
 	if t.Contract != nil {
 		if t.EthBalance != nil {
@@ -632,6 +635,26 @@ func (t *TransactionFilter) Validate(ctx ValidatorContext) (response ValidateRes
 	return response
 }
 
+func (t *TransactionFilter) validateConstraint(ctx ValidatorContext) (response ValidateResponse) {
+	if t.isMinFilterConstraintFulfilled() {
+		return response
+	}
+	return response.Error(ctx, MsgMinFilterConstraint)
+}
+
+func (t *TransactionFilter) isMinFilterConstraintFulfilled() bool {
+	return (t.From != nil && len(t.From.Values) > 0) ||
+		(t.To != nil && len(t.To.Values) > 0) ||
+		(t.Function != nil && len(t.Function.Values) > 0) ||
+		(t.EventEmitted != nil && len(t.EventEmitted.Values) > 0) ||
+		(t.LogEmitted != nil && len(t.LogEmitted.Values) > 0)
+}
+
+type TransactionTrigger struct {
+	Status  TransactionStatus   `yaml:"status" json:"status"`
+	Filters []TransactionFilter `yaml:"filters" json:"filters"`
+}
+
 func (t *TransactionTrigger) Validate(ctx ValidatorContext) (response ValidateResponse) {
 	response.Merge(t.Status.Validate(ctx.With("status")))
 	if len(t.Filters) == 0 {
@@ -641,11 +664,6 @@ func (t *TransactionTrigger) Validate(ctx ValidatorContext) (response ValidateRe
 		response.Merge(filter.Validate(ctx.With("filters").With(strconv.Itoa(i))))
 	}
 	return response
-}
-
-type TransactionTrigger struct {
-	Status  TransactionStatus   `yaml:"status" json:"status"`
-	Filters []TransactionFilter `yaml:"filters" json:"filters"`
 }
 
 func (t *TransactionTrigger) ToRequest() actions.Trigger {
