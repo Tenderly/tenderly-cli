@@ -25,7 +25,7 @@ type Block struct {
 	ValuesHash         common.Hash    `json:"hash"`
 	ValueParentHash    common.Hash    `json:"parentHash"`
 	ValueTimestamp     *hexutil.Big   `json:"timestamp"`
-	ValueDifficulty    *hexutil.Big   `json:"difficulty"`
+	ValueDifficulty    []byte         `json:"difficulty"`
 	ValueGasLimit      *hexutil.Big   `json:"gasLimit"`
 	ValuesTransactions []*Transaction `json:"transactions"`
 	ValueBaseFeePerGas *hexutil.Big   `json:"baseFeePerGas"`
@@ -51,7 +51,7 @@ func (b *Block) Timestamp() time.Time {
 	return time.Unix(b.ValueTimestamp.ToInt().Int64(), 0)
 }
 
-func (b *Block) Difficulty() *hexutil.Big {
+func (b *Block) Difficulty() []byte {
 	return b.ValueDifficulty
 }
 
@@ -86,7 +86,7 @@ type BlockHeader struct {
 	ValueReceiptHash   common.Hash    `json:"receiptsRoot"`
 	ValueBloom         hexutil.Bytes  `json:"logsBloom"`
 	ValueTimestamp     *hexutil.Big   `json:"timestamp"`
-	ValueDifficulty    *hexutil.Big   `json:"difficulty"`
+	ValueDifficulty    []byte         `json:"difficulty"`
 	ValueGasLimit      *hexutil.Big   `json:"gasLimit"`
 	ValueGasUsed       *hexutil.Big   `json:"gasUsed"`
 	ValueCoinbase      common.Address `json:"miner"`
@@ -138,7 +138,7 @@ func (b *BlockHeader) Timestamp() time.Time {
 	return time.Unix(b.ValueTimestamp.ToInt().Int64(), 0)
 }
 
-func (b *BlockHeader) Difficulty() *hexutil.Big {
+func (b *BlockHeader) Difficulty() []byte {
 	return b.ValueDifficulty
 }
 
