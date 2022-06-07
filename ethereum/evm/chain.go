@@ -87,7 +87,7 @@ func (c *Chain) GetHeader(hash common.Hash, number uint64) *types.Header {
 		Bloom:       blockHeader.Bloom(),
 		Number:      blockHeader.Number().Big(),
 		Time:        blockHeader.Time().ToInt().Uint64(),
-		Difficulty:  blockHeader.Difficulty().ToInt(),
+		Difficulty:  maybeDifficulty(blockHeader.Difficulty()),
 		GasLimit:    blockHeader.GasLimit().ToInt().Uint64(),
 		GasUsed:     blockHeader.GasUsed().ToInt().Uint64(),
 		Coinbase:    blockHeader.Coinbase(),

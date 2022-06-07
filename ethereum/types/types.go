@@ -58,7 +58,7 @@ type Block interface {
 	ParentHash() common.Hash
 	Time() *hexutil.Big
 	Timestamp() time.Time
-	Difficulty() *hexutil.Big
+	Difficulty() []byte
 	GasLimit() *hexutil.Big
 	BaseFeePerGas() *hexutil.Big
 }
@@ -72,7 +72,7 @@ type BlockHeader interface {
 	TxHash() common.Hash
 	ReceiptHash() common.Hash
 	Bloom() [256]byte
-	Difficulty() *hexutil.Big
+	Difficulty() []byte
 	GasLimit() *hexutil.Big
 	GasUsed() *hexutil.Big
 	Coinbase() common.Address
