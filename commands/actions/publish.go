@@ -253,6 +253,8 @@ func mustBuildProject(sourcesDir string, tsconfig *typescript.TsConfig) {
 		return
 	}
 
+	util.RemoveDirWithContent(filepath.Join(sourcesDir, *tsconfig.CompilerOptions.OutDir))
+
 	logrus.Info("\nBuilding actions...")
 	cmd := exec.Command("npm", "--prefix", sourcesDir, "run", typescript.DefaultBuildScriptName)
 	cmd.Stdout = os.Stdout
