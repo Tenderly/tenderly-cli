@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/briandowns/spinner"
@@ -125,6 +126,7 @@ func buildFunc(cmd *cobra.Command, args []string) {
 		outDir = filepath.Join(outDir, *tsconfig.CompilerOptions.OutDir)
 		mustInstallDependencies(actions.Sources)
 		mustBuildProject(actions.Sources, tsconfig)
+		mustExistCompiledFiles(outDir, actions)
 	}
 
 	sources = mustValidateAndGetSources(r, actions, projectSlug, actions.Sources)
@@ -413,4 +415,38 @@ func anyFunctionTsFileExists(actions *actionsModel.ProjectActions) (bool, string
 		}
 	}
 	return false, ""
+}
+
+func mustExistCompiledFiles(outDir string, actions *actionsModel.ProjectActions) {
+	notFoundDistinctFilePaths := make([]string, 0, len(actions.Specs))
+	filesMissing := make(map[string]bool)
+
+	for _, spec := range actions.Specs {
+		internalLocator, err := actionsModel.NewInternalLocator(spec.Function)
+		if err != nil {
+			userError.LogErrorf("invalid locator: %s",
+				userError.NewUserError(err,
+					commands.Colorizer.Sprintf(
+						"Invalid locator format %s.",
+						commands.Colorizer.Bold(commands.Colorizer.Red(spec.Function)),
+					)))
+			os.Exit(1)
+		}
+
+		filePath := filepath.Join(outDir, fmt.Sprintf("%s.js", internalLocator.Path))
+
+		if !util.ExistFile(filePath) {
+			if !filesMissing[filePath] {
+				filesMissing[filePath] = true
+				notFoundDistinctFilePaths = append(notFoundDistinctFilePaths, filePath)
+			}
+		}
+	}
+	if len(filesMissing) > 0 {
+		logrus.Errorf("Unable to resolve path for some of the compiled files: %s\n"+
+			`Make sure all imported files are contained in the configured action sources: "%s" directory.`,
+			commands.Colorizer.Bold(commands.Colorizer.Red(strings.Join(notFoundDistinctFilePaths, ", "))),
+			commands.Colorizer.Bold(actions.Sources))
+		os.Exit(1)
+	}
 }
