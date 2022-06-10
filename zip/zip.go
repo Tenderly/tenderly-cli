@@ -50,7 +50,7 @@ func Zip(dirPath string, insidePath string) ([]string, []byte, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("walk directory %s", dirPath)
+		return nil, nil, errors.Wrap(err, fmt.Sprintf("walk directory %s", dirPath))
 	}
 
 	err = writer.Close()
