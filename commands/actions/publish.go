@@ -420,8 +420,8 @@ func anyFunctionTsFileExists(actions *actionsModel.ProjectActions) (bool, string
 }
 
 func mustExistCompiledFiles(outDir string, actions *actionsModel.ProjectActions) {
-	notFoundDistinctFilePaths := make([]string, 0, len(actions.Specs))
-	filesMissing := make(map[string]bool)
+	missingFilePaths := make([]string, 0, len(actions.Specs))
+	missingFileAlreadyAdded := make(map[string]bool)
 
 	for _, spec := range actions.Specs {
 		internalLocator, err := actionsModel.NewInternalLocator(spec.Function)
@@ -438,17 +438,19 @@ func mustExistCompiledFiles(outDir string, actions *actionsModel.ProjectActions)
 		filePath := filepath.Join(outDir, fmt.Sprintf("%s.js", internalLocator.Path))
 
 		if !util.ExistFile(filePath) {
-			if !filesMissing[filePath] {
-				filesMissing[filePath] = true
-				notFoundDistinctFilePaths = append(notFoundDistinctFilePaths, filePath)
+			if !missingFileAlreadyAdded[filePath] {
+				missingFileAlreadyAdded[filePath] = true
+				missingFilePaths = append(missingFilePaths, filePath)
 			}
 		}
 	}
-	if len(filesMissing) > 0 {
+	if len(missingFilePaths) > 0 {
 		logrus.Errorf("Unable to resolve path for some of the compiled files: %s\n"+
-			`Make sure all imported files are contained in the configured action sources: "%s" directory.`,
-			commands.Colorizer.Bold(commands.Colorizer.Red(strings.Join(notFoundDistinctFilePaths, ", "))),
-			commands.Colorizer.Bold(actions.Sources))
+			"Make sure all imported files are contained in the configured action sources directory (%s).\n"+
+			"If the problem persists, please run this command with the %s flag and send logs to our customer support.",
+			commands.Colorizer.Bold(commands.Colorizer.Red(strings.Join(missingFilePaths, ", "))),
+			commands.Colorizer.Bold(actions.Sources),
+			commands.Colorizer.Bold(commands.Colorizer.Red("--debug")))
 		os.Exit(1)
 	}
 }
