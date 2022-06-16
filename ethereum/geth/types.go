@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+
 	"github.com/tenderly/tenderly-cli/ethereum/types"
 )
 
@@ -24,7 +25,7 @@ type Block struct {
 	ValuesHash         common.Hash    `json:"hash"`
 	ValueParentHash    common.Hash    `json:"parentHash"`
 	ValueTimestamp     *hexutil.Big   `json:"timestamp"`
-	ValueDifficulty    []byte         `json:"difficulty"`
+	ValueDifficulty    *hexutil.Big   `json:"difficulty"`
 	ValueGasLimit      *hexutil.Big   `json:"gasLimit"`
 	ValuesTransactions []*Transaction `json:"transactions"`
 	ValueBaseFeePerGas *hexutil.Big   `json:"baseFeePerGas"`
@@ -51,7 +52,7 @@ func (b *Block) Timestamp() time.Time {
 }
 
 func (b *Block) Difficulty() []byte {
-	return b.ValueDifficulty
+	return []byte(b.ValueDifficulty.String())
 }
 
 func (b *Block) GasLimit() *hexutil.Big {
@@ -81,7 +82,7 @@ type BlockHeader struct {
 	ValueReceiptHash   common.Hash    `json:"receiptsRoot"`
 	ValueBloom         hexutil.Bytes  `json:"logsBloom"`
 	ValueTimestamp     *hexutil.Big   `json:"timestamp"`
-	ValueDifficulty    []byte         `json:"difficulty"`
+	ValueDifficulty    *hexutil.Big   `json:"difficulty"`
 	ValueGasLimit      *hexutil.Big   `json:"gasLimit"`
 	ValueGasUsed       *hexutil.Big   `json:"gasUsed"`
 	ValueCoinbase      common.Address `json:"miner"`
@@ -134,7 +135,7 @@ func (b *BlockHeader) Timestamp() time.Time {
 }
 
 func (b *BlockHeader) Difficulty() []byte {
-	return b.ValueDifficulty
+	return []byte(b.ValueDifficulty.String())
 }
 
 func (b *BlockHeader) GasLimit() *hexutil.Big {
@@ -251,10 +252,12 @@ func (t *Transaction) Nonce() *hexutil.Big {
 
 func (t *Transaction) AccessList() (list []types.AccessTuple) {
 	for _, accessTuple := range t.ValueAccessList {
-		list = append(list, &AccessTuple{
-			ValueAddress:     accessTuple.ValueAddress,
-			ValueStorageKeys: accessTuple.ValueStorageKeys,
-		})
+		list = append(
+			list, &AccessTuple{
+				ValueAddress:     accessTuple.ValueAddress,
+				ValueStorageKeys: accessTuple.ValueStorageKeys,
+			},
+		)
 	}
 
 	return
