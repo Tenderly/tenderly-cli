@@ -57,7 +57,7 @@ func LogErrorf(format string, err error) {
 
 func formatErrorMessageIfContainsVerb(format string, a ...interface{}) interface{} {
 	if strings.Contains(format, "%") {
-		return fmt.Errorf(format, a)
+		return fmt.Errorf(format, a...)
 	}
 	return format
 }
