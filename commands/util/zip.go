@@ -18,7 +18,7 @@ func MustZipDir(dirPath string, insidePath string, limitBytes int) []byte {
 		userError.LogErrorf("zip directory failed: %s",
 			userError.NewUserError(
 				err,
-				fmt.Sprintf("Zip directory %s failed. Please run this command with the \"--debug\" flag and send logs to our customer support.",
+				fmt.Sprintf("Zip directory %s failed. Please run this command with the \"--debug\" flag and send the logs to our customer support.",
 					dirPath,
 				),
 			),
