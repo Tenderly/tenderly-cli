@@ -140,3 +140,14 @@ func CreateDir(path string) {
 		os.Exit(1)
 	}
 }
+
+func RemoveDirWithContent(path string) {
+	err := os.RemoveAll(path)
+	if err != nil {
+		userError.LogErrorf(
+			"failed to delete dir: %s",
+			userError.NewUserError(err,
+				fmt.Sprintf("Couldn't delete directory %s.", path)))
+		os.Exit(1)
+	}
+}

@@ -48,6 +48,7 @@ func DefaultTsConfig() *TsConfig {
 		},
 		CompileOnSave: boolPointer(true),
 		Include:       []string{"**/*"},
+		Exclude:       []string{"**/*.spec.ts"},
 	}
 }
 

@@ -2,6 +2,8 @@ package userError
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
 )
@@ -41,14 +43,21 @@ func LogErrorf(format string, err error) {
 		return
 	}
 	if err, ok := err.(*UserError); ok {
-		logrus.Debug(fmt.Errorf(format, err.error))
+		logrus.Debug(formatErrorMessageIfContainsVerb(format, err.error))
 		logrus.Error(err.userMessage)
 		return
 	}
 	if err, ok := err.(*payloads.ApiError); ok {
-		logrus.Debug(fmt.Errorf(format, err.Slug))
+		logrus.Debug(formatErrorMessageIfContainsVerb(format, err.Slug))
 		logrus.Error(err.Message)
 		return
 	}
 	logrus.Debug(fmt.Errorf(format, err))
+}
+
+func formatErrorMessageIfContainsVerb(format string, a ...interface{}) interface{} {
+	if strings.Contains(format, "%") {
+		return fmt.Errorf(format, a...)
+	}
+	return format
 }

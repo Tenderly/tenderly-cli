@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,11 +18,11 @@ func Zip(dirPath string, insidePath string) ([]string, []byte, error) {
 	writer := zip.NewWriter(buf)
 	var files []string
 
-	err := filepath.Walk(dirPath, func(path string, info fs.FileInfo, err error) error {
-		if info == nil {
+	err := filepath.WalkDir(dirPath, func(path string, dirEntry os.DirEntry, err error) error {
+		if dirEntry == nil {
 			return fmt.Errorf("directory missing %s", dirPath)
 		}
-		if info.IsDir() {
+		if dirEntry.IsDir() {
 			return nil
 		}
 		if err != nil {
@@ -50,7 +49,7 @@ func Zip(dirPath string, insidePath string) ([]string, []byte, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("walk directory %s", dirPath)
+		return nil, nil, errors.Wrap(err, fmt.Sprintf("walk directory %s", dirPath))
 	}
 
 	err = writer.Close()
