@@ -356,8 +356,6 @@ In addition to command specific flags, the following flags can be passed to any 
 We look forward to any feedback you want to share with us or if you're stuck with a problem you can contact us
 at [support@tenderly.co](mailto:support@tenderly.co).
 
-You can also join our [Discord server](https://discord.gg/fBvDJYR) or create an Issue in the Github repository.
-
 -----
 
 Made with ♥ by [Tenderly](https://tenderly.co)
