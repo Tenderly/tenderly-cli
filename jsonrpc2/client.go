@@ -218,19 +218,21 @@ func (c *Client) listen() {
 func (c *Client) processMsg(msg *Message) error {
 	if msg.ID == 0 {
 		// notification
-		c.subscribers.Range(func(_, val interface{}) bool {
-			subCh := val.(chan *Message)
+		c.subscribers.Range(
+			func(_, val interface{}) bool {
+				subCh := val.(chan *Message)
 
-			subCh <- msg
+				subCh <- msg
 
-			return true
-		})
+				return true
+			},
+		)
 
 		return nil
 	}
 
 	// response
-	//@TODO: We don't have to send ID and JSONRPC version back to caller.
+	// @TODO: We don't have to send ID and JSONRPC version back to caller.
 
 	resCh, ok := c.getFlying(msg.ID)
 
