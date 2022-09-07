@@ -30,7 +30,7 @@ brew tap tenderly/tenderly
 brew install tenderly
 ```
 
-Or if your prefer you can also install by using cURL and running our installation script:
+Or if you prefer you can also install by using cURL and running our installation script:
 
 ```
 curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-macos.sh | sh
@@ -166,7 +166,7 @@ await hre.tenderly.persistArtifacts(...contracts)
 
 The `push` command is used to add your contracts to the [Tenderly Dashboard](https://dashboard.tenderly.co).
 
-Note that the `push` command is used **only** for adding contracts that are deploy to a public network. For local
+Note that the `push` command is used **only** for adding contracts that are deployed to a public network. For local
 networks see the [export command](#export).
 
 ```
@@ -198,7 +198,7 @@ projects: # running tenderly push will push the smart contracts to all of the pr
   # if the networks property is not provided or is empty the project will be pushed to all of the migrated networks
   company-account/my-other-project:
   # if you want to push to a shared project provide the full project identifier
-  # the identifier can be found in you Tenderly dashboard under the projects name
+  # the identifier can be found in your Tenderly dashboard under the projects name
 ```
 
 ### Export init
@@ -288,7 +288,7 @@ exports: # running tenderly export will export local transaction to the provided
     project_slug: company-account/my-other-project
     rpc_address: rpc.ethereum.company:8545
     # if you want to export to a shared project provide the full project identifier
-    # the identifier can be found in you Tenderly dashboard under the projects name
+    # the identifier can be found in your Tenderly dashboard under the projects name
 ```
 
 ### Verify
