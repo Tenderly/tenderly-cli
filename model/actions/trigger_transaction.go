@@ -323,7 +323,8 @@ func (e *EventEmittedField) ToRequest() (response []actions.EventEmittedFilter) 
 }
 
 type LogEmittedValue struct {
-	StartsWith []Hex64 `yaml:"startsWith" json:"startsWith"`
+	StartsWith []Hex64        `yaml:"startsWith" json:"startsWith"`
+	Contract   *ContractValue `yaml:"contract" json:"contract"`
 }
 
 func (l *LogEmittedValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
@@ -345,9 +346,16 @@ func (l *LogEmittedValue) ToRequest() actions.LogEmittedFilter {
 	for i, with := range l.StartsWith {
 		topicsStartsWith[i] = with.Value
 	}
-	return actions.LogEmittedFilter{
+	lef := actions.LogEmittedFilter{
 		TopicsStartsWith: topicsStartsWith,
 	}
+	if l.Contract != nil {
+		c := actions.ContractReference{
+			Address: l.Contract.Address.String(),
+		}
+		lef.Contract = &c
+	}
+	return lef
 }
 
 type LogEmittedField struct {

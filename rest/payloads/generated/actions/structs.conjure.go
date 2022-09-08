@@ -874,7 +874,8 @@ func (o *FunctionFilter) UnmarshalYAML(unmarshal func(interface{}) error) error 
 }
 
 type LogEmittedFilter struct {
-	TopicsStartsWith []string `json:"topicsStartsWith"`
+	TopicsStartsWith []string           `json:"topicsStartsWith"`
+	Contract         *ContractReference `json:"contract"`
 }
 
 func (o LogEmittedFilter) MarshalJSON() ([]byte, error) {
