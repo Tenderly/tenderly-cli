@@ -29,9 +29,9 @@ if [ "$NEW_VERSION" != "$CUR_VERSION" ]; then
 
   unlink $tarball
 
-  printf "Moving CLI to ~/usr/local/bin/\n"
+  printf "Moving CLI to ~/bin/\n"
 
-  mv tenderly ~/usr/local/bin/
+  mv tenderly ~/bin
 
   cd - > /dev/null
 
