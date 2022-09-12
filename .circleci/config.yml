@@ -2,14 +2,14 @@ version: 2
 jobs:
   release:
     docker:
-    - image: cimg/go:1.19.1
+    - image: circleci/golang:1.16.7
     working_directory: /go/src/github.com/tenderly/tenderly-cli
     environment:
       GO111MODULE: "on"
     steps:
     - checkout
     - run: go get ./...
-    - run: GOOS=windows go get github.com/spf13/cobra
+    - run: GOOS=windows go get github.com/spf13/cobra@v1.4.0
     - run: GOOS=windows go get github.com/konsorten/go-windows-terminal-sequences
     - run: curl -sL https://git.io/goreleaser | bash
 workflows:
