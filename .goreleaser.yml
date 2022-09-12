@@ -5,9 +5,9 @@ builds:
   - id: tenderly-windows
     goos:
       - windows
-  ignore:
-    - goos: windows
-      goarch: arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
 
 archives:
   - replacements:
