@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/briandowns/spinner"
+	"github.com/hashicorp/go-version"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -349,6 +350,8 @@ func mustValidate(
 		DependenciesVersion: nil,
 	}
 
+	mustValidatePackageJson(actions.Sources)
+
 	_, logicHash := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
 
 	request.LogicVersion = &logicHash
@@ -453,4 +456,45 @@ func mustExistCompiledFiles(outDir string, actions *actionsModel.ProjectActions)
 			commands.Colorizer.Bold(commands.Colorizer.Red("--debug")))
 		os.Exit(1)
 	}
+}
+
+func mustValidatePackageJson(directory string) {
+	if !util.PackageJSONExists(directory) {
+		return
+	}
+
+	packageJson := util.MustLoadPackageJSON(directory)
+
+	axios := packageJson.Dependencies["axios"]
+	if axios == "" {
+		return
+	}
+
+	axiosMaxVersion, err := version.NewVersion("0.27.2")
+	if err != nil {
+		logrus.Error(commands.Colorizer.Sprintf(
+			"Cannot parse axios version!",
+		))
+		os.Exit(1)
+	}
+
+	axiosPackageVersion, err := version.NewVersion(strings.TrimLeft(axios, "^~"))
+	if err != nil {
+		logrus.Error(commands.Colorizer.Sprintf(
+			"Cannot parse axios version! Version in `package.json`: %s",
+			commands.Colorizer.Bold(commands.Colorizer.Red(axios)),
+		))
+		os.Exit(1)
+	}
+
+	if axiosPackageVersion.GreaterThan(axiosMaxVersion) {
+		logrus.Error(commands.Colorizer.Sprintf(
+			"Invalid axios version - Version %s or lower required. Version in `package.json`: %s",
+			commands.Colorizer.Bold(commands.Colorizer.Red(axiosMaxVersion.String())),
+			commands.Colorizer.Bold(commands.Colorizer.Red(axios)),
+		))
+		os.Exit(1)
+	}
+
+	return
 }
