@@ -7,7 +7,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/providers"
@@ -15,35 +14,23 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type BrownieCompilerSettings struct {
-	Compiler providers.Compiler `json:"compiler,omitempty" yaml:"compiler,omitempty"`
-}
-
 func (p Provider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
 	browniePath := filepath.Join(projectDir, configName)
 
-	logrus.Debugf("Trying Brownie config path: %s", browniePath)
-	_, err := os.Stat(browniePath)
-	if os.IsNotExist(err) {
-		return nil, err
-	}
-	if err != nil {
-		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, browniePath, err)
-	}
-
+	// Replace the absolute path on Windows machines
 	if runtime.GOOS == "windows" {
 		browniePath = strings.ReplaceAll(browniePath, `\`, `\\`)
 	}
 
-	data, err := os.ReadFile(browniePath)
-	if err != nil {
-		return nil, errors.Wrap(err, "read brownie config")
+	// Check to see if the configuration file is present in the file system
+	if err := validateConfigPresence(browniePath); err != nil {
+		return nil, err
 	}
 
-	var brownieConfig providers.Config
-	err = yaml.Unmarshal(data, &brownieConfig)
+	// Read the configuration
+	brownieConfig, err := readConfig(browniePath)
 	if err != nil {
-		return nil, errors.Wrap(err, "parse brownie config")
+		return nil, err
 	}
 
 	return &providers.Config{
@@ -52,6 +39,42 @@ func (p Provider) GetConfig(configName string, projectDir string) (*providers.Co
 		ConfigType:       configName,
 		Compilers:        brownieConfig.Compilers,
 	}, nil
+}
+
+// validateConfigPresence validates that the configuration file is present
+func validateConfigPresence(configPath string) error {
+	logrus.Debugf("Trying Brownie config path: %s", configPath)
+
+	// Verify that the config is present
+	if _, err := os.Stat(configPath); err != nil {
+		return fmt.Errorf(
+			"unable to locate configuaration at path: %s, error: %w",
+			configPath,
+			err,
+		)
+	}
+
+	return nil
+}
+
+// readConfig reads the configuration file from disk
+func readConfig(configPath string) (*providers.Config, error) {
+	var (
+		brownieConfig *providers.Config
+	)
+
+	// Read the config from disk
+	configRaw, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read configuration file, %w", err)
+	}
+
+	// Parse the config
+	if err := yaml.Unmarshal(configRaw, &brownieConfig); err != nil {
+		return nil, fmt.Errorf("unable to parse configuration file, %w", err)
+	}
+
+	return brownieConfig, nil
 }
 
 func (p Provider) MustGetConfig() (*providers.Config, error) {

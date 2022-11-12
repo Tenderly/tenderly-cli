@@ -52,6 +52,11 @@ func TestValidProviderStructure(t *testing.T) {
 				t.Fatalf("unable to create temporary base directory, %v", err)
 			}
 
+			// Set up the cleanup method
+			t.Cleanup(func() {
+				_ = os.RemoveAll(tempDirectory)
+			})
+
 			for _, initialDir := range testCase.initialDirectories {
 				path := filepath.Join(tempDirectory, initialDir)
 
