@@ -14,3 +14,9 @@ func NewBrownieProvider() Provider {
 func (p Provider) GetProviderName() providers.DeploymentProviderName {
 	return providers.BrownieDeploymentProvider
 }
+
+func (p Provider) GetDirectoryStructure() []string {
+	return []string{
+		"build",
+	}
+}

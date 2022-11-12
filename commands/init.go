@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/config"
+	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
@@ -51,7 +52,10 @@ var initCmd = &cobra.Command{
 		}
 
 		if !ForceInit &&
-			(DeploymentProvider == nil || !DeploymentProvider.ValidProviderStructure(config.ProjectDirectory)) {
+			(DeploymentProvider == nil || !providers.ValidProviderStructure(
+				config.ProjectDirectory,
+				DeploymentProvider.GetDirectoryStructure(),
+			)) {
 			WrongFolderMessage("initialize", "cd %s; tenderly init")
 			os.Exit(1)
 		}

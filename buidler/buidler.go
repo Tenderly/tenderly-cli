@@ -1,11 +1,12 @@
 package buidler
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/tenderly/tenderly-cli/providers"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/call"
-	"strconv"
-	"strings"
 )
 
 type DeploymentProvider struct {
@@ -48,4 +49,10 @@ var _ providers.DeploymentProvider = (*DeploymentProvider)(nil)
 
 func (*DeploymentProvider) GetProviderName() providers.DeploymentProviderName {
 	return providers.BuidlerDeploymentProvider
+}
+
+func (dp *DeploymentProvider) GetDirectoryStructure() []string {
+	return []string{
+		"deployments",
+	}
 }

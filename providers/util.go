@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"math/rand"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 type DeploymentProviderName string
@@ -78,7 +80,7 @@ func CheckIfFileDoesNotExist(path string) bool {
 }
 
 func GetGlobalPathForModule(localPath string) string {
-	//global path - npm
+	// global path - npm
 	cmd := exec.Command("npm", "root", "-g")
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -92,7 +94,7 @@ func GetGlobalPathForModule(localPath string) string {
 	absPath := filepath.Join(globalNodeModule, localPath)
 	doesNotExist := CheckIfFileDoesNotExist(absPath)
 	if doesNotExist {
-		//global path - yarn
+		// global path - yarn
 		cmd = exec.Command("yarn", "global", "dir")
 		cmd.Stdout = &out
 		err := cmd.Run()
@@ -106,4 +108,21 @@ func GetGlobalPathForModule(localPath string) string {
 	}
 
 	return absPath
+}
+
+// ValidProviderStructure validates that the provider directories are present
+// on the file system
+func ValidProviderStructure(baseDirectory string, providerDirectories []string) bool {
+	for _, folder := range providerDirectories {
+		directory := path.Join(baseDirectory, folder)
+
+		// Check if the directory is queryable
+		if _, err := os.Stat(directory); err != nil {
+			logrus.Debugf("unable to stat directory %s", directory)
+
+			return false
+		}
+	}
+
+	return true
 }

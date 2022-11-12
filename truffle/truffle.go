@@ -14,3 +14,7 @@ var _ providers.DeploymentProvider = (*DeploymentProvider)(nil)
 func (*DeploymentProvider) GetProviderName() providers.DeploymentProviderName {
 	return providers.TruffleDeploymentProvider
 }
+
+func (dp *DeploymentProvider) GetDirectoryStructure() []string {
+	return truffleFolders
+}

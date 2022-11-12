@@ -72,17 +72,6 @@ func FindDirectories() []string {
 	return result
 }
 
-func (dp *DeploymentProvider) ValidProviderStructure(directory string) bool {
-	for _, truffleFolder := range truffleFolders {
-		folderPath := filepath.Join(directory, truffleFolder)
-		if _, err := os.Stat(folderPath); err != nil {
-			return false
-		}
-	}
-
-	return true
-}
-
 func CheckIfProviderStructure(directory string) bool {
 	for _, truffleFolder := range truffleFolders {
 		folderPath := filepath.Join(directory, truffleFolder)
