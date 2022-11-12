@@ -176,7 +176,7 @@ func InitProvider() {
 
 	var promptProviders []providers.DeploymentProviderName
 
-	//If both config files exist, prompt user to choose
+	// If both config files exist, prompt user to choose
 	if provider == "" || resetProvider {
 		if _, err := os.Stat(openZeppelinPath); err == nil {
 			promptProviders = append(promptProviders, providers.OpenZeppelinDeploymentProvider)
@@ -291,7 +291,7 @@ func InitProvider() {
 	if provider == providers.BrownieDeploymentProvider || provider == "" {
 		_, err := os.Stat(browniePath)
 		if err == nil {
-			DeploymentProvider = brownie.NewDeploymentProvider()
+			DeploymentProvider = brownie.NewBrownieProvider()
 			return
 		}
 

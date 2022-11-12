@@ -5,15 +5,11 @@ import (
 	"path"
 )
 
-var brownieFolders = []string{
-	"build",
-}
+func (p Provider) ValidProviderStructure(directory string) bool {
+	var brownieFolders = []string{
+		"build",
+	}
 
-func FindDirectories() []string {
-	return []string{}
-}
-
-func (dp *DeploymentProvider) CheckIfProviderStructure(directory string) bool {
 	for _, folder := range brownieFolders {
 		folderPath := path.Join(directory, folder)
 		if _, err := os.Stat(folderPath); err != nil {

@@ -14,7 +14,7 @@ import (
 type DeploymentProvider interface {
 	GetConfig(configName string, configDir string) (*Config, error)
 	MustGetConfig() (*Config, error)
-	CheckIfProviderStructure(directory string) bool
+	ValidProviderStructure(directory string) bool
 	GetProviderName() DeploymentProviderName
 	GetContracts(buildDir string, networkIDs []string, objects ...*model.StateObject) ([]Contract, int, error)
 }

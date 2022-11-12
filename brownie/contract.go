@@ -15,19 +15,19 @@ import (
 )
 
 const (
-	BrownieContractDirectoryPath  = "contracts"
-	BrownieContractDeploymentPath = "deployments"
-	BrownieContractMapFile        = "map.json"
+	contractDirectoryPath  = "contracts"
+	contractDeploymentPath = "deployments"
+	contractMapFile        = "map.json"
 
-	BrownieDependencySeparator = "packages"
+	dependencySeparator = "packages"
 )
 
-func (dp *DeploymentProvider) GetContracts(
+func (p Provider) GetContracts(
 	buildDir string,
 	networkIDs []string,
 	objects ...*model.StateObject,
 ) ([]providers.Contract, int, error) {
-	contractsPath := filepath.Join(buildDir, BrownieContractDirectoryPath)
+	contractsPath := filepath.Join(buildDir, contractDirectoryPath)
 	files, err := os.ReadDir(contractsPath)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "failed listing build files")
@@ -50,7 +50,7 @@ func (dp *DeploymentProvider) GetContracts(
 	for _, contractFile := range files {
 		if contractFile.IsDir() {
 			dependencyPath := filepath.Join(contractsPath, contractFile.Name())
-			err = dp.resolveDependencies(dependencyPath, contractMap)
+			err = p.resolveDependencies(dependencyPath, contractMap)
 			if err != nil {
 				logrus.Debug(fmt.Sprintf("Failed resolving dependencies at %s with error: %s", dependencyPath, err))
 				break
@@ -77,7 +77,7 @@ func (dp *DeploymentProvider) GetContracts(
 		contractMap[contractData.Name] = &contractData
 	}
 
-	deploymentMapFile := filepath.Join(buildDir, BrownieContractDeploymentPath, BrownieContractMapFile)
+	deploymentMapFile := filepath.Join(buildDir, contractDeploymentPath, contractMapFile)
 
 	data, err := os.ReadFile(deploymentMapFile)
 	if err != nil {
@@ -104,7 +104,7 @@ func (dp *DeploymentProvider) GetContracts(
 			if contractMap[contractName].Networks == nil {
 				contractMap[contractName].Networks = make(map[string]providers.ContractNetwork)
 			}
-			//We only take the latest deployment to some network
+			// We only take the latest deployment to some network
 			contractMap[contractName].Networks[networkID] = providers.ContractNetwork{
 				Address: deploymentAddresses[0],
 			}
@@ -120,7 +120,7 @@ func (dp *DeploymentProvider) GetContracts(
 	return contracts, numberOfContractsWithANetwork, nil
 }
 
-func (dp *DeploymentProvider) resolveDependencies(path string, contractMap map[string]*providers.Contract) error {
+func (p Provider) resolveDependencies(path string, contractMap map[string]*providers.Contract) error {
 	info, err := os.Stat(path)
 	if err != nil {
 		logrus.Debugf("Failed reading dependency at %s", path)
@@ -135,7 +135,7 @@ func (dp *DeploymentProvider) resolveDependencies(path string, contractMap map[s
 
 		for _, file := range files {
 			newFilePath := filepath.Join(path, file.Name())
-			err = dp.resolveDependencies(newFilePath, contractMap)
+			err = p.resolveDependencies(newFilePath, contractMap)
 			if err != nil {
 				return err
 			}
@@ -156,7 +156,7 @@ func (dp *DeploymentProvider) resolveDependencies(path string, contractMap map[s
 		return errors.Wrap(err, "failed parsing contract")
 	}
 
-	sourcePath := strings.Split(contractData.SourcePath, BrownieDependencySeparator)
+	sourcePath := strings.Split(contractData.SourcePath, dependencySeparator)
 	contractData.SourcePath = strings.TrimPrefix(sourcePath[1], string(os.PathSeparator))
 	contractMap[contractData.Name] = &contractData
 

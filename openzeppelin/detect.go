@@ -14,7 +14,7 @@ func FindDirectories() []string {
 	return []string{}
 }
 
-func (dp *DeploymentProvider) CheckIfProviderStructure(directory string) bool {
+func (dp *DeploymentProvider) ValidProviderStructure(directory string) bool {
 	for _, openZeppelinFolder := range openZeppelinFolders {
 		folderPath := filepath.Join(directory, openZeppelinFolder)
 		if _, err := os.Stat(folderPath); err != nil {

@@ -19,7 +19,7 @@ type BrownieCompilerSettings struct {
 	Compiler providers.Compiler `json:"compiler,omitempty" yaml:"compiler,omitempty"`
 }
 
-func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
+func (p Provider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
 	browniePath := filepath.Join(projectDir, configName)
 
 	logrus.Debugf("Trying Brownie config path: %s", browniePath)
@@ -54,7 +54,7 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	}, nil
 }
 
-func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
+func (p Provider) MustGetConfig() (*providers.Config, error) {
 	projectDir, err := filepath.Abs(config.ProjectDirectory)
 	brownieConfigFile := providers.BrownieConfigFile
 
@@ -65,7 +65,7 @@ func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 		)
 	}
 
-	brownieConfig, err := dp.GetConfig(brownieConfigFile, projectDir)
+	brownieConfig, err := p.GetConfig(brownieConfigFile, projectDir)
 	if err != nil {
 		return nil, userError.NewUserError(
 			fmt.Errorf("unable to fetch config: %s", err),

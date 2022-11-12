@@ -34,7 +34,7 @@ var verifyCmd = &cobra.Command{
 		commands.InitProvider()
 		commands.CheckProvider(commands.DeploymentProvider)
 
-		if !commands.DeploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !commands.ForceInit {
+		if !commands.DeploymentProvider.ValidProviderStructure(config.ProjectDirectory) && !commands.ForceInit {
 			commands.WrongFolderMessage("verify", "cd %s; tenderly verify")
 			os.Exit(1)
 		}

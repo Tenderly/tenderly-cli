@@ -51,7 +51,7 @@ var initCmd = &cobra.Command{
 		}
 
 		if !ForceInit &&
-			(DeploymentProvider == nil || !DeploymentProvider.CheckIfProviderStructure(config.ProjectDirectory)) {
+			(DeploymentProvider == nil || !DeploymentProvider.ValidProviderStructure(config.ProjectDirectory)) {
 			WrongFolderMessage("initialize", "cd %s; tenderly init")
 			os.Exit(1)
 		}
