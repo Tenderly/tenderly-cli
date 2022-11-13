@@ -79,8 +79,6 @@ func readConfig(configPath string) (*providers.Config, error) {
 
 func (p Provider) MustGetConfig() (*providers.Config, error) {
 	projectDir, err := filepath.Abs(config.ProjectDirectory)
-	brownieConfigFile := providers.BrownieConfigFile
-
 	if err != nil {
 		return nil, userError.NewUserError(
 			fmt.Errorf("get absolute project dir: %s", err),
@@ -88,7 +86,7 @@ func (p Provider) MustGetConfig() (*providers.Config, error) {
 		)
 	}
 
-	brownieConfig, err := p.GetConfig(brownieConfigFile, projectDir)
+	brownieConfig, err := p.GetConfig(providers.BrownieConfigFile, projectDir)
 	if err != nil {
 		return nil, userError.NewUserError(
 			fmt.Errorf("unable to fetch config: %s", err),
