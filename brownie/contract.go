@@ -157,7 +157,13 @@ func getContractsMap(contractsPath string) (contractsMap, error) {
 			// Recursively fetch the contract files
 			newMap, err := getContractsMap(dependencyPath)
 			if err != nil {
-				logrus.Warnf(fmt.Sprintf("Failed resolving dependencies at %s with error: %s", dependencyPath, err))
+				logrus.Warnf(
+					fmt.Sprintf(
+						"Failed resolving dependencies at %s with error: %s",
+						dependencyPath,
+						err,
+					),
+				)
 
 				break
 			}
