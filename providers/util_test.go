@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValidProviderStructure(t *testing.T) {
@@ -68,8 +68,8 @@ func TestValidProviderStructure(t *testing.T) {
 			// Validate if the folder structure is present or not
 			assert.Equal(
 				t,
-				ValidProviderStructure(tempDirectory, testCase.directories),
 				testCase.shouldHaveValid,
+				ValidProviderStructure(tempDirectory, testCase.directories),
 			)
 		})
 	}

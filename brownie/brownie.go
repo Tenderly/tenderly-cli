@@ -4,6 +4,10 @@ import (
 	"github.com/tenderly/tenderly-cli/providers"
 )
 
+var directoryStructure = []string{
+	"build",
+}
+
 type Provider struct {
 }
 
@@ -16,7 +20,5 @@ func (p Provider) GetProviderName() providers.DeploymentProviderName {
 }
 
 func (p Provider) GetDirectoryStructure() []string {
-	return []string{
-		"build",
-	}
+	return directoryStructure
 }

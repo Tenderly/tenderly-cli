@@ -14,7 +14,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func (p Provider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
+// getConfig fetches the Brownie configuration file
+func (p Provider) getConfig(configName string, projectDir string) (*providers.Config, error) {
 	browniePath := filepath.Join(projectDir, configName)
 
 	// Replace the absolute path on Windows machines
@@ -22,12 +23,7 @@ func (p Provider) GetConfig(configName string, projectDir string) (*providers.Co
 		browniePath = strings.ReplaceAll(browniePath, `\`, `\\`)
 	}
 
-	// Check to see if the configuration file is present in the file system
-	if err := validateConfigPresence(browniePath); err != nil {
-		return nil, err
-	}
-
-	// Read the configuration
+	// Read the configuration from disk
 	brownieConfig, err := readConfig(browniePath)
 	if err != nil {
 		return nil, err
@@ -63,6 +59,11 @@ func readConfig(configPath string) (*providers.Config, error) {
 		brownieConfig *providers.Config
 	)
 
+	// Check to see if the configuration file is present in the file system
+	if err := validateConfigPresence(configPath); err != nil {
+		return nil, err
+	}
+
 	// Read the config from disk
 	configRaw, err := os.ReadFile(configPath)
 	if err != nil {
@@ -86,7 +87,7 @@ func (p Provider) MustGetConfig() (*providers.Config, error) {
 		)
 	}
 
-	brownieConfig, err := p.GetConfig(providers.BrownieConfigFile, projectDir)
+	brownieConfig, err := p.getConfig(providers.BrownieConfigFile, projectDir)
 	if err != nil {
 		return nil, userError.NewUserError(
 			fmt.Errorf("unable to fetch config: %s", err),

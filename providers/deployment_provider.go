@@ -12,7 +12,6 @@ import (
 )
 
 type DeploymentProvider interface {
-	GetConfig(configName string, configDir string) (*Config, error)
 	MustGetConfig() (*Config, error)
 	GetDirectoryStructure() []string
 	GetProviderName() DeploymentProviderName
