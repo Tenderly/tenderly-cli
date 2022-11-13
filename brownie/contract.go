@@ -20,10 +20,10 @@ const (
 	dependencySeparator = "packages"
 )
 
-type networkIDFilter map[string]bool
+type networkIDFilterMap map[string]bool
 
-// newNetworkIDFilter creates a new network ID filter map
-func newNetworkIDFilter(networkIDs []string) networkIDFilter {
+// newNetworkIDFilterMap creates a new network ID filter map
+func newNetworkIDFilterMap(networkIDs []string) networkIDFilterMap {
 	networkIDFilterMap := make(map[string]bool)
 
 	for _, networkID := range networkIDs {
@@ -34,7 +34,7 @@ func newNetworkIDFilter(networkIDs []string) networkIDFilter {
 }
 
 // hasNetworkID checks if the network ID filter map has a network ID
-func (n networkIDFilter) hasNetworkID(networkID string) bool {
+func (n networkIDFilterMap) hasNetworkID(networkID string) bool {
 	_, exists := n[networkID]
 
 	return exists
@@ -75,12 +75,12 @@ func (c contractsMap) getContracts() []providers.Contract {
 
 // filterContracts filters the contracts map based on the deployment map and network ID filters
 func (c contractsMap) filterContracts(
-	deploymentMap deploymentsMap,
-	networkIDFilterMap networkIDFilter,
+	deploymentsMap deploymentsMap,
+	networkIDFilterMap networkIDFilterMap,
 ) int {
 	var numberOfContractsWithANetwork int
 
-	for networkID, contractDeployments := range deploymentMap {
+	for networkID, contractDeployments := range deploymentsMap {
 		for contractName, deploymentAddresses := range contractDeployments {
 			if _, ok := c[contractName]; !ok {
 				continue
@@ -114,7 +114,7 @@ func (p Provider) GetContracts(
 	_ ...*model.StateObject,
 ) ([]providers.Contract, int, error) {
 	// Create the filter ID map
-	networkIDFilterMap := newNetworkIDFilter(networkIDs)
+	networkIDFilterMap := newNetworkIDFilterMap(networkIDs)
 
 	// Get the contracts directory listing
 	contractMap, err := getContractsMap(filepath.Join(buildDir, contractDirectoryPath))
@@ -222,11 +222,11 @@ func readDeploymentsMap(deploymentsPath string) (deploymentsMap, error) {
 		)
 	}
 
-	var deploymentMap deploymentsMap
+	var deploymentsMap deploymentsMap
 
-	if err := json.Unmarshal(data, &deploymentMap); err != nil {
+	if err := json.Unmarshal(data, &deploymentsMap); err != nil {
 		return nil, fmt.Errorf("unable to parse deployments map file, %w", err)
 	}
 
-	return deploymentMap, nil
+	return deploymentsMap, nil
 }
