@@ -56,7 +56,7 @@ func validateConfigPresence(configPath string) error {
 // readConfig reads the configuration file from disk
 func readConfig(configPath string) (*providers.Config, error) {
 	var (
-		brownieConfig *providers.Config
+		brownieConfig providers.Config
 	)
 
 	// Check to see if the configuration file is present in the file system
@@ -75,7 +75,7 @@ func readConfig(configPath string) (*providers.Config, error) {
 		return nil, fmt.Errorf("unable to parse configuration file, %w", err)
 	}
 
-	return brownieConfig, nil
+	return &brownieConfig, nil
 }
 
 func (p Provider) MustGetConfig() (*providers.Config, error) {

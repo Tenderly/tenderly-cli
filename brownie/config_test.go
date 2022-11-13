@@ -17,28 +17,18 @@ func TestBrownie_MustGetConfig(t *testing.T) {
 
 	testTable := []struct {
 		name       string
-		config     string
+		config     []byte
 		shouldRead bool
 	}{
 		{
 			"Valid Brownie config",
-			`
-					project_structure:
-						build: client/src/artifacts
-					
-					networks:
-					  default: development
-					  development:
-						cmd_settings:
-						  mnemonic: hill law jazz limb penalty escape public dish stand bracket blue jar
-					
-					dev_deployment_artifacts: true
-				`,
+			[]byte(`compiler:
+evm_version: 1.0.0`),
 			true,
 		},
 		{
 			"Missing Brownie config",
-			"",
+			nil,
 			false,
 		},
 	}
@@ -50,7 +40,7 @@ func TestBrownie_MustGetConfig(t *testing.T) {
 			t.Parallel()
 
 			projectDirectory := ""
-			if testCase.config != "" {
+			if testCase.config != nil {
 				// Create a temporary directory
 				tmpDirectory, err := os.MkdirTemp("", "")
 				if err != nil {
@@ -66,7 +56,7 @@ func TestBrownie_MustGetConfig(t *testing.T) {
 				// Create a temporary config file
 				filePath := filepath.Join(tmpDirectory, providers.BrownieConfigFile)
 
-				if err := os.WriteFile(filePath, []byte(testCase.config), os.ModePerm); err != nil {
+				if err := os.WriteFile(filePath, testCase.config, os.ModePerm); err != nil {
 					t.Fatalf("unable to write the temporary configuration file, %v", err)
 				}
 			}
