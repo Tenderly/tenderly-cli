@@ -38,11 +38,18 @@ curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/inst
 
 ### Linux
 
-You can install the Tenderly CLI by using cURL and running our installation script:
+You can install the Tenderly CLI by using cURL and running our installation script.
 
+With `root` privileges user:
 ```
 curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh | sh
 ```
+
+Or with `sudo` user:
+```
+curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh | sudo sh
+```
+
 
 ### Windows
 
