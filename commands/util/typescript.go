@@ -67,3 +67,7 @@ func MustLoadPackageJSON(directory string) *typescript.PackageJson {
 func PackageJSONExists(directory string) bool {
 	return ExistFile(filepath.Join(directory, typescript.PackageJsonFile))
 }
+
+func HasDependencies(packageJSON *typescript.PackageJson) bool {
+	return len(packageJSON.Dependencies)+len(packageJSON.DevDependencies) != 0
+}

@@ -9,13 +9,13 @@ import (
 	"time"
 
 	"github.com/briandowns/spinner"
-	"github.com/hashicorp/go-version"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/tenderly/tenderly-cli/commands"
 	"github.com/tenderly/tenderly-cli/commands/util"
+	"github.com/tenderly/tenderly-cli/commands/util/packagejson"
 	"github.com/tenderly/tenderly-cli/config"
 	actionsModel "github.com/tenderly/tenderly-cli/model/actions"
 	"github.com/tenderly/tenderly-cli/rest"
@@ -123,6 +123,29 @@ func buildFunc(cmd *cobra.Command, args []string) {
 	}
 
 	outDir = actions.Sources
+
+	exists := util.PackageJSONExists(actions.Sources)
+	if exists {
+		packageJSON := util.MustLoadPackageJSON(actions.Sources)
+		if util.HasDependencies(packageJSON) {
+			logrus.Info("\nValidating package.json dependencies...")
+
+			validator := packagejson.NewValidator(actions.Runtime)
+			result, err := mustValidateDependencies(packageJSON, validator)
+			if err != nil {
+				userError.LogErrorf("failed to validate package.json packages: %s", err)
+				os.Exit(1)
+			}
+
+			if !result.Success {
+				printPackageValidationErrors(result.Errors)
+				os.Exit(1)
+			}
+
+			logrus.Info("\nFinished validating package.json dependencies...")
+		}
+	}
+
 	if tsconfig != nil {
 		outDir = filepath.Join(outDir, *tsconfig.CompilerOptions.OutDir)
 		mustInstallDependencies(actions.Sources)
@@ -350,8 +373,6 @@ func mustValidate(
 		DependenciesVersion: nil,
 	}
 
-	mustValidatePackageJson(actions.Sources)
-
 	_, logicHash := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
 
 	request.LogicVersion = &logicHash
@@ -458,43 +479,14 @@ func mustExistCompiledFiles(outDir string, actions *actionsModel.ProjectActions)
 	}
 }
 
-func mustValidatePackageJson(directory string) {
-	if !util.PackageJSONExists(directory) {
-		return
-	}
-
-	packageJson := util.MustLoadPackageJSON(directory)
-
-	axios := packageJson.Dependencies["axios"]
-	if axios == "" {
-		return
-	}
-
-	axiosMaxVersion, err := version.NewVersion("0.27.2")
-	if err != nil {
+func printPackageValidationErrors(vE []*packagejson.ValidationError) {
+	logrus.Error("The following packages have invalid versions:")
+	for _, e := range vE {
 		logrus.Error(commands.Colorizer.Sprintf(
-			"Cannot parse axios version!",
+			"  %s\n\tFound: %s\n\tRequired: %s",
+			commands.Colorizer.Bold(commands.Colorizer.Bold(e.Name)),
+			commands.Colorizer.Bold(commands.Colorizer.Red(e.PackageJsonVersion)),
+			commands.Colorizer.Bold(commands.Colorizer.Red(e.Constraint)),
 		))
-		os.Exit(1)
 	}
-
-	axiosPackageVersion, err := version.NewVersion(strings.TrimLeft(axios, "^~"))
-	if err != nil {
-		logrus.Error(commands.Colorizer.Sprintf(
-			"Cannot parse axios version! Version in `package.json`: %s",
-			commands.Colorizer.Bold(commands.Colorizer.Red(axios)),
-		))
-		os.Exit(1)
-	}
-
-	if axiosPackageVersion.GreaterThan(axiosMaxVersion) {
-		logrus.Error(commands.Colorizer.Sprintf(
-			"Invalid axios version - Version %s or lower required. Version in `package.json`: %s",
-			commands.Colorizer.Bold(commands.Colorizer.Red(axiosMaxVersion.String())),
-			commands.Colorizer.Bold(commands.Colorizer.Red(axios)),
-		))
-		os.Exit(1)
-	}
-
-	return
 }
