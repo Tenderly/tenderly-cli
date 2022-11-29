@@ -479,7 +479,7 @@ func mustExistCompiledFiles(outDir string, actions *actionsModel.ProjectActions)
 	}
 }
 
-func printPackageValidationErrors(vE []*packagejson.ValidationError) {
+func printPackageValidationErrors(validationErrors []*packagejson.ValidationError) {
 	logrus.Error("The following packages have invalid versions:")
 	for _, e := range vE {
 		logrus.Error(commands.Colorizer.Sprintf(
