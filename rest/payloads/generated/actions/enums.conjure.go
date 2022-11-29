@@ -318,12 +318,13 @@ type Runtime_Value string
 
 const (
 	Runtime_V1      Runtime_Value = "V1"
+	Runtime_V2      Runtime_Value = "V2"
 	Runtime_UNKNOWN Runtime_Value = "UNKNOWN"
 )
 
 // Runtime_Values returns all known variants of Runtime.
 func Runtime_Values() []Runtime_Value {
-	return []Runtime_Value{Runtime_V1}
+	return []Runtime_Value{Runtime_V1, Runtime_V2}
 }
 
 func New_Runtime(value Runtime_Value) Runtime {
@@ -334,6 +335,8 @@ func New_Runtime(value Runtime_Value) Runtime {
 func (e Runtime) IsUnknown() bool {
 	switch e.val {
 	case Runtime_V1:
+		return false
+	case Runtime_V2:
 		return false
 	}
 	return true
@@ -360,6 +363,8 @@ func (e *Runtime) UnmarshalText(data []byte) error {
 		*e = New_Runtime(Runtime_Value(v))
 	case "V1":
 		*e = New_Runtime(Runtime_V1)
+	case "V2":
+		*e = New_Runtime(Runtime_V2)
 	}
 	return nil
 }

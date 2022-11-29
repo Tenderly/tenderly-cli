@@ -8,6 +8,8 @@ import (
 
 var (
 	RuntimeV1          = "v1"
+	RuntimeV2          = "v2"
+	SupportedRuntimes  = []string{RuntimeV1, RuntimeV2}
 	TriggerTypes       = []string{"periodic", "webhook", "block", "transaction", "alert"}
 	PeriodicType       = "periodic"
 	WebhookType        = "webhook"
