@@ -69,5 +69,5 @@ func PackageJSONExists(directory string) bool {
 }
 
 func HasDependencies(packageJSON *typescript.PackageJson) bool {
-	return len(packageJSON.Dependencies)+len(packageJSON.DevDependencies) != 0
+	return len(packageJSON.Dependencies)+len(packageJSON.DevDependencies) > 0
 }
