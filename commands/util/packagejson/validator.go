@@ -126,7 +126,6 @@ func unmarshalVersion(message bytes.Buffer) (string, error) {
 		return v, nil
 	case '[':
 		var versions []string
-		message = *bytes.NewBufferString("aha")
 		err = json.Unmarshal(rawMessage, &versions)
 		if err != nil {
 			return "", userError.NewUserError(err, "error unmarshalling response from npm")
