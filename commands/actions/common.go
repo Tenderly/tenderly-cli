@@ -10,10 +10,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/commands"
 	"github.com/tenderly/tenderly-cli/commands/util"
+	"github.com/tenderly/tenderly-cli/commands/util/packagejson"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/model"
 	actionsModel "github.com/tenderly/tenderly-cli/model/actions"
 	"github.com/tenderly/tenderly-cli/rest"
+	"github.com/tenderly/tenderly-cli/typescript"
 	"github.com/tenderly/tenderly-cli/userError"
 	"gopkg.in/yaml.v3"
 )
@@ -168,6 +170,23 @@ func mustGetProjectActions(actions map[string]actionsModel.ProjectActions, proje
 	}
 
 	return &ret
+}
+
+func mustValidateDependencies(packageJSON *typescript.PackageJson, validator *packagejson.Validator) (*packagejson.ValidationResult, error) {
+	depResult, err := validator.Validate(packageJSON.Dependencies)
+	if err != nil {
+		return nil, err
+	}
+
+	devDepResult, err := validator.Validate(packageJSON.DevDependencies)
+	if err != nil {
+		return nil, err
+	}
+
+	return &packagejson.ValidationResult{
+		Success: depResult.Success && devDepResult.Success,
+		Errors:  append(depResult.Errors, devDepResult.Errors...),
+	}, nil
 }
 
 func mustInstallDependencies(sourcesDir string) {
