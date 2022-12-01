@@ -28,7 +28,7 @@ func (s *ProjectActions) ToRequest(sources map[string]string) map[string]actions
 			Description: action.Description,
 			Source:      &source,
 			// V1 runtime is validated earlier in the code
-			Runtime:  actions.New_Runtime(actions.Runtime_V1),
+			Runtime:  actions.New_Runtime(actions.Runtime_Value(s.Runtime)),
 			Function: actions.Function(action.Function),
 			// Field will be set when we access it
 			TriggerType: action.TriggerParsed.ToRequestType(),
@@ -89,4 +89,14 @@ func NewInternalLocator(function string) (*InternalLocator, error) {
 		Path:         parts[0],
 		FunctionName: parts[1],
 	}, nil
+}
+
+func IsRuntimeSupported(runtime string) bool {
+	for _, supportedRuntime := range SupportedRuntimes {
+		if runtime == supportedRuntime {
+			return true
+		}
+	}
+
+	return false
 }

@@ -19,7 +19,7 @@ import (
 
 const (
 	TypescriptActionsDependency        = "@tenderly/actions"
-	TypescriptActionsDependencyVersion = "^0.0.8"
+	TypescriptActionsDependencyVersion = "^0.1.0"
 	LanguageJavaScript                 = "javascript"
 	LanguageTypeScript                 = "typescript"
 )
@@ -133,7 +133,7 @@ var initCmd = &cobra.Command{
 		}
 
 		config.MustWriteActionsInit(projectSlug, &actionsModel.ProjectActions{
-			Runtime:      "v1",
+			Runtime:      actionsModel.RuntimeV2,
 			Sources:      sources,
 			Dependencies: nil,
 			Specs:        specs,
