@@ -93,9 +93,9 @@ func buildFunc(cmd *cobra.Command, args []string) {
 	util.MustExistDir(actions.Sources)
 	if !actionsModel.IsRuntimeSupported(actions.Runtime) {
 		logrus.Error(commands.Colorizer.Sprintf(
-			"Configured runtime '%s' is not supported. Supported values: {%s}",
+			"Configured runtime %s is not supported. Supported values: {%s}",
 			commands.Colorizer.Bold(commands.Colorizer.Red(actions.Runtime)),
-			commands.Colorizer.Bold(commands.Colorizer.Green("'"+strings.Join(actionsModel.SupportedRuntimes, "','")+"'")),
+			commands.Colorizer.Bold(commands.Colorizer.Green(strings.Join(actionsModel.SupportedRuntimes, ","))),
 		))
 		os.Exit(1)
 	}
