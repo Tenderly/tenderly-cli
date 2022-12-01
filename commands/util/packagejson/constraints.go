@@ -25,6 +25,6 @@ var runtimesToConstraints = map[string]*Constraints{
 	},
 	"V2": {
 		"axios":             "<1.0.0",
-		"@tenderly/actions": ">=0.1.0",
+		"@tenderly/actions": ">=0.1.0, <0.2.0",
 	},
 }
