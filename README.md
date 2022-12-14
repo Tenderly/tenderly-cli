@@ -171,6 +171,8 @@ await hre.tenderly.persistArtifacts(...contracts)
 
 ### Push
 
+If you are using Hardhat, take a look at [docs](https://docs.tenderly.co/monitoring/smart-contract-verification/verifying-contracts-using-the-tenderly-hardhat-plugin) instead of using this command.
+
 The `push` command is used to add your contracts to the [Tenderly Dashboard](https://dashboard.tenderly.co).
 
 Note that the `push` command is used **only** for adding contracts that are deployed to a public network. For local
