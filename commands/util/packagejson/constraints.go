@@ -20,11 +20,11 @@ func (dc Constraints) findConstraints(dependencyName string) (version.Constraint
 
 var runtimesToConstraints = map[string]*Constraints{
 	"V1": {
-		"axios":             "<1.0.0",
+		"axios":             "!=1.1.3, !=1.1.2, !=1.1.1, !=1.1.0, !=1.0.0, !=1.0.0-alpha.1",
 		"@tenderly/actions": "<0.1.0",
 	},
 	"V2": {
-		"axios":             "<1.0.0",
+		"axios":             "!=1.1.3, !=1.1.2, !=1.1.1, !=1.1.0, !=1.0.0, !=1.0.0-alpha.1",
 		"@tenderly/actions": ">=0.1.0, <0.2.0",
 	},
 }
