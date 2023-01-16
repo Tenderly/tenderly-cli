@@ -96,8 +96,17 @@ type Compiler struct {
 }
 
 type CompilerSettings struct {
-	Optimizer  *Optimizer `json:"optimizer"`
-	EvmVersion *string    `json:"evmVersion"`
+	Remappings        []string                  `json:"remappings" yaml:"remappings"`
+	Optimizer         *Optimizer                `json:"optimizer"`
+	EvmVersion        *string                   `json:"evmVersion"`
+	Metadata          *CompilerSettingsMetadata `json:"metadata"`
+	CompilationTarget map[string]string         `json:"compilationTarget"`
+	Libraries         map[string]string         `json:"libraries"`
+}
+
+type CompilerSettingsMetadata struct {
+	UseLiteralContent *bool   `json:"useLiteralContent"`
+	BytecodeHash      *string `json:"bytecodeHash"`
 }
 
 type Optimizer struct {
@@ -140,13 +149,32 @@ type Contract struct {
 	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
+type ContractMetadata struct {
+	Version  int                        `json:"version"`
+	Language string                     `json:"language"`
+	Compiler ContractCompiler           `json:"compiler"`
+	Sources  map[string]ContractSources `json:"sources"`
+	Settings CompilerSettings           `json:"settings"`
+	Output   ContractOutput             `json:"output"`
+}
+
 type ContractCompiler struct {
-	Name    string `json:"name"`
-	Version string `json:"version"`
+	Name      string `json:"name"`
+	Version   string `json:"version"`
+	Keccak256 string `json:"keccak256"`
 }
 
 type ContractSources struct {
-	Content string `json:"content"`
+	Keccak256 string    `json:"keccak256"`
+	Content   string    `json:"content"`
+	URLs      *[]string `json:"urls"`
+	License   string    `json:"license"`
+}
+
+type ContractOutput struct {
+	Abi     interface{} `json:"abi"`
+	Userdoc interface{} `json:"userdoc"`
+	Devdoc  interface{} `json:"devdoc"`
 }
 
 type ContractNetwork struct {
