@@ -101,3 +101,27 @@ func (rest *ContractCalls) RemoveContracts(request payloads.RemoveContractsReque
 
 	return &res, err
 }
+
+func (rest *ContractCalls) RenameContract(
+	request payloads.RenameContractRequest,
+	projectSlug, networkID, address string,
+) (*payloads.RenameContractResponse, error) {
+	renameJson, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+
+	response := client.Request(
+		"POST",
+		fmt.Sprintf("api/v1/account/me/project/%s/contract/%s/%s/rename", projectSlug, networkID, address),
+		renameJson,
+	)
+
+	var res payloads.RenameContractResponse
+	err = json.NewDecoder(response).Decode(&res)
+	if err.Error() == "EOF" {
+		return nil, nil
+	}
+
+	return &res, err
+}

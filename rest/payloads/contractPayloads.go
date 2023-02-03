@@ -28,6 +28,14 @@ type RemoveContractsResponse struct {
 	Error *ApiError `json:"error"`
 }
 
+type RenameContractRequest struct {
+	DisplayName string `json:"display_name"`
+}
+
+type RenameContractResponse struct {
+	Error *ApiError `json:"error"`
+}
+
 type Config struct {
 	OptimizationsUsed  *bool          `json:"optimizations_used,omitempty"`
 	OptimizationsCount *int           `json:"optimizations_count,omitempty"`
