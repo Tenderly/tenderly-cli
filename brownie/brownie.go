@@ -4,15 +4,21 @@ import (
 	"github.com/tenderly/tenderly-cli/providers"
 )
 
-type DeploymentProvider struct {
+var directoryStructure = []string{
+	"build",
 }
 
-func NewDeploymentProvider() *DeploymentProvider {
-	return &DeploymentProvider{}
+type Provider struct {
 }
 
-var _ providers.DeploymentProvider = (*DeploymentProvider)(nil)
+func NewBrownieProvider() Provider {
+	return Provider{}
+}
 
-func (*DeploymentProvider) GetProviderName() providers.DeploymentProviderName {
+func (p Provider) GetProviderName() providers.DeploymentProviderName {
 	return providers.BrownieDeploymentProvider
+}
+
+func (p Provider) GetDirectoryStructure() []string {
+	return directoryStructure
 }
