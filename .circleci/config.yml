@@ -10,6 +10,7 @@ jobs:
       - run: go get ./...
       - run: GOOS=windows go get github.com/spf13/cobra@v1.4.0
       - run: GOOS=windows go get github.com/konsorten/go-windows-terminal-sequences
+        # Added version because ignore flag in .goreleaser.yml config was not respected
       - run: curl -sL https://git.io/goreleaser | VERSION=v1.13.1 bash
   test:
     docker:
