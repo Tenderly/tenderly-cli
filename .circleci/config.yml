@@ -3,22 +3,18 @@ jobs:
   release:
     docker:
       - image: cimg/go:1.18.8
-    working_directory: /go/src/github.com/tenderly/tenderly-cli
     environment:
       GO111MODULE: "on"
     steps:
-      - run: chown -R $USER:$USER /go
       - checkout
       - run: go get ./...
       - run: GOOS=windows go get github.com/spf13/cobra@v1.4.0
       - run: GOOS=windows go get github.com/konsorten/go-windows-terminal-sequences
       - run: curl -sL https://git.io/goreleaser | bash
   test:
-    working_directory: /go/src/github.com/tenderly/tenderly-cli
     docker:
       - image: cimg/go:1.18.8
     steps:
-      - run: chown -R $USER:$USER /go
       - checkout
       - restore_cache:
           keys:
@@ -40,6 +36,10 @@ workflows:
       - release:
           filters:
             branches:
-              only: master
+              ignore: /.*/
             tags:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+      - test:
+          filters:
+            branches:
+              only: master
