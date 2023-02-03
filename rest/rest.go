@@ -27,6 +27,7 @@ type ContractRoutes interface {
 	UploadContracts(request payloads.UploadContractsRequest, projectSlug string) (*payloads.UploadContractsResponse, error)
 	VerifyContracts(request payloads.UploadContractsRequest) (*payloads.UploadContractsResponse, error)
 	RemoveContracts(request payloads.RemoveContractsRequest, projectSlug string) (*payloads.RemoveContractsResponse, error)
+	RenameContract(request payloads.RenameContractRequest, projectSlug, networkID, address string) (*payloads.RenameContractResponse, error)
 }
 
 type ExportRoutes interface {

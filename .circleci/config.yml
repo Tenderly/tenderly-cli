@@ -2,23 +2,42 @@ version: 2
 jobs:
   release:
     docker:
-    - image: circleci/golang:1.16.7
+      - image: cimg/go:1.18.8
     working_directory: /go/src/github.com/tenderly/tenderly-cli
     environment:
       GO111MODULE: "on"
     steps:
-    - checkout
-    - run: go get ./...
-    - run: GOOS=windows go get github.com/spf13/cobra@v1.4.0
-    - run: GOOS=windows go get github.com/konsorten/go-windows-terminal-sequences
-    - run: curl -sL https://git.io/goreleaser | bash
+      - checkout
+      - run: go get ./...
+      - run: GOOS=windows go get github.com/spf13/cobra@v1.4.0
+      - run: GOOS=windows go get github.com/konsorten/go-windows-terminal-sequences
+      - run: curl -sL https://git.io/goreleaser | bash
+  test:
+    working_directory: /go/src/github.com/tenderly/tenderly-cli
+    docker:
+      - image: cimg/go:1.18.8
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v4-{{ checksum "go.sum" }}
+      - run:
+          name: Install Dependencies
+          command: go get ./...
+      - save_cache:
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+      - run:
+          name: Run tests
+          command: go test -shuffle=on -timeout 2m ./...
 workflows:
   version: 2
   release:
     jobs:
-    - release:
-        filters:
-          branches:
-            ignore: /.*/
-          tags:
-            only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+      - release:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
