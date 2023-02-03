@@ -13,7 +13,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/go-version v1.2.0
 	github.com/logrusorgru/aurora v0.0.0-20190803045625-94edacc10f9b
-	github.com/manifoldco/promptui v0.3.0
+	github.com/manifoldco/promptui v0.9.0
 	github.com/palantir/pkg/datetime v1.0.1
 	github.com/palantir/pkg/safejson v1.0.1
 	github.com/palantir/pkg/safeyaml v1.0.1
@@ -52,10 +52,8 @@ require (
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
-	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
-	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
