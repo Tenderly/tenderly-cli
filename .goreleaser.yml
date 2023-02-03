@@ -5,10 +5,9 @@ builds:
   - id: tenderly-windows
     goos:
       - windows
-    goarch:
-      - amd64
-      - arm
-
+    ignore:
+      - goos: windows
+        goarch: arm64
 archives:
   - replacements:
       darwin: Darwin
