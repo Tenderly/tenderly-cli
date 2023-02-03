@@ -11,7 +11,7 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-github/v37 v37.0.0
 	github.com/gorilla/websocket v1.4.2
-	github.com/hashicorp/go-version v1.2.0
+	github.com/hashicorp/go-version v1.6.0
 	github.com/logrusorgru/aurora v0.0.0-20190803045625-94edacc10f9b
 	github.com/manifoldco/promptui v0.3.0
 	github.com/palantir/pkg/datetime v1.0.1
