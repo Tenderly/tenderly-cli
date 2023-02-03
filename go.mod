@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/go-version v1.2.0
 	github.com/logrusorgru/aurora v0.0.0-20190803045625-94edacc10f9b
 	github.com/manifoldco/promptui v0.3.0
-	github.com/palantir/pkg/datetime v1.0.1
+	github.com/palantir/pkg/datetime v1.1.0
 	github.com/palantir/pkg/safejson v1.0.1
 	github.com/palantir/pkg/safeyaml v1.0.1
 	github.com/pkg/errors v0.9.1
@@ -22,7 +22,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.10.0
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -63,7 +63,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/palantir/pkg v1.0.1 // indirect
+	github.com/palantir/pkg v1.1.0 // indirect
 	github.com/palantir/pkg/transform v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/prometheus/tsdb v0.7.1 // indirect
