@@ -2,11 +2,12 @@ package commands
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/tenderly/tenderly-cli/providers"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/tenderly/tenderly-cli/providers"
 
 	"github.com/briandowns/spinner"
 	"github.com/sirupsen/logrus"
@@ -35,7 +36,10 @@ var verifyCmd = &cobra.Command{
 		CheckProvider(DeploymentProvider)
 		CheckLogin()
 
-		if !DeploymentProvider.CheckIfProviderStructure(config.ProjectDirectory) && !ForceInit {
+		if !providers.ValidProviderStructure(
+			config.ProjectDirectory,
+			DeploymentProvider.GetDirectoryStructure(),
+		) && !ForceInit {
 			WrongFolderMessage("verify", "cd %s; tenderly verify")
 			os.Exit(1)
 		}

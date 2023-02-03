@@ -14,3 +14,10 @@ var _ providers.DeploymentProvider = (*DeploymentProvider)(nil)
 func (*DeploymentProvider) GetProviderName() providers.DeploymentProviderName {
 	return providers.OpenZeppelinDeploymentProvider
 }
+
+func (dp *DeploymentProvider) GetDirectoryStructure() []string {
+	return []string{
+		"contracts",
+		".openzeppelin",
+	}
+}

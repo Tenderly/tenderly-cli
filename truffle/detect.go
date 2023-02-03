@@ -1,7 +1,6 @@
 package truffle
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 	"os/user"
@@ -9,6 +8,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 var truffleFolders = []string{
@@ -69,17 +70,6 @@ func FindDirectories() []string {
 	}
 
 	return result
-}
-
-func (dp *DeploymentProvider) CheckIfProviderStructure(directory string) bool {
-	for _, truffleFolder := range truffleFolders {
-		folderPath := filepath.Join(directory, truffleFolder)
-		if _, err := os.Stat(folderPath); err != nil {
-			return false
-		}
-	}
-
-	return true
 }
 
 func CheckIfProviderStructure(directory string) bool {

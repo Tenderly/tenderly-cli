@@ -7,158 +7,232 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/model"
 	"github.com/tenderly/tenderly-cli/providers"
 )
 
 const (
-	BrownieContractDirectoryPath  = "contracts"
-	BrownieContractDeploymentPath = "deployments"
-	BrownieContractMapFile        = "map.json"
+	contractDirectoryPath  = "contracts"
+	contractDeploymentPath = "deployments"
+	contractMapFile        = "map.json"
 
-	BrownieDependencySeparator = "packages"
+	dependencySeparator = "packages"
 )
 
-func (dp *DeploymentProvider) GetContracts(
-	buildDir string,
-	networkIDs []string,
-	objects ...*model.StateObject,
-) ([]providers.Contract, int, error) {
-	contractsPath := filepath.Join(buildDir, BrownieContractDirectoryPath)
-	files, err := os.ReadDir(contractsPath)
-	if err != nil {
-		return nil, 0, errors.Wrap(err, "failed listing build files")
-	}
+type networkIDFilterMap map[string]bool
 
+// newNetworkIDFilterMap creates a new network ID filter map
+func newNetworkIDFilterMap(networkIDs []string) networkIDFilterMap {
 	networkIDFilterMap := make(map[string]bool)
+
 	for _, networkID := range networkIDs {
 		networkIDFilterMap[networkID] = true
 	}
-	objectMap := make(map[string]*model.StateObject)
-	for _, object := range objects {
-		if object.Code == nil || len(object.Code) == 0 {
-			continue
+
+	return networkIDFilterMap
+}
+
+// hasNetworkID checks if the network ID filter map has a network ID
+func (n networkIDFilterMap) hasNetworkID(networkID string) bool {
+	_, exists := n[networkID]
+
+	return exists
+}
+
+type contractsMap map[string]*providers.Contract
+
+// mergeContractsMaps returns the merged contracts maps
+func mergeContractsMaps(maps ...contractsMap) contractsMap {
+	mergedMap := make(contractsMap)
+
+	// Iterate over each map, and merge the keys.
+	// This should be substituted with contractsMap.Copy(dst, src) when
+	// the go version is bumped to at least 1.18
+	for _, contractMap := range maps {
+		for k, v := range contractMap {
+			mergedMap[k] = v
 		}
-		objectMap[hexutil.Encode(object.Code)] = object
 	}
 
-	contractMap := make(map[string]*providers.Contract)
+	return mergedMap
+}
+
+// getContracts converts the contracts map to an array
+func (c contractsMap) getContracts() []providers.Contract {
+	var (
+		index     = 0
+		contracts = make([]providers.Contract, len(c))
+	)
+
+	for _, contract := range c {
+		contracts[index] = *contract
+		index++
+	}
+
+	return contracts
+}
+
+// filterContracts filters the contracts map based on the deployment map and network ID filters
+func (c contractsMap) filterContracts(
+	deploymentsMap deploymentsMap,
+	networkIDFilterMap networkIDFilterMap,
+) int {
 	var numberOfContractsWithANetwork int
-	for _, contractFile := range files {
-		if contractFile.IsDir() {
-			dependencyPath := filepath.Join(contractsPath, contractFile.Name())
-			err = dp.resolveDependencies(dependencyPath, contractMap)
-			if err != nil {
-				logrus.Debug(fmt.Sprintf("Failed resolving dependencies at %s with error: %s", dependencyPath, err))
-				break
-			}
-			continue
-		}
-		if !strings.HasSuffix(contractFile.Name(), ".json") {
-			continue
-		}
-		contractFilePath := filepath.Join(contractsPath, contractFile.Name())
-		data, err := os.ReadFile(contractFilePath)
-		if err != nil {
-			logrus.Debug(fmt.Sprintf("Failed reading build file at %s with error: %s", contractFilePath, err))
-			break
-		}
 
-		var contractData providers.Contract
-		err = json.Unmarshal(data, &contractData)
-		if err != nil {
-			logrus.Debug(fmt.Sprintf("Failed parsing build file at %s with error: %s", contractFilePath, err))
-			break
-		}
-
-		contractMap[contractData.Name] = &contractData
-	}
-
-	deploymentMapFile := filepath.Join(buildDir, BrownieContractDeploymentPath, BrownieContractMapFile)
-
-	data, err := os.ReadFile(deploymentMapFile)
-	if err != nil {
-		logrus.Debug(fmt.Sprintf("Failed reading map file at %s with error: %s", deploymentMapFile, err))
-		return nil, 0, errors.Wrap(err, "failed reading map file")
-	}
-
-	var deploymentMap map[string]map[string][]string
-	err = json.Unmarshal(data, &deploymentMap)
-	if err != nil {
-		logrus.Debug(fmt.Sprintf("Failed parsing map file at %s with error: %s", deploymentMapFile, err))
-		return nil, 0, errors.Wrap(err, "failed unmarshaling map file")
-	}
-	for networkID, contractDeployments := range deploymentMap {
+	for networkID, contractDeployments := range deploymentsMap {
 		for contractName, deploymentAddresses := range contractDeployments {
-			if _, ok := contractMap[contractName]; !ok {
+			if _, ok := c[contractName]; !ok {
 				continue
 			}
 
-			if len(networkIDFilterMap) > 0 && !networkIDFilterMap[networkID] {
+			if !networkIDFilterMap.hasNetworkID(networkID) {
 				continue
 			}
 
-			if contractMap[contractName].Networks == nil {
-				contractMap[contractName].Networks = make(map[string]providers.ContractNetwork)
+			if c[contractName].Networks == nil {
+				c[contractName].Networks = make(map[string]providers.ContractNetwork)
 			}
-			//We only take the latest deployment to some network
-			contractMap[contractName].Networks[networkID] = providers.ContractNetwork{
+
+			// We only take the latest deployment to some network
+			c[contractName].Networks[networkID] = providers.ContractNetwork{
 				Address: deploymentAddresses[0],
 			}
+
 			numberOfContractsWithANetwork += 1
 		}
 	}
 
-	var contracts []providers.Contract
-	for _, contract := range contractMap {
-		contracts = append(contracts, *contract)
-	}
-
-	return contracts, numberOfContractsWithANetwork, nil
+	return numberOfContractsWithANetwork
 }
 
-func (dp *DeploymentProvider) resolveDependencies(path string, contractMap map[string]*providers.Contract) error {
-	info, err := os.Stat(path)
-	if err != nil {
-		logrus.Debugf("Failed reading dependency at %s", path)
-		return errors.Wrap(err, "failed reading dependency files")
-	}
-	if info.IsDir() {
-		files, err := os.ReadDir(path)
-		if err != nil {
-			logrus.Debugf("Failed reading dependency at %s", path)
-			return errors.Wrap(err, "failed reading dependency files")
-		}
+type deploymentsMap map[string]map[string][]string
 
-		for _, file := range files {
-			newFilePath := filepath.Join(path, file.Name())
-			err = dp.resolveDependencies(newFilePath, contractMap)
+func (p Provider) GetContracts(
+	buildDir string,
+	networkIDs []string,
+	_ ...*model.StateObject,
+) ([]providers.Contract, int, error) {
+	// Create the filter ID map
+	networkIDFilterMap := newNetworkIDFilterMap(networkIDs)
+
+	// Get the contracts directory listing
+	contractMap, err := getContractsMap(filepath.Join(buildDir, contractDirectoryPath))
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get the deployments map
+	deploymentMap, err := readDeploymentsMap(
+		filepath.Join(buildDir, contractDeploymentPath, contractMapFile),
+	)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Filter the contracts map
+	numberOfContractsWithANetwork := contractMap.filterContracts(deploymentMap, networkIDFilterMap)
+
+	return contractMap.getContracts(), numberOfContractsWithANetwork, nil
+}
+
+// getContractsMap recursively gathers contract files from the specified directory
+// and aggregates them into a contracts map
+func getContractsMap(contractsPath string) (contractsMap, error) {
+	// Read the directory listing
+	directoryEntry, err := os.ReadDir(contractsPath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get directory build files at %s, %w", contractsPath, err)
+	}
+
+	contractMap := make(contractsMap)
+
+	for _, contractFile := range directoryEntry {
+		fileName := contractFile.Name()
+
+		// Check if there is an underlying contract file directory
+		if contractFile.IsDir() {
+			dependencyPath := filepath.Join(contractsPath, fileName)
+
+			// Recursively fetch the contract files
+			newMap, err := getContractsMap(dependencyPath)
 			if err != nil {
-				return err
+				logrus.Warnf(
+					fmt.Sprintf(
+						"Failed resolving dependencies at %s with error: %s",
+						dependencyPath,
+						err,
+					),
+				)
+
+				break
 			}
+
+			// Merge the maps
+			contractMap = mergeContractsMaps(contractMap, newMap)
+
+			continue
 		}
-		return nil
+
+		// The directory entry is a file, verify and read it
+		if !strings.HasSuffix(fileName, ".json") {
+			// Non-JSON files are ignored
+			continue
+		}
+
+		// Read the contract data
+		contractData, err := readProviderContract(filepath.Join(contractsPath, fileName))
+		if err != nil {
+			logrus.Warnf("unable to read contract file, %v", err)
+
+			break
+		}
+
+		// Set the source path
+		sourcePath := strings.Split(contractData.SourcePath, dependencySeparator)
+		if len(sourcePath) > 1 {
+			contractData.SourcePath = strings.TrimPrefix(sourcePath[1], string(os.PathSeparator))
+		}
+
+		contractMap[contractData.Name] = contractData
 	}
 
-	data, err := os.ReadFile(path)
+	return contractMap, nil
+}
+
+// readProviderContract reads the provider contract file from the specified path
+func readProviderContract(contractFilePath string) (*providers.Contract, error) {
+	contractRaw, err := os.ReadFile(contractFilePath)
+
 	if err != nil {
-		logrus.Debug(fmt.Sprintf("Failed reading build file at %s with error: %s", path, err))
-		return errors.Wrap(err, "failed reading contract")
+		return nil, fmt.Errorf("unable to read contract file at %s, %w", contractFilePath, err)
 	}
 
 	var contractData providers.Contract
-	err = json.Unmarshal(data, &contractData)
-	if err != nil {
-		logrus.Debug(fmt.Sprintf("Failed parsing build file at %s with error: %s", path, err))
-		return errors.Wrap(err, "failed parsing contract")
+
+	if err := json.Unmarshal(contractRaw, &contractData); err != nil {
+		return nil, fmt.Errorf("unable to parse contract file at %s, %w", contractFilePath, err)
 	}
 
-	sourcePath := strings.Split(contractData.SourcePath, BrownieDependencySeparator)
-	contractData.SourcePath = strings.TrimPrefix(sourcePath[1], string(os.PathSeparator))
-	contractMap[contractData.Name] = &contractData
+	return &contractData, err
+}
 
-	return nil
+// readDeploymentsMap reads the deployments map from the specified location
+func readDeploymentsMap(deploymentsPath string) (deploymentsMap, error) {
+	data, err := os.ReadFile(deploymentsPath)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"unable to read deployment map file at %s, %w",
+			deploymentsPath,
+			err,
+		)
+	}
+
+	var deploymentsMap deploymentsMap
+
+	if err := json.Unmarshal(data, &deploymentsMap); err != nil {
+		return nil, fmt.Errorf("unable to parse deployments map file, %w", err)
+	}
+
+	return deploymentsMap, nil
 }

@@ -50,3 +50,9 @@ var _ providers.DeploymentProvider = (*DeploymentProvider)(nil)
 func (*DeploymentProvider) GetProviderName() providers.DeploymentProviderName {
 	return providers.HardhatDeploymentProvider
 }
+
+func (dp *DeploymentProvider) GetDirectoryStructure() []string {
+	return []string{
+		"deployments",
+	}
+}
