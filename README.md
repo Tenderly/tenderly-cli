@@ -305,7 +305,7 @@ exports: # running tenderly export will export local transaction to the provided
 The `verify` command uploads your smart contracts and verifies them on [Tenderly](https://tenderly.co).
 
 ```
-tenderly verify
+tenderly contracts verify
 ```
 
 #### Command Flags
