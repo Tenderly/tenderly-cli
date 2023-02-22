@@ -43,6 +43,9 @@ type ActionRoutes interface {
 	Publish(request generatedActions.PublishRequest, projectSlug string) (*generatedActions.PublishResponse, error)
 }
 
+type DevnetRoutes interface {
+}
+
 type Rest struct {
 	Auth     AuthRoutes
 	User     UserRoutes
@@ -51,6 +54,7 @@ type Rest struct {
 	Export   ExportRoutes
 	Networks NetworkRoutes
 	Actions  ActionRoutes
+	Devnet   DevnetRoutes
 }
 
 func NewRest(
@@ -61,6 +65,7 @@ func NewRest(
 	export ExportRoutes,
 	networks NetworkRoutes,
 	actions ActionRoutes,
+	devnet DevnetRoutes,
 ) *Rest {
 	return &Rest{
 		Auth:     auth,
@@ -70,5 +75,6 @@ func NewRest(
 		Export:   export,
 		Networks: networks,
 		Actions:  actions,
+		Devnet:   devnet,
 	}
 }
