@@ -1,4 +1,4 @@
-package hardhat
+package commands
 
 import (
 	"encoding/json"
@@ -11,13 +11,12 @@ import (
 	"regexp"
 
 	"github.com/spf13/cobra"
-	"github.com/tenderly/tenderly-cli/commands"
 )
 
 var (
-	cmdString string
-	config    string
-	name      string
+	cmdString    string
+	configString string
+	name         string
 )
 
 type DevnetConfig struct {
@@ -28,28 +27,28 @@ type DevnetConfig struct {
 }
 
 func init() {
-	//hardhatDevnetCmd.PersistentFlags().StringVar(&actionsProjectName, "project", "", "The project slug in which the actions will published & deployed")
 	hardhatDevnetCmd.PersistentFlags().StringVar(&cmdString, "cmd", "", "Command to run.")
-	hardhatDevnetCmd.PersistentFlags().StringVar(&config, "config", "", "The email used for logging in.")
+	hardhatDevnetCmd.PersistentFlags().StringVar(&configString, "config", "", "The email used for logging in.")
 	hardhatDevnetCmd.PersistentFlags().StringVar(&name, "name", "", "The email used for logging in.")
 
-	commands.RootCmd.AddCommand(hardhatDevnetCmd)
+	RootCmd.AddCommand(hardhatDevnetCmd)
 }
 
 var hardhatDevnetCmd = &cobra.Command{
 	Use:   "hardhat-devnet",
 	Short: "Tenderly Devnet hardhat wrapper",
+	Long:  `Tenderly Devnet hardhat wrapper`,
 	Run:   executeFunc,
 }
 
 func executeFunc(cmd *cobra.Command, args []string) {
-	commands.CheckLogin()
+	CheckLogin()
 
 	// 1. read
 	// read config argument to understand devnet
 
 	var devnetConfig DevnetConfig
-	err := json.Unmarshal([]byte(config), &devnetConfig)
+	err := json.Unmarshal([]byte(configString), &devnetConfig)
 	if err != nil {
 		panic(err)
 	}
