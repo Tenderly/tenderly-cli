@@ -19,7 +19,8 @@ import (
 const sessionLimitErrorSlug = "session_limit_exceeded"
 
 func Request(method, path string, body []byte) io.Reader {
-	apiBase := "https://api.tenderly.co"
+	//apiBase := "https://api.tenderly.co"
+	apiBase := "http://localhost:8000"
 	if alternativeApiBase := config.MaybeGetString("api_base"); len(alternativeApiBase) != 0 {
 		apiBase = alternativeApiBase
 	}
