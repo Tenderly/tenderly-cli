@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 
@@ -14,9 +15,9 @@ import (
 )
 
 var (
-	cmd    string
-	config string
-	name   string
+	cmdString string
+	config    string
+	name      string
 )
 
 type DevnetConfig struct {
@@ -28,7 +29,7 @@ type DevnetConfig struct {
 
 func init() {
 	//hardhatDevnetCmd.PersistentFlags().StringVar(&actionsProjectName, "project", "", "The project slug in which the actions will published & deployed")
-	hardhatDevnetCmd.PersistentFlags().StringVar(&cmd, "cmd", "", "Command to run.")
+	hardhatDevnetCmd.PersistentFlags().StringVar(&cmdString, "cmd", "", "Command to run.")
 	hardhatDevnetCmd.PersistentFlags().StringVar(&config, "config", "", "The email used for logging in.")
 	hardhatDevnetCmd.PersistentFlags().StringVar(&name, "name", "", "The email used for logging in.")
 
@@ -125,5 +126,11 @@ func executeFunc(cmd *cobra.Command, args []string) {
 
 	// 5. Run hardhat
 	// run hardhat with args
+	output, err := exec.Command("bash", "-c", cmdString).Output()
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 
+	fmt.Println(string(output))
 }
