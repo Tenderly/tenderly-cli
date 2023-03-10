@@ -75,10 +75,19 @@ func walkSymlink(writer *zip.Writer, files *[]string, path string, destBasePath 
 	}
 
 	return filepath.WalkDir(evaluatedDirPath, func(path string, dirEntry os.DirEntry, err error) error {
+		destPath := getDestPath(path, evaluatedDirPath, destBasePath)
 		if dirEntry == nil {
 			return fmt.Errorf("directory missing %s", evaluatedDirPath)
 		}
 		if dirEntry.IsDir() {
+			return nil
+		}
+		if dirEntry.Type() == os.ModeSymlink {
+			err := walkSymlink(writer, files, path, destPath)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("failed to walk symlinked dir %s", evaluatedDirPath))
+			}
+
 			return nil
 		}
 		if err != nil {
@@ -90,7 +99,6 @@ func walkSymlink(writer *zip.Writer, files *[]string, path string, destBasePath 
 			return errors.Wrap(err, fmt.Sprintf("failed reading %s", path))
 		}
 
-		destPath := getDestPath(path, evaluatedDirPath, destBasePath)
 		destFile, err := writer.Create(destPath)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("failed creating %s", destPath))
