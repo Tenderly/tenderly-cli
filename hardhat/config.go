@@ -79,6 +79,9 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 				// Store value in our collection
 				cache.push(value);
 			}
+			if (typeof value === 'bigint') {
+				value = value.toString();
+			}
 			return value;
 		}, '');
 		
