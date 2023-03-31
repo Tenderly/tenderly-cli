@@ -9,6 +9,7 @@ import (
 	// THIS IS HOW WE SUBSCRIBE NESTED COMMANDS
 	_ "github.com/tenderly/tenderly-cli/commands/actions"
 	_ "github.com/tenderly/tenderly-cli/commands/contract"
+	_ "github.com/tenderly/tenderly-cli/commands/devnet"
 	_ "github.com/tenderly/tenderly-cli/commands/export"
 )
 

@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"io"
 	"net/http"
 	"os"
@@ -12,14 +13,16 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
-const sessionLimitErrorSlug = "session_limit_exceeded"
+const (
+	sessionLimitErrorSlug = "session_limit_exceeded"
+	apiBaseURL            = "https://api.tenderly.co"
+)
 
 func Request(method, path string, body []byte) io.Reader {
-	apiBase := "https://api.tenderly.co"
+	apiBase := apiBaseURL
 	if alternativeApiBase := config.MaybeGetString("api_base"); len(alternativeApiBase) != 0 {
 		apiBase = alternativeApiBase
 	}
@@ -121,6 +124,29 @@ func Request(method, path string, body []byte) io.Reader {
 			err,
 			"Failed making request. Please try again.",
 		))
+		os.Exit(1)
+	}
+
+	if res.StatusCode < 200 || res.StatusCode >= 300 {
+		if res.StatusCode >= 500 {
+			userError.LogErrorf("request failed: %s", userError.NewUserError(
+				err,
+				fmt.Sprintf(
+					"Request failed. Please try again. Status code: %d. Status: %s",
+					res.StatusCode,
+					res.Status,
+				),
+			))
+		} else {
+			userError.LogErrorf("request failed: %s", userError.NewUserError(
+				err,
+				fmt.Sprintf(
+					"Request failed. Status code: %d. Status: %s",
+					res.StatusCode,
+					res.Status,
+				),
+			))
+		}
 		os.Exit(1)
 	}
 
