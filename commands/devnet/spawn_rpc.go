@@ -1,13 +1,14 @@
 package devnet
 
 import (
+	"os"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tenderly/tenderly-cli/commands"
 	"github.com/tenderly/tenderly-cli/config"
 	"github.com/tenderly/tenderly-cli/userError"
-	"os"
 )
 
 var accountID string
@@ -21,7 +22,7 @@ func init() {
 		&accountID,
 		"account",
 		"",
-		"The Tenderly account. If not provided, the system will try to read 'account_id' from the 'tenderly.yaml' configuration file.",
+		"The Tenderly account username or organization slug. If not provided, the system will try to read 'account_id' from the 'tenderly.yaml' configuration file.",
 	)
 	spawnRpcCommand.PersistentFlags().StringVar(
 		&projectSlug,
@@ -33,7 +34,7 @@ func init() {
 		&templateSlug,
 		"template",
 		"",
-		"The DevNet template which is going to be applied when spawning the DevNet RPC.",
+		"The DevNet template slug which is going to be applied when spawning the DevNet RPC.",
 	)
 	spawnRpcCommand.PersistentFlags().StringVar(
 		&accessKey,
@@ -45,7 +46,7 @@ func init() {
 		&token,
 		"token",
 		"",
-		"The Tenderly token. If not provided, the system will try to read 'token' from the 'tenderly.yaml' configuration file.",
+		"The Tenderly JWT. If not provided, the system will try to read 'token' from the 'tenderly.yaml' configuration file.",
 	)
 	DevNetCmd.AddCommand(spawnRpcCommand)
 }
@@ -53,7 +54,7 @@ func init() {
 var spawnRpcCommand = &cobra.Command{
 	Use:   "spawn-rpc",
 	Short: "Spawn DevNet RPC",
-	Long:  `Spawn DevNet RPC that represents the network endpoint for your DevNet`,
+	Long:  `Spawn DevNet RPC that represents the JSON-RPC endpoint for your DevNet`,
 	Run:   spawnRPCHandler,
 }
 
@@ -94,7 +95,7 @@ func spawnRPCHandler(cmd *cobra.Command, args []string) {
 	}
 
 	if templateSlug == "" {
-		err := userError.NewUserError(errors.New("Missing required argument 'template'"), "Missing required argument 'template'")
+		err := userError.NewUserError(errors.New("Missing required argument 'template'"), "Missing required argument 'template'. Please provide '--template' flag with the DevNet template slug")
 		userError.LogError(err)
 		os.Exit(1)
 	}
