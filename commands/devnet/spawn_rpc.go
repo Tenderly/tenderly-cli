@@ -47,7 +47,7 @@ func init() {
 		"",
 		"The Tenderly token. If not provided, the system will try to read 'token' from the 'tenderly.yaml' configuration file.",
 	)
-	commands.RootCmd.AddCommand(spawnRpcCommand)
+	DevNetCmd.AddCommand(spawnRpcCommand)
 }
 
 var spawnRpcCommand = &cobra.Command{
