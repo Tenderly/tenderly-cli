@@ -6,10 +6,10 @@ import (
 )
 
 func init() {
-	commands.RootCmd.AddCommand(DevNetCmd)
+	commands.RootCmd.AddCommand(CmdDevNet)
 }
 
-var DevNetCmd = &cobra.Command{
+var CmdDevNet = &cobra.Command{
 	Use:   "devnet",
 	Short: "Tenderly DevNets.",
 }

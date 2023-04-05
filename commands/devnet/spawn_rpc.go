@@ -18,40 +18,40 @@ var accessKey string
 var token string
 
 func init() {
-	spawnRpcCommand.PersistentFlags().StringVar(
+	cmdSpawnRpc.PersistentFlags().StringVar(
 		&accountID,
 		"account",
 		"",
 		"The Tenderly account username or organization slug. If not provided, the system will try to read 'account_id' from the 'tenderly.yaml' configuration file.",
 	)
-	spawnRpcCommand.PersistentFlags().StringVar(
+	cmdSpawnRpc.PersistentFlags().StringVar(
 		&projectSlug,
 		"project",
 		"",
 		"The DevNet project slug. If not provided, the system will try to read 'project_slug' from the 'tenderly.yaml' configuration file.",
 	)
-	spawnRpcCommand.PersistentFlags().StringVar(
+	cmdSpawnRpc.PersistentFlags().StringVar(
 		&templateSlug,
 		"template",
 		"",
 		"The DevNet template slug which is going to be applied when spawning the DevNet RPC.",
 	)
-	spawnRpcCommand.PersistentFlags().StringVar(
+	cmdSpawnRpc.PersistentFlags().StringVar(
 		&accessKey,
 		"access_key",
 		"",
 		"The Tenderly access key. If not provided, the system will try to read 'access_key' from the 'tenderly.yaml' configuration file.",
 	)
-	spawnRpcCommand.PersistentFlags().StringVar(
+	cmdSpawnRpc.PersistentFlags().StringVar(
 		&token,
 		"token",
 		"",
 		"The Tenderly JWT. If not provided, the system will try to read 'token' from the 'tenderly.yaml' configuration file.",
 	)
-	DevNetCmd.AddCommand(spawnRpcCommand)
+	CmdDevNet.AddCommand(cmdSpawnRpc)
 }
 
-var spawnRpcCommand = &cobra.Command{
+var cmdSpawnRpc = &cobra.Command{
 	Use:   "spawn-rpc",
 	Short: "Spawn DevNet RPC",
 	Long:  `Spawn DevNet RPC that represents the JSON-RPC endpoint for your DevNet`,
@@ -65,7 +65,10 @@ func spawnRPCHandler(cmd *cobra.Command, args []string) {
 	}
 
 	if accountID == "" {
-		err := userError.NewUserError(errors.New("account not found"), "No account found. Please login with `tenderly login` or provide '--account' flag")
+		err := userError.NewUserError(
+			errors.New("account not found"),
+			"An account is required. Please log in using tenderly login or include the '--account' flag.",
+		)
 		userError.LogError(err)
 		os.Exit(1)
 	}
@@ -79,7 +82,10 @@ func spawnRPCHandler(cmd *cobra.Command, args []string) {
 	}
 
 	if accessKey == "" && token == "" {
-		err := userError.NewUserError(errors.New("access key or token not found"), "No access key or token found. Please login with `tenderly login` or provide '--access_key' or '--token' flag")
+		err := userError.NewUserError(
+			errors.New("access key or token not found"),
+			"An access key or token is required. Please log in using tenderly login or include the '--access_key' or '--token' flag.",
+		)
 		userError.LogError(err)
 		os.Exit(1)
 	}
@@ -89,13 +95,19 @@ func spawnRPCHandler(cmd *cobra.Command, args []string) {
 	}
 
 	if projectSlug == "" {
-		err := userError.NewUserError(errors.New("project not found"), "No project found. Please set a project with `tenderly use project <project-slug>` or provide '--project' flag")
+		err := userError.NewUserError(
+			errors.New("project not found"),
+			"No project was found. To set a project, use tenderly use project <project-slug> or include the '--project' flag.",
+		)
 		userError.LogError(err)
 		os.Exit(1)
 	}
 
 	if templateSlug == "" {
-		err := userError.NewUserError(errors.New("Missing required argument 'template'"), "Missing required argument 'template'. Please provide '--template' flag with the DevNet template slug")
+		err := userError.NewUserError(
+			errors.New("Missing required argument 'template'"),
+			"The 'template' argument is required. Please include the '--template' flag and provide the DevNet template slug.",
+		)
 		userError.LogError(err)
 		os.Exit(1)
 	}
