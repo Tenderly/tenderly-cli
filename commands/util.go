@@ -34,6 +34,7 @@ func NewRest() *rest.Rest {
 		call.NewExportCalls(),
 		call.NewNetworkCalls(),
 		call.NewActionCalls(),
+		call.NewDevNetCalls(),
 	)
 }
 

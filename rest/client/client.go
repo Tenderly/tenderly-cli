@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"io"
 	"net/http"
 	"os"
@@ -12,33 +13,31 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/tenderly/tenderly-cli/config"
-	"github.com/tenderly/tenderly-cli/rest/payloads"
 	"github.com/tenderly/tenderly-cli/userError"
 )
 
-const sessionLimitErrorSlug = "session_limit_exceeded"
+const (
+	sessionLimitErrorSlug = "session_limit_exceeded"
+	defaultApiBaseURL     = "https://api.tenderly.co"
+)
 
 func Request(method, path string, body []byte) io.Reader {
-	apiBase := "https://api.tenderly.co"
-	if alternativeApiBase := config.MaybeGetString("api_base"); len(alternativeApiBase) != 0 {
-		apiBase = alternativeApiBase
-	}
-
-	requestUrl := fmt.Sprintf("%s/%s", apiBase, strings.TrimPrefix(path, "/"))
+	apiBaseURL := resolveApiBaseURL()
+	requestURL := resolveRequestURL(apiBaseURL, path)
 	req, err := http.NewRequest(
 		method,
-		requestUrl,
+		requestURL,
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		userError.LogErrorf("failed creating request: %s", userError.NewUserError(
+		userError.LogErrorf("failed to create request: %s", userError.NewUserError(
 			err,
-			"Failed creating request. Please try again.",
+			"Failed to create request. Please try again.",
 		))
 		os.Exit(1)
 	}
 
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: false}
+	ensureTLS()
 
 	if key := config.GetAccessKey(); key != "" {
 		// set access key
@@ -48,7 +47,7 @@ func Request(method, path string, body []byte) io.Reader {
 		req.Header.Add("Authorization", "Bearer "+token)
 
 		urlPath := fmt.Sprintf("api/v1/account/%s/token", config.GetAccountId())
-		if requestUrl != fmt.Sprintf("%s/%s", apiBase, urlPath) {
+		if requestURL != fmt.Sprintf("%s/%s", apiBaseURL, urlPath) {
 			var request payloads.GenerateAccessTokenRequest
 			request.Name = "CLI access token"
 
@@ -110,10 +109,12 @@ func Request(method, path string, body []byte) io.Reader {
 		}
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"request_url":  requestUrl,
-		"request_body": string(body),
-	}).Debug("Making request")
+	logrus.WithFields(
+		logrus.Fields{
+			"request_url":  requestURL,
+			"request_body": string(body),
+		},
+	).Debug("Making request")
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -123,9 +124,13 @@ func Request(method, path string, body []byte) io.Reader {
 		))
 		os.Exit(1)
 	}
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
+	handleResponseStatus(res, err)
 
 	data, err := io.ReadAll(res.Body)
-	defer res.Body.Close()
 
 	if err != nil {
 		userError.LogErrorf("failed reading response body: %s", userError.NewUserError(
@@ -138,4 +143,52 @@ func Request(method, path string, body []byte) io.Reader {
 	logrus.WithField("response_body", string(data)).Debug("Got response with body")
 
 	return bytes.NewReader(data)
+}
+
+// handleResponseStatus handles the response status code.
+func handleResponseStatus(res *http.Response, err error) {
+	if res.StatusCode < 200 || res.StatusCode >= 300 {
+		if res.StatusCode >= 500 {
+			userError.LogErrorf("request failed: %s", userError.NewUserError(
+				err,
+				fmt.Sprintf(
+					"The request failed with a status code of %d and status message of '%s'. Please try again.",
+					res.StatusCode,
+					res.Status,
+				),
+			))
+		} else {
+			userError.LogErrorf("request failed: %s", userError.NewUserError(
+				err,
+				fmt.Sprintf(
+					"The request failed with a status code of %d and status message of '%s'",
+					res.StatusCode,
+					res.Status,
+				),
+			))
+		}
+		os.Exit(1)
+	}
+}
+
+// ensureTLS configures the default http transport to use TLS.
+func ensureTLS() {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: false,
+	}
+}
+
+// resolveRequestURL resolves the request URL based on the API base URL and the path.
+func resolveRequestURL(apiBaseURL string, path string) string {
+	requestURL := fmt.Sprintf("%s/%s", apiBaseURL, strings.TrimPrefix(path, "/"))
+	return requestURL
+}
+
+// resolveApiBaseURL resolves the API base URL based on the config.
+func resolveApiBaseURL() string {
+	apiBase := defaultApiBaseURL
+	if apiBaseOverride := config.MaybeGetString("api_base"); len(apiBaseOverride) != 0 {
+		apiBase = apiBaseOverride
+	}
+	return apiBase
 }
