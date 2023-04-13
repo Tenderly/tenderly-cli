@@ -120,7 +120,7 @@ type actionsTenderlyYaml struct {
 	Actions map[string]actionsModel.ProjectActions `yaml:"actions"`
 }
 
-func mustGetActions() map[string]actionsModel.ProjectActions {
+func MustGetActions() map[string]actionsModel.ProjectActions {
 	if !config.IsAnyActionsInit() {
 		logrus.Error(commands.Colorizer.Sprintf(
 			"Actions not initialized. Are you in the right directory? Run %s to initialize project.",
