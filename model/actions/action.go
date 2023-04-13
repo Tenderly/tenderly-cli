@@ -9,6 +9,12 @@ import (
 	"github.com/tenderly/tenderly-cli/rest/payloads/generated/actions"
 )
 
+type Action struct {
+	ID     string       `json:"id"`
+	Name   string       `json:"name"`
+	Status DeployStatus `json:"status"`
+}
+
 type ProjectActions struct {
 	Runtime      string           `json:"runtime" yaml:"runtime"`
 	Sources      string           `json:"sources" yaml:"sources"`
