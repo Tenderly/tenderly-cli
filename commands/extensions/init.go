@@ -37,12 +37,12 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		commands.CheckLogin()
 
-		if !IsMethodNameValid(extensionMethodName) {
+		if !isMethodNameValid(extensionMethodName) {
 			logrus.Error(
 				commands.Colorizer.Red(
 					fmt.Sprintf(
-						"Error initializing node-extensions: invalid method name: %s\n"+
-							"Please make sure that your node-extension's method name satisfies the following regex: `%s`\n",
+						"Error initializing extensions: invalid method name: %s\n"+
+							"Please make sure that your extension's method name satisfies the following regex: `%s`\n",
 						extensionMethodName,
 						regexMethodName.String(),
 					)),
@@ -56,7 +56,7 @@ var initCmd = &cobra.Command{
 		if len(eligibleActions) == 0 {
 			logrus.Error(
 				commands.Colorizer.Red(
-					"Error initializing node-extensions: no actions found in tenderly.yaml that can be used to create a node-extension.\n" +
+					"Error initializing extensions: no actions found in tenderly.yaml that can be used to create a extension.\n" +
 						"Please make sure that you have at least one action in tenderly.yaml which has a non authenticated webhook trigger.\n",
 				),
 			)
@@ -69,20 +69,20 @@ var initCmd = &cobra.Command{
 		if len(eligibleActions) == 0 {
 			logrus.Error(
 				commands.Colorizer.Red(
-					"Error initializing node-extensions: all eligible actions are already used by node-extensions in tenderly.yaml\n" +
-						"Please make sure that you have at least one action in tenderly.yaml which has a non authenticated webhook trigger and isn't used by any node-extension.\n",
+					"Error initializing extensions: all eligible actions are already used by extensions in tenderly.yaml\n" +
+						"Please make sure that you have at least one action in tenderly.yaml which has a non authenticated webhook trigger and isn't used by any extension.\n",
 				),
 			)
 			os.Exit(1)
 		}
 
 		projectName, actionName := promptActionSelect(eligibleActions)
-		if !isExtensionMethodNameAvailable(projectExtensions, projectName, extensionMethodName) {
+		if !isMethodNameAvailableInConfig(projectExtensions, projectName, extensionMethodName) {
 			logrus.Error(
 				commands.Colorizer.Red(
 					fmt.Sprintf(
-						"Error initializing node-extensions: node-extension method name %s is already used by another node-extension in project `%s`.\n"+
-							"Please choose a different method name for your new node-extension.",
+						"Error initializing extensions: method name %s is already used by another extension in project `%s`.\n"+
+							"Please choose a different method name for your new extension.",
 						extensionMethodName,
 						projectName,
 					)),
@@ -190,14 +190,4 @@ func addExtensionToConfig(projectExtensions map[string]extensionsModel.ConfigPro
 	}
 	projectExtensions[projectName].Specs[extensionName] = newExtension
 	config.MustWriteExtensionsInit(projectName, projectExtensions[projectName])
-}
-
-func isExtensionMethodNameAvailable(allExtensions map[string]extensionsModel.ConfigProjectExtensions, accountAndProjectSlug string, methodName string) bool {
-	projectExtensions := allExtensions[accountAndProjectSlug]
-	for _, extension := range projectExtensions.Specs {
-		if extension.MethodName == methodName {
-			return false
-		}
-	}
-	return true
 }
