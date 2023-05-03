@@ -50,6 +50,7 @@ type DevNetRoutes interface {
 
 type ExtensionRoutes interface {
 	DeployExtension(accountSlugOrID string, projectSlugOrID string, actionID string, gatewayID string, extensionName string, extensionMethodName string) (*payloads.DeployExtensionResponse, error)
+	GetExtensions(accountSlugOrID string, projectSlugOrID string, gatewayID string) (*payloads.GetExtensionsResponse, error)
 }
 
 type GatewayRoutes interface {

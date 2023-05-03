@@ -9,7 +9,6 @@ import (
 	actionsModel "github.com/tenderly/tenderly-cli/model/actions"
 	extensionsModel "github.com/tenderly/tenderly-cli/model/extensions"
 	"github.com/tenderly/tenderly-cli/userError"
-	"gopkg.in/yaml.v3"
 	"os"
 	"strings"
 
@@ -34,11 +33,20 @@ func init() {
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Init node extensions for project",
-	Long:  "Guides you through setting up extensions in your project. It will populate the `node_extensions` section in the config (`tenderly.yaml`) file.",
+	Long:  "Guides you through setting up extensions in your project. It will populate the `node_extensions` section in the tenderly.yaml file.",
 	Run: func(cmd *cobra.Command, args []string) {
 		commands.CheckLogin()
+
 		if !IsMethodNameValid(extensionMethodName) {
-			handleInvalidMethodName(extensionMethodName)
+			logrus.Error(
+				commands.Colorizer.Red(
+					fmt.Sprintf(
+						"Error initializing node-extensions: invalid method name: %s\n"+
+							"Please make sure that your node-extension's method name satisfies the following regex: `%s`\n",
+						extensionMethodName,
+						regexMethodName.String(),
+					)),
+			)
 			os.Exit(1)
 		}
 
@@ -46,33 +54,51 @@ var initCmd = &cobra.Command{
 		eligibleActions := findEligibleActions(actions)
 
 		if len(eligibleActions) == 0 {
-			handleNoEligibleActionsForExtensions()
+			logrus.Error(
+				commands.Colorizer.Red(
+					"Error initializing node-extensions: no actions found in tenderly.yaml that can be used to create a node-extension.\n" +
+						"Please make sure that you have at least one action in tenderly.yaml which has a non authenticated webhook trigger.\n",
+				),
+			)
 			os.Exit(1)
 		}
 
-		projectExtensions := mustGetExtensions()
+		projectExtensions := MustGetExtensions()
 		eligibleActions = findActionsNotInUse(eligibleActions, projectExtensions)
 
 		if len(eligibleActions) == 0 {
-			handleAllActionsInUse()
+			logrus.Error(
+				commands.Colorizer.Red(
+					"Error initializing node-extensions: all eligible actions are already used by node-extensions in tenderly.yaml\n" +
+						"Please make sure that you have at least one action in tenderly.yaml which has a non authenticated webhook trigger and isn't used by any node-extension.\n",
+				),
+			)
 			os.Exit(1)
 		}
 
-		projectName, actionName := PromptActionSelect(eligibleActions)
+		projectName, actionName := promptActionSelect(eligibleActions)
 		if !isExtensionMethodNameAvailable(projectExtensions, projectName, extensionMethodName) {
-			handleMethodNameInUse()
+			logrus.Error(
+				commands.Colorizer.Red(
+					fmt.Sprintf(
+						"Error initializing node-extensions: node-extension method name %s is already used by another node-extension in project `%s`.\n"+
+							"Please choose a different method name for your new node-extension.",
+						extensionMethodName,
+						projectName,
+					)),
+			)
 			os.Exit(1)
 		}
 
-		newExtension := &extensionsModel.Extension{
-			Method:      extensionMethodName,
+		newExtension := &extensionsModel.ConfigExtension{
+			MethodName:  extensionMethodName,
 			Description: extensionDescription,
-			Action:      actionName,
+			ActionName:  actionName,
 		}
 
 		addExtensionToConfig(projectExtensions, projectName, newExtension)
 
-		logrus.Info(commands.Colorizer.Sprintf("\nInitialized extension \"%s\" in project \"%s\" using action \"%s\"",
+		logrus.Info(commands.Colorizer.Sprintf("\nInitialized extension %s in project %s using action %s",
 			commands.Colorizer.Bold(commands.Colorizer.Green(extensionName)),
 			commands.Colorizer.Bold(commands.Colorizer.Green(projectName)),
 			commands.Colorizer.Bold(commands.Colorizer.Green(actionName)),
@@ -82,15 +108,39 @@ var initCmd = &cobra.Command{
 	},
 }
 
+func promptActionSelect(projectActions map[string]map[string]*actionsModel.ActionSpec) (string, string) {
+	var projectActionNames []string
+	for projectName, actions := range projectActions {
+		for actionName, _ := range actions {
+			projectActionNames = append(projectActionNames, fmt.Sprintf("%s:%s", projectName, actionName))
+		}
+	}
+
+	promptActions := promptui.Select{
+		Label: "Select action to use with extension",
+		Items: projectActionNames,
+	}
+
+	index, _, err := promptActions.Run()
+	if err != nil {
+		userError.LogErrorf("prompt actions failed: %s", err)
+		os.Exit(1)
+	}
+
+	parts := strings.Split(projectActionNames[index], ":")
+
+	return parts[0], parts[1]
+}
+
 func findActionsNotInUse(
 	projectActions map[string]map[string]*actionsModel.ActionSpec,
-	projectExtensions map[string]extensionsModel.ProjectExtensions) map[string]map[string]*actionsModel.ActionSpec {
+	projectExtensions map[string]extensionsModel.ConfigProjectExtensions) map[string]map[string]*actionsModel.ActionSpec {
 
 	for projectName, extensions := range projectExtensions {
 		for _, extension := range extensions.Specs {
 			actionSpecs := projectActions[projectName]
-			if _, ok := actionSpecs[extension.Action]; ok {
-				delete(actionSpecs, extension.Action)
+			if _, ok := actionSpecs[extension.ActionName]; ok {
+				delete(actionSpecs, extension.ActionName)
 			}
 		}
 		if len(projectActions[projectName]) == 0 {
@@ -130,79 +180,24 @@ func filterActions(actions actionsModel.NamedActionSpecs) map[string]*actionsMod
 	return filteredActions
 }
 
-func PromptActionSelect(projectActions map[string]map[string]*actionsModel.ActionSpec) (string, string) {
-	var projectActionNames []string
-	for projectName, actions := range projectActions {
-		for actionName, _ := range actions {
-			projectActionNames = append(projectActionNames, fmt.Sprintf("%s:%s", projectName, actionName))
-		}
-	}
-
-	promptActions := promptui.Select{
-		Label: "Select action to use with extension",
-		Items: projectActionNames,
-	}
-
-	index, _, err := promptActions.Run()
-	if err != nil {
-		userError.LogErrorf("prompt actions failed: %s", err)
-		os.Exit(1)
-	}
-
-	parts := strings.Split(projectActionNames[index], ":")
-
-	return parts[0], parts[1]
-}
-
-func addExtensionToConfig(projectExtensions map[string]extensionsModel.ProjectExtensions, projectName string, newExtension *extensionsModel.Extension) {
+func addExtensionToConfig(projectExtensions map[string]extensionsModel.ConfigProjectExtensions, projectName string, newExtension *extensionsModel.ConfigExtension) {
 	if projectExtensions == nil {
-		projectExtensions = make(map[string]extensionsModel.ProjectExtensions)
+		projectExtensions = make(map[string]extensionsModel.ConfigProjectExtensions)
 	}
 	if entry, ok := projectExtensions[projectName]; !ok {
-		entry.Specs = make(map[string]*extensionsModel.Extension)
+		entry.Specs = make(map[string]*extensionsModel.ConfigExtension)
 		projectExtensions[projectName] = entry
 	}
 	projectExtensions[projectName].Specs[extensionName] = newExtension
 	config.MustWriteExtensionsInit(projectName, projectExtensions[projectName])
 }
 
-func isExtensionMethodNameAvailable(allExtensions map[string]extensionsModel.ProjectExtensions, accountAndProjectSlug string, methodName string) bool {
+func isExtensionMethodNameAvailable(allExtensions map[string]extensionsModel.ConfigProjectExtensions, accountAndProjectSlug string, methodName string) bool {
 	projectExtensions := allExtensions[accountAndProjectSlug]
 	for _, extension := range projectExtensions.Specs {
-		if extension.Method == methodName {
+		if extension.MethodName == methodName {
 			return false
 		}
 	}
 	return true
-}
-
-type extensionsTenderlyYaml struct {
-	Extensions map[string]extensionsModel.ProjectExtensions `yaml:"node_extensions"`
-}
-
-func mustGetExtensions() map[string]extensionsModel.ProjectExtensions {
-	content, err := config.ReadProjectConfig()
-	if err != nil {
-		userError.LogErrorf("failed reading project config: %s",
-			userError.NewUserError(
-				err,
-				"Failed reading project's tenderly.yaml config. This can happen if you are running an older version of the Tenderly CLI.",
-			),
-		)
-		os.Exit(1)
-	}
-
-	var tenderlyYaml extensionsTenderlyYaml
-	err = yaml.Unmarshal(content, &tenderlyYaml)
-	if err != nil {
-		userError.LogErrorf("failed unmarshalling `node_extensions` config: %s",
-			userError.NewUserError(
-				err,
-				"Failed parsing `node_extensions` configuration. This can happen if you are running an older version of the Tenderly CLI.",
-			),
-		)
-		os.Exit(1)
-	}
-
-	return tenderlyYaml.Extensions
 }

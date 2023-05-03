@@ -365,7 +365,7 @@ func MustWriteActionsInit(projectSlug string, projectActions *actions.ProjectAct
 	}
 }
 
-func MustWriteExtensionsInit(projectSlug string, projectExtensions extensionsModel.ProjectExtensions) {
+func MustWriteExtensionsInit(projectSlug string, projectExtensions extensionsModel.ConfigProjectExtensions) {
 	act := projectConfig.GetStringMap(Extensions)
 	act[projectSlug] = projectExtensions
 

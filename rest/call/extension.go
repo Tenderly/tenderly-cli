@@ -3,6 +3,7 @@ package call
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/tenderly/tenderly-cli/model/extensions"
 	"github.com/tenderly/tenderly-cli/rest"
 	"github.com/tenderly/tenderly-cli/rest/client"
 	"github.com/tenderly/tenderly-cli/rest/payloads"
@@ -49,6 +50,29 @@ func (rest *ExtensionCalls) DeployExtension(
 	var response *payloads.DeployExtensionResponse
 
 	err = json.NewDecoder(resp).Decode(&response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, err
+}
+
+func (rest *ExtensionCalls) GetExtensions(
+	accountSlugOrID string,
+	projectSlugOrID string,
+	gatewayID string) (*payloads.GetExtensionsResponse, error) {
+	path := fmt.Sprintf("api/v1/account/%s/project/%s/handlers/%s/get", accountSlugOrID, projectSlugOrID, gatewayID)
+	resp := client.Request(
+		"GET",
+		path,
+		nil,
+	)
+
+	response := &payloads.GetExtensionsResponse{
+		Handlers: []extensions.BackendExtension{},
+	}
+
+	err := json.NewDecoder(resp).Decode(&response)
 	if err != nil {
 		return nil, err
 	}
