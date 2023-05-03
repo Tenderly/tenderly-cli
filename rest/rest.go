@@ -39,7 +39,7 @@ type NetworkRoutes interface {
 }
 
 type ActionRoutes interface {
-	GetActions(accountSlugOrID string, projectSlugOrID string) (*payloads.GetActionsResponse, error)
+	GetActionsForExtensions(accountSlugOrID string, projectSlugOrID string) (*payloads.GetActionsForExtensionsResponse, error)
 	Validate(request generatedActions.ValidateRequest, projectSlug string) (*generatedActions.ValidateResponse, error)
 	Publish(request generatedActions.PublishRequest, projectSlug string) (*generatedActions.PublishResponse, error)
 }

@@ -109,11 +109,11 @@ func (rest *ActionCalls) Publish(request actions2.PublishRequest, projectSlug st
 	return &ret, err
 }
 
-func (rest *ActionCalls) GetActions(accountSlugOrID string, projectSlugOrID string) (*payloads.GetActionsResponse, error) {
+func (rest *ActionCalls) GetActionsForExtensions(accountSlugOrID string, projectSlugOrID string) (*payloads.GetActionsForExtensionsResponse, error) {
 	retOrError := maybeErrorResponse{}
-	ret := payloads.GetActionsResponse{}
+	ret := payloads.GetActionsForExtensionsResponse{}
 
-	path := fmt.Sprintf("/api/v1/account/%s/project/%s/actions", accountSlugOrID, projectSlugOrID)
+	path := fmt.Sprintf("/api/v1/account/%s/project/%s/actions-get-for-handlers", accountSlugOrID, projectSlugOrID)
 	response := client.Request(
 		"GET",
 		path,

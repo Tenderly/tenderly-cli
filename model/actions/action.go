@@ -10,9 +10,8 @@ import (
 )
 
 type Action struct {
-	ID     string       `json:"id"`
-	Name   string       `json:"name"`
-	Status DeployStatus `json:"status"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type ProjectActions struct {
