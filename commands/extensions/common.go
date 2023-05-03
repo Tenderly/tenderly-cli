@@ -11,7 +11,7 @@ func init() {
 }
 
 var extensionsCmd = &cobra.Command{
-	Use:   "extensions",
+	Use:   "node-extensions",
 	Short: "Create, build and deploy Node Extensions.",
 	Long: "Node Extensions allow you to easily build and deploy custom RPC endpoints for your dapps.\n" +
 		"Backed by Web3 Actions, you can define your own, custom JSON-RPC endpoints to fit your needs.",
