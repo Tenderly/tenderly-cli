@@ -19,13 +19,11 @@ import (
 var extensionName string
 var extensionDescription string
 var extensionMethodName string
-var extensionActionName string
 
 func init() {
 	initCmd.PersistentFlags().StringVar(&extensionName, "name", "", "Name for the extension")
 	initCmd.PersistentFlags().StringVar(&extensionDescription, "description", "", "Description for the extension")
 	initCmd.PersistentFlags().StringVar(&extensionMethodName, "methodName", "", "Name for the extension method (must begin with \"extension_\")")
-	initCmd.PersistentFlags().StringVar(&extensionActionName, "actionName", "", "Name for the extension action")
 
 	extensionsCmd.AddCommand(initCmd)
 }
