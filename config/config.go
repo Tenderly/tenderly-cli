@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/tenderly/tenderly-cli/model/actions"
+	extensionsModel "github.com/tenderly/tenderly-cli/model/extensions"
 	"github.com/tenderly/tenderly-cli/userError"
 
 	"github.com/spf13/viper"
@@ -29,9 +30,10 @@ const (
 
 	OrganizationName = "org_name"
 
-	Exports  = "exports"
-	Actions  = "actions"
-	Projects = "projects"
+	Exports    = "exports"
+	Actions    = "actions"
+	Extensions = "node_extensions"
+	Projects   = "projects"
 )
 
 var defaultsGlobal = map[string]interface{}{
@@ -353,6 +355,21 @@ func MustWriteActionsInit(projectSlug string, projectActions *actions.ProjectAct
 	act[projectSlug] = projectActions
 
 	projectConfig.Set(Actions, act)
+	err := WriteProjectConfig()
+	if err != nil {
+		userError.LogErrorf(
+			"write project config: %s",
+			userError.NewUserError(err, "Couldn't write project config file"),
+		)
+		os.Exit(1)
+	}
+}
+
+func MustWriteExtensionsInit(projectSlug string, projectExtensions extensionsModel.ConfigProjectExtensions) {
+	act := projectConfig.GetStringMap(Extensions)
+	act[projectSlug] = projectExtensions
+
+	projectConfig.Set(Extensions, act)
 	err := WriteProjectConfig()
 	if err != nil {
 		userError.LogErrorf(

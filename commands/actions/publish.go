@@ -74,7 +74,7 @@ func buildFunc(cmd *cobra.Command, args []string) {
 	commands.CheckLogin()
 	r = commands.NewRest()
 
-	allActions := mustGetActions()
+	allActions := MustGetActions()
 	var slugs []string
 	for k := range allActions {
 		slugs = append(slugs, k)

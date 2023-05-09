@@ -11,6 +11,7 @@ import (
 	_ "github.com/tenderly/tenderly-cli/commands/contract"
 	_ "github.com/tenderly/tenderly-cli/commands/devnet"
 	_ "github.com/tenderly/tenderly-cli/commands/export"
+	_ "github.com/tenderly/tenderly-cli/commands/extensions"
 )
 
 var (

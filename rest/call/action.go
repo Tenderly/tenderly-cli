@@ -108,3 +108,27 @@ func (rest *ActionCalls) Publish(request actions2.PublishRequest, projectSlug st
 
 	return &ret, err
 }
+
+func (rest *ActionCalls) GetActionsForExtensions(accountSlugOrID string, projectSlugOrID string) (*payloads.GetActionsForExtensionsResponse, error) {
+	retOrError := maybeErrorResponse{}
+	ret := payloads.GetActionsForExtensionsResponse{}
+
+	path := fmt.Sprintf("/api/v1/account/%s/project/%s/actions-get-for-handlers", accountSlugOrID, projectSlugOrID)
+	response := client.Request(
+		"GET",
+		path,
+		nil,
+	)
+
+	err := json.NewDecoder(response).Decode(&retOrError)
+	if err == nil && retOrError.Error != nil {
+		return nil, fmt.Errorf("%s (%s)", retOrError.Error.Message, retOrError.Error.Slug)
+	}
+
+	err = json.Unmarshal(retOrError.Data, &ret)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, err
+}
