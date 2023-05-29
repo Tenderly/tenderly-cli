@@ -57,15 +57,24 @@ module.exports = { blockHelloWorldFn };
 var initDescription = "This is just an example, but you can publish this action."
 
 var initAction = &actionsModel.ActionSpec{
-	Description: &initDescription,
-	Function:    "example:blockHelloWorldFn",
-	Trigger:     actionsModel.TriggerUnparsed{Type: "block"},
+	Description:   &initDescription,
+	Function:      "example:blockHelloWorldFn",
+	Trigger:       actionsModel.TriggerUnparsed{Type: "block"},
+	ExecutionType: "sequential",
 }
 
 func init() {
-	initCmd.PersistentFlags().StringVar(&actionsSourcesDir, "sources", "", "The path where the actions will be created.")
-	initCmd.PersistentFlags().StringVar(&actionsLanguage, "language", "typescript", "Initialize actions for this language. Supported {javascript, typescript}")
-	initCmd.PersistentFlags().StringVar(&actionsTemplateName, "template", "", "Initialize actions from this template, see Tenderly/tenderly-actions.")
+	initCmd.PersistentFlags().StringVar(
+		&actionsSourcesDir, "sources", "", "The path where the actions will be created.",
+	)
+	initCmd.PersistentFlags().StringVar(
+		&actionsLanguage, "language", "typescript",
+		"Initialize actions for this language. Supported {javascript, typescript}",
+	)
+	initCmd.PersistentFlags().StringVar(
+		&actionsTemplateName, "template", "",
+		"Initialize actions from this template, see Tenderly/tenderly-actions.",
+	)
 
 	actionsCmd.AddCommand(initCmd)
 }
@@ -88,11 +97,13 @@ var initCmd = &cobra.Command{
 				"Actions for project are already initialized",
 				userError.NewUserError(
 					fmt.Errorf("actions initialized"),
-					commands.Colorizer.Sprintf("Actions for project %s are already initialized, see %s",
+					commands.Colorizer.Sprintf(
+						"Actions for project %s are already initialized, see %s",
 						commands.Colorizer.Bold(commands.Colorizer.Green(projectSlug)),
 						commands.Colorizer.Bold(commands.Colorizer.Green("tenderly.yaml")),
 					),
-				))
+				),
+			)
 			os.Exit(0)
 		}
 
@@ -106,7 +117,10 @@ var initCmd = &cobra.Command{
 			if err != nil {
 				userError.LogErrorf(
 					"failed to load template",
-					userError.NewUserError(err, fmt.Sprintf("Failed to load template %s", actionsTemplateName)))
+					userError.NewUserError(
+						err, fmt.Sprintf("Failed to load template %s", actionsTemplateName),
+					),
+				)
 				os.Exit(1)
 			}
 
@@ -127,17 +141,22 @@ var initCmd = &cobra.Command{
 			if err != nil {
 				userError.LogErrorf(
 					"failed to load template specs",
-					userError.NewUserError(err, fmt.Sprintf("Failed to load specs for template %s", actionsTemplateName)))
+					userError.NewUserError(
+						err, fmt.Sprintf("Failed to load specs for template %s", actionsTemplateName),
+					),
+				)
 				os.Exit(1)
 			}
 		}
 
-		config.MustWriteActionsInit(projectSlug, &actionsModel.ProjectActions{
-			Runtime:      actionsModel.RuntimeV2,
-			Sources:      sources,
-			Dependencies: nil,
-			Specs:        specs,
-		})
+		config.MustWriteActionsInit(
+			projectSlug, &actionsModel.ProjectActions{
+				Runtime:      actionsModel.RuntimeV2,
+				Sources:      sources,
+				Dependencies: nil,
+				Specs:        specs,
+			},
+		)
 
 		if actionsLanguage == LanguageJavaScript {
 			filePath := filepath.Join(sources, "example.js")
@@ -145,10 +164,13 @@ var initCmd = &cobra.Command{
 
 			util.CreateFileWithContent(filePath, content)
 
-			logrus.Info(commands.Colorizer.Sprintf("\nInitialized actions project. Sources directory created at %s. Configuration created in %s.",
-				commands.Colorizer.Bold(commands.Colorizer.Green(sources)),
-				commands.Colorizer.Bold(commands.Colorizer.Green("tenderly.yaml")),
-			))
+			logrus.Info(
+				commands.Colorizer.Sprintf(
+					"\nInitialized actions project. Sources directory created at %s. Configuration created in %s.",
+					commands.Colorizer.Bold(commands.Colorizer.Green(sources)),
+					commands.Colorizer.Bold(commands.Colorizer.Green("tenderly.yaml")),
+				),
+			)
 
 			os.Exit(0)
 		}
@@ -183,7 +205,10 @@ var initCmd = &cobra.Command{
 			if err != nil {
 				userError.LogErrorf(
 					"failed to create from template",
-					userError.NewUserError(err, fmt.Sprintf("Failed to create from template %s", actionsTemplateName)))
+					userError.NewUserError(
+						err, fmt.Sprintf("Failed to create from template %s", actionsTemplateName),
+					),
+				)
 				os.Exit(1)
 			}
 		}
@@ -191,10 +216,13 @@ var initCmd = &cobra.Command{
 		// Install dependencies
 		mustInstallDependencies(sources)
 
-		logrus.Info(commands.Colorizer.Sprintf("\nInitialized actions project. Sources directory created at %s. Configuration created in %s.",
-			commands.Colorizer.Bold(commands.Colorizer.Green(sources)),
-			commands.Colorizer.Bold(commands.Colorizer.Green("tenderly.yaml")),
-		))
+		logrus.Info(
+			commands.Colorizer.Sprintf(
+				"\nInitialized actions project. Sources directory created at %s. Configuration created in %s.",
+				commands.Colorizer.Bold(commands.Colorizer.Green(sources)),
+				commands.Colorizer.Bold(commands.Colorizer.Green("tenderly.yaml")),
+			),
+		)
 
 		os.Exit(0)
 	},
@@ -229,8 +257,10 @@ func promptTemplateArg(arg actionsModel.TemplateArg) string {
 	if result == "" {
 		userError.LogErrorf(
 			"value for template arg not entered",
-			userError.NewUserError(errors.New("enter template arg"),
-				"Value for template arg not entered correctly"),
+			userError.NewUserError(
+				errors.New("enter template arg"),
+				"Value for template arg not entered correctly",
+			),
 		)
 		os.Exit(1)
 	}
@@ -241,7 +271,11 @@ func mustValidateFlags() {
 	if actionsLanguage != LanguageTypeScript && actionsLanguage != LanguageJavaScript {
 		userError.LogErrorf(
 			"language not supported",
-			userError.NewUserError(errors.New("language not supported"), fmt.Sprintf("Language %s not supported", actionsLanguage)))
+			userError.NewUserError(
+				errors.New("language not supported"),
+				fmt.Sprintf("Language %s not supported", actionsLanguage),
+			),
+		)
 		os.Exit(1)
 	}
 }
@@ -251,8 +285,10 @@ func chooseSources() string {
 		if util.ExistFile(actionsSourcesDir) {
 			userError.LogErrorf(
 				"sources dir is file: %s",
-				userError.NewUserError(errors.New("sources dir is file"),
-					"Selected sources directory is a file."),
+				userError.NewUserError(
+					errors.New("sources dir is file"),
+					"Selected sources directory is a file.",
+				),
 			)
 			os.Exit(1)
 		}
@@ -260,8 +296,10 @@ func chooseSources() string {
 		if util.ExistDir(actionsSourcesDir) {
 			userError.LogErrorf(
 				"sources dir exists: %s",
-				userError.NewUserError(errors.New("sources dir exists"),
-					"Selected sources directory already exists."),
+				userError.NewUserError(
+					errors.New("sources dir exists"),
+					"Selected sources directory already exists.",
+				),
 			)
 			os.Exit(1)
 		}
@@ -324,7 +362,8 @@ func excludeFromTsconfigParent(sourcesPath string, parentPath string) {
 		if err != nil {
 			userError.LogErrorf(
 				"failed to get path relative to parentPath",
-				userError.NewUserError(err, fmt.Sprintf("Can't find relative path for %s", sourcesPath)))
+				userError.NewUserError(err, fmt.Sprintf("Can't find relative path for %s", sourcesPath)),
+			)
 			os.Exit(1)
 		}
 		rel = relTmp
