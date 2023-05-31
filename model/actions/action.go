@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	sequentialExecutionType = "sequential"
-	parallelExecutionType   = "parallel"
+	SequentialExecutionType = "sequential"
+	ParallelExecutionType   = "parallel"
 )
 
 type Action struct {
@@ -115,9 +115,9 @@ func IsRuntimeSupported(runtime string) bool {
 
 func invocationTypeFromExecution(executionType string) string {
 	switch executionType {
-	case sequentialExecutionType:
+	case SequentialExecutionType:
 		return "SYNC"
-	case parallelExecutionType:
+	case ParallelExecutionType:
 		return "ASYNC"
 	default:
 		return ""

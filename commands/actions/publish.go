@@ -110,7 +110,7 @@ func buildFunc(cmd *cobra.Command, args []string) {
 		)
 		os.Exit(1)
 	}
-	mustParseAndValidateTriggers(actions)
+	mustParseAndValidateActions(actions)
 
 	tsConfigExists := util.TsConfigExists(actions.Sources)
 	tsFileExists, tsFile := anyFunctionTsFileExists(actions)
@@ -175,8 +175,25 @@ func buildFunc(cmd *cobra.Command, args []string) {
 	logrus.Info(commands.Colorizer.Green("\nBuild completed."))
 }
 
-func mustParseAndValidateTriggers(projectActions *actionsModel.ProjectActions) {
+func mustParseAndValidateActions(projectActions *actionsModel.ProjectActions) {
 	for name, spec := range projectActions.Specs {
+		if spec.ExecutionType != actionsModel.ParallelExecutionType &&
+			spec.ExecutionType != actionsModel.SequentialExecutionType {
+			userError.LogErrorf(
+				"validation of action failed",
+				userError.NewUserError(
+					nil,
+					commands.Colorizer.Sprintf(
+						"Invalid execution type %s for action %s. Supported values: {%s, %s}",
+						commands.Colorizer.Bold(commands.Colorizer.Red(spec.ExecutionType)),
+						commands.Colorizer.Bold(commands.Colorizer.Blue(name)),
+						commands.Colorizer.Bold(commands.Colorizer.Green(actionsModel.SequentialExecutionType)),
+						commands.Colorizer.Bold(commands.Colorizer.Green(actionsModel.ParallelExecutionType)),
+					),
+				),
+			)
+			os.Exit(1)
+		}
 		err := spec.Parse()
 		if err != nil {
 			userError.LogErrorf(
