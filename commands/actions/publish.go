@@ -178,7 +178,8 @@ func buildFunc(cmd *cobra.Command, args []string) {
 func mustParseAndValidateActions(projectActions *actionsModel.ProjectActions) {
 	for name, spec := range projectActions.Specs {
 		if spec.ExecutionType != actionsModel.ParallelExecutionType &&
-			spec.ExecutionType != actionsModel.SequentialExecutionType {
+			spec.ExecutionType != actionsModel.SequentialExecutionType &&
+			spec.ExecutionType != "" {
 			userError.LogErrorf(
 				"validation of action failed",
 				userError.NewUserError(
