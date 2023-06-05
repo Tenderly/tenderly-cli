@@ -9,6 +9,11 @@ import (
 	"github.com/tenderly/tenderly-cli/rest/payloads/generated/actions"
 )
 
+const (
+	SequentialExecutionType = "sequential"
+	ParallelExecutionType   = "parallel"
+)
+
 type Action struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -36,8 +41,9 @@ func (s *ProjectActions) ToRequest(sources map[string]string) map[string]actions
 			Runtime:  actions.New_Runtime(actions.Runtime_Value(s.Runtime)),
 			Function: actions.Function(action.Function),
 			// Field will be set when we access it
-			TriggerType: action.TriggerParsed.ToRequestType(),
-			Trigger:     action.TriggerParsed.ToRequest(),
+			TriggerType:    action.TriggerParsed.ToRequestType(),
+			Trigger:        action.TriggerParsed.ToRequest(),
+			InvocationType: invocationTypeFromExecution(action.ExecutionType),
 		}
 		response[name] = spec
 	}
@@ -50,6 +56,7 @@ type ActionSpec struct {
 	// Parsing and validation of trigger happens later, and Trigger field is set
 	Trigger       TriggerUnparsed `json:"trigger" yaml:"trigger"`
 	TriggerParsed *Trigger        `json:"-" yaml:"-"`
+	ExecutionType string          `json:"execution_type" yaml:"execution_type"`
 }
 
 type TriggerUnparsed struct {
@@ -104,4 +111,15 @@ func IsRuntimeSupported(runtime string) bool {
 	}
 
 	return false
+}
+
+func invocationTypeFromExecution(executionType string) string {
+	switch executionType {
+	case SequentialExecutionType:
+		return "SYNC"
+	case ParallelExecutionType:
+		return "ASYNC"
+	default:
+		return ""
+	}
 }

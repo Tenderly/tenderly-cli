@@ -86,31 +86,49 @@ func buildFunc(cmd *cobra.Command, args []string) {
 	actions = mustGetProjectActions(allActions, projectSlug)
 	logrus.Info("\nBuilding actions:")
 	for actionName := range actions.Specs {
-		logrus.Info(commands.Colorizer.Sprintf(
-			"- %s", commands.Colorizer.Bold(commands.Colorizer.Green(actionName))))
+		logrus.Info(
+			commands.Colorizer.Sprintf(
+				"- %s", commands.Colorizer.Bold(commands.Colorizer.Green(actionName)),
+			),
+		)
 	}
 
 	util.MustExistDir(actions.Sources)
 	if !actionsModel.IsRuntimeSupported(actions.Runtime) {
-		logrus.Error(commands.Colorizer.Sprintf(
-			"Configured runtime %s is not supported. Supported values: {%s}",
-			commands.Colorizer.Bold(commands.Colorizer.Red(actions.Runtime)),
-			commands.Colorizer.Bold(commands.Colorizer.Green(strings.Join(actionsModel.SupportedRuntimes, ","))),
-		))
+		logrus.Error(
+			commands.Colorizer.Sprintf(
+				"Configured runtime %s is not supported. Supported values: {%s}",
+				commands.Colorizer.Bold(commands.Colorizer.Red(actions.Runtime)),
+				commands.Colorizer.Bold(
+					commands.Colorizer.Green(
+						strings.Join(
+							actionsModel.SupportedRuntimes, ",",
+						),
+					),
+				),
+			),
+		)
 		os.Exit(1)
 	}
-	mustParseAndValidateTriggers(actions)
+	mustParseAndValidateActions(actions)
 
 	tsConfigExists := util.TsConfigExists(actions.Sources)
 	tsFileExists, tsFile := anyFunctionTsFileExists(actions)
 	if tsFileExists && !tsConfigExists {
-		err := errors.New(fmt.Sprintf("File %s is a typescript file but there is no typescript config file!", tsFile))
-		userError.LogErrorf("missing typescript config file %s",
-			userError.NewUserError(err,
+		err := errors.New(
+			fmt.Sprintf(
+				"File %s is a typescript file but there is no typescript config file!", tsFile,
+			),
+		)
+		userError.LogErrorf(
+			"missing typescript config file %s",
+			userError.NewUserError(
+				err,
 				commands.Colorizer.Sprintf(
 					"Missing typescript config file in your sources! Sources: %s, File: %s",
 					commands.Colorizer.Bold(commands.Colorizer.Red(actions.Sources)),
-					commands.Colorizer.Bold(commands.Colorizer.Red(tsFile))),
+					commands.Colorizer.Bold(commands.Colorizer.Red(tsFile)),
+				),
 			),
 		)
 		os.Exit(1)
@@ -157,15 +175,36 @@ func buildFunc(cmd *cobra.Command, args []string) {
 	logrus.Info(commands.Colorizer.Green("\nBuild completed."))
 }
 
-func mustParseAndValidateTriggers(projectActions *actionsModel.ProjectActions) {
+func mustParseAndValidateActions(projectActions *actionsModel.ProjectActions) {
 	for name, spec := range projectActions.Specs {
+		if spec.ExecutionType != actionsModel.ParallelExecutionType &&
+			spec.ExecutionType != actionsModel.SequentialExecutionType &&
+			spec.ExecutionType != "" {
+			userError.LogErrorf(
+				"validation of action failed",
+				userError.NewUserError(
+					nil,
+					commands.Colorizer.Sprintf(
+						"Invalid execution type %s for action %s. Supported values: {%s, %s}",
+						commands.Colorizer.Bold(commands.Colorizer.Red(spec.ExecutionType)),
+						commands.Colorizer.Bold(commands.Colorizer.Blue(name)),
+						commands.Colorizer.Bold(commands.Colorizer.Green(actionsModel.SequentialExecutionType)),
+						commands.Colorizer.Bold(commands.Colorizer.Green(actionsModel.ParallelExecutionType)),
+					),
+				),
+			)
+			os.Exit(1)
+		}
 		err := spec.Parse()
 		if err != nil {
-			userError.LogErrorf("failed parsing action trigger with %s",
-				userError.NewUserError(err,
+			userError.LogErrorf(
+				"failed parsing action trigger with %s",
+				userError.NewUserError(
+					err,
 					commands.Colorizer.Sprintf(
 						"Failed parsing action trigger for %s",
-						commands.Colorizer.Bold(commands.Colorizer.Red(name))),
+						commands.Colorizer.Bold(commands.Colorizer.Red(name)),
+					),
 				),
 			)
 			os.Exit(1)
@@ -216,8 +255,11 @@ func publish(
 		logrus.Info("\nPublishing and deploying actions:")
 	}
 	for actionName := range actions.Specs {
-		logrus.Info(commands.Colorizer.Sprintf(
-			"- %s", commands.Colorizer.Bold(commands.Colorizer.Green(actionName))))
+		logrus.Info(
+			commands.Colorizer.Sprintf(
+				"- %s", commands.Colorizer.Bold(commands.Colorizer.Green(actionName)),
+			),
+		)
 	}
 
 	logicZip, logicHash := util.MustZipAndHashDir(outDir, srcPathInZip, zipLimitBytes)
@@ -226,7 +268,9 @@ func publish(
 	}
 
 	dependenciesDir := filepath.Join(actions.Sources, typescript.NodeModulesDir)
-	dependenciesZip, dependenciesHash := util.ZipAndHashDir(dependenciesDir, nodeModulesPathInZip, zipLimitBytes)
+	dependenciesZip, dependenciesHash := util.ZipAndHashDir(
+		dependenciesDir, nodeModulesPathInZip, zipLimitBytes,
+	)
 	if dependenciesExist {
 		dependenciesZip = nil
 	}
@@ -248,11 +292,14 @@ func publish(
 	s.Stop()
 
 	if err != nil {
-		userError.LogErrorf("publish request failed",
+		userError.LogErrorf(
+			"publish request failed",
 			userError.NewUserError(
 				err,
-				commands.Colorizer.Sprintf("Publish request failed: %s",
-					commands.Colorizer.Red(err.Error())),
+				commands.Colorizer.Sprintf(
+					"Publish request failed: %s",
+					commands.Colorizer.Red(err.Error()),
+				),
 			),
 		)
 		os.Exit(1)
@@ -264,11 +311,15 @@ func publish(
 		logrus.Info("\nPublished and deployed actions:")
 	}
 	for key, version := range response.Actions {
-		logrus.Info(commands.Colorizer.Sprintf("- %s (actionId = %s, versionId = %s) %s",
-			commands.Colorizer.Bold(commands.Colorizer.Green(key)),
-			version.ActionId,
-			version.Id,
-			fmt.Sprintf(ActionUrlPattern, projectSlug, version.ActionId)))
+		logrus.Info(
+			commands.Colorizer.Sprintf(
+				"- %s (actionId = %s, versionId = %s) %s",
+				commands.Colorizer.Bold(commands.Colorizer.Green(key)),
+				version.ActionId,
+				version.Id,
+				fmt.Sprintf(ActionUrlPattern, projectSlug, version.ActionId),
+			),
+		)
 	}
 }
 
@@ -286,8 +337,10 @@ func mustBuildProject(sourcesDir string, tsconfig *typescript.TsConfig) {
 
 	err := cmd.Run()
 	if err != nil {
-		userError.LogErrorf("failed to run build typescript: %s",
-			userError.NewUserError(err,
+		userError.LogErrorf(
+			"failed to run build typescript: %s",
+			userError.NewUserError(
+				err,
 				commands.Colorizer.Sprintf(
 					"Failed to run: %s.",
 					commands.Colorizer.Bold(
@@ -323,7 +376,8 @@ func mustValidateAndGetSources(
 func mustGetSource(sourcesDir string, locator string) string {
 	internalLocator, err := actionsModel.NewInternalLocator(locator)
 	if err != nil {
-		userError.LogErrorf("invalid locator: %s",
+		userError.LogErrorf(
+			"invalid locator: %s",
 			userError.NewUserError(
 				err,
 				commands.Colorizer.Sprintf(
@@ -349,11 +403,13 @@ func mustGetSource(sourcesDir string, locator string) string {
 		}
 	}
 	if !exists {
-		logrus.Error(commands.Colorizer.Sprintf(
-			"Invalid locator %s (file %s not found).",
-			commands.Colorizer.Bold(commands.Colorizer.Red(locator)),
-			commands.Colorizer.Bold(commands.Colorizer.Red(filePath)),
-		))
+		logrus.Error(
+			commands.Colorizer.Sprintf(
+				"Invalid locator %s (file %s not found).",
+				commands.Colorizer.Bold(commands.Colorizer.Red(locator)),
+				commands.Colorizer.Bold(commands.Colorizer.Red(filePath)),
+			),
+		)
 		os.Exit(1)
 	}
 
@@ -384,11 +440,14 @@ func mustValidate(
 
 	response, err := r.Actions.Validate(request, projectSlug)
 	if err != nil {
-		userError.LogErrorf("validate request failed",
+		userError.LogErrorf(
+			"validate request failed",
 			userError.NewUserError(
 				err,
-				commands.Colorizer.Sprintf("Validate request failed: %s",
-					commands.Colorizer.Red(err.Error())),
+				commands.Colorizer.Sprintf(
+					"Validate request failed: %s",
+					commands.Colorizer.Red(err.Error()),
+				),
 			),
 		)
 		os.Exit(1)
@@ -397,7 +456,9 @@ func mustValidate(
 	if len(response.Errors) > 0 {
 		for name, errs := range response.Errors {
 			logrus.Info(
-				commands.Colorizer.Sprintf("Validation for %s failed with errors:", commands.Colorizer.Yellow(name)),
+				commands.Colorizer.Sprintf(
+					"Validation for %s failed with errors:", commands.Colorizer.Yellow(name),
+				),
 			)
 			for _, e := range errs {
 				logrus.Info(commands.Colorizer.Sprintf("%s: %s", commands.Colorizer.Red(e.Name), e.Message))
@@ -411,10 +472,12 @@ func mustValidate(
 
 func mustValidateTsconfig(tsconfig *typescript.TsConfig) {
 	if tsconfig.CompilerOptions.OutDir == nil {
-		logrus.Error(commands.Colorizer.Sprintf(
-			"Invalid tsconfig - %s must be set.",
-			commands.Colorizer.Bold(commands.Colorizer.Red("compilerOptions.outDir")),
-		))
+		logrus.Error(
+			commands.Colorizer.Sprintf(
+				"Invalid tsconfig - %s must be set.",
+				commands.Colorizer.Bold(commands.Colorizer.Red("compilerOptions.outDir")),
+			),
+		)
 		os.Exit(1)
 	}
 }
@@ -424,7 +487,8 @@ func anyFunctionTsFileExists(actions *actionsModel.ProjectActions) (bool, string
 		locator := spec.Function
 		internalLocator, err := actionsModel.NewInternalLocator(locator)
 		if err != nil {
-			userError.LogErrorf("invalid locator: %s",
+			userError.LogErrorf(
+				"invalid locator: %s",
 				userError.NewUserError(
 					err,
 					commands.Colorizer.Sprintf(
@@ -450,12 +514,16 @@ func mustExistCompiledFiles(outDir string, actions *actionsModel.ProjectActions)
 	for _, spec := range actions.Specs {
 		internalLocator, err := actionsModel.NewInternalLocator(spec.Function)
 		if err != nil {
-			userError.LogErrorf("invalid locator: %s",
-				userError.NewUserError(err,
+			userError.LogErrorf(
+				"invalid locator: %s",
+				userError.NewUserError(
+					err,
 					commands.Colorizer.Sprintf(
 						"Invalid locator format %s.",
 						commands.Colorizer.Bold(commands.Colorizer.Red(spec.Function)),
-					)))
+					),
+				),
+			)
 			os.Exit(1)
 		}
 
@@ -469,12 +537,14 @@ func mustExistCompiledFiles(outDir string, actions *actionsModel.ProjectActions)
 		}
 	}
 	if len(missingFilePaths) > 0 {
-		logrus.Errorf("Unable to resolve path for some of the compiled files: %s\n"+
-			"Make sure all imported files are contained in the configured action sources directory (%s).\n"+
-			"If the problem persists, please run this command with the %s flag and send logs to our customer support.",
+		logrus.Errorf(
+			"Unable to resolve path for some of the compiled files: %s\n"+
+				"Make sure all imported files are contained in the configured action sources directory (%s).\n"+
+				"If the problem persists, please run this command with the %s flag and send logs to our customer support.",
 			commands.Colorizer.Bold(commands.Colorizer.Red(strings.Join(missingFilePaths, ", "))),
 			commands.Colorizer.Bold(actions.Sources),
-			commands.Colorizer.Bold(commands.Colorizer.Red("--debug")))
+			commands.Colorizer.Bold(commands.Colorizer.Red("--debug")),
+		)
 		os.Exit(1)
 	}
 }
@@ -482,11 +552,13 @@ func mustExistCompiledFiles(outDir string, actions *actionsModel.ProjectActions)
 func printPackageValidationErrors(validationErrors []*packagejson.ValidationError) {
 	logrus.Error("The following packages have invalid versions:")
 	for _, e := range validationErrors {
-		logrus.Error(commands.Colorizer.Sprintf(
-			"  %s\n\tFound: %s\n\tRequired: %s",
-			commands.Colorizer.Bold(commands.Colorizer.Bold(e.Name)),
-			commands.Colorizer.Bold(commands.Colorizer.Red(e.PackageJsonVersion)),
-			commands.Colorizer.Bold(commands.Colorizer.Red(e.Constraint)),
-		))
+		logrus.Error(
+			commands.Colorizer.Sprintf(
+				"  %s\n\tFound: %s\n\tRequired: %s",
+				commands.Colorizer.Bold(commands.Colorizer.Bold(e.Name)),
+				commands.Colorizer.Bold(commands.Colorizer.Red(e.PackageJsonVersion)),
+				commands.Colorizer.Bold(commands.Colorizer.Red(e.Constraint)),
+			),
+		)
 	}
 }

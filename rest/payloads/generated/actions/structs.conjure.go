@@ -65,11 +65,12 @@ type ActionSpec struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
 	// Source code, usually just top level file when function is defined.
-	Source      *string     `json:"source" conjure-docs:"Source code, usually just top level file when function is defined."`
-	Runtime     Runtime     `json:"runtime"`
-	Function    Function    `json:"function"`
-	TriggerType TriggerType `json:"triggerType"`
-	Trigger     *Trigger    `json:"trigger"`
+	Source         *string     `json:"source" conjure-docs:"Source code, usually just top level file when function is defined."`
+	Runtime        Runtime     `json:"runtime"`
+	Function       Function    `json:"function"`
+	TriggerType    TriggerType `json:"triggerType"`
+	Trigger        *Trigger    `json:"trigger"`
+	InvocationType string      `json:"invocationType"`
 }
 
 func (o ActionSpec) MarshalYAML() (interface{}, error) {
