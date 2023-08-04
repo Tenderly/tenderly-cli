@@ -18,6 +18,9 @@ func init() {
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Export init is a helper subcommand for creating exported network configuration",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		logrus.Warn("The export functionality has been deprecated. Please transition to using DevNets.")
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		commands.CheckLogin()
 

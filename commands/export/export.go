@@ -70,6 +70,9 @@ var exportCmd = &cobra.Command{
 
 		return nil
 	},
+	PreRun: func(cmd *cobra.Command, args []string) {
+		logrus.Warn("The export functionality has been deprecated. Please transition to using DevNets.")
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 
 		network = getExportNetwork()
