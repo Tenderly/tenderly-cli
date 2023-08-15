@@ -79,6 +79,8 @@ func initConfig() {
 func initLog() {
 	Colorizer = aurora.NewAurora(false)
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetOutput(os.Stdout)
+
 	if debugMode {
 		logrus.SetLevel(logrus.DebugLevel)
 		logrus.SetReportCaller(true)
