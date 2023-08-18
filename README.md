@@ -12,8 +12,6 @@ contracts.
     * [Login](#login)
     * [Init](#init)
     * [Push](#push)
-    * [Export setup](#export-init)
-    * [Export local transactions to Tenderly](#export)
     * [Check for updates](#check-for-updates)
     * [Version](#version)
     * [Who am I?](#who-am-i)
@@ -175,8 +173,7 @@ If you are using Hardhat, take a look at [docs](https://docs.tenderly.co/monitor
 
 The `push` command is used to add your contracts to the [Tenderly Dashboard](https://dashboard.tenderly.co).
 
-Note that the `push` command is used **only** for adding contracts that are deployed to a public network. For local
-networks see the [export command](#export).
+Note that the `push` command is used **only** for adding contracts that are deployed to a public network.
 
 ```
 tenderly push
@@ -202,102 +199,12 @@ projects: # running tenderly push will push the smart contracts to all of the pr
   my-cool-project:
     networks:
       - "1" # mainnet
-      - "42" # kovan
+      - "5" # goerli
   my-other-project:
   # if the networks property is not provided or is empty the project will be pushed to all of the migrated networks
   company-account/my-other-project:
   # if you want to push to a shared project provide the full project identifier
   # the identifier can be found in your Tenderly dashboard under the projects name
-```
-
-### Export init
-
-In order to use the [tenderly export](#export) command you need to define a configuration file
-(which is described in more detail in the [export command](#export) advanced usage section).
-
-```
-tenderly export init
-```
-
-#### Command Flags
-
-| Flag | Default | Description |
-| --- | --- | --- |
-| --project | / | The project name used for network configuration |
-| --rpc | / | Rpc server address (example: 127.0.0.1:8545) |
-| --forked-network | / | In case you forked a public network (example: mainnet) |
-| --help | / | Help for export init command |
-
-### Export
-
-The `export` command can be used to access transaction debugging tooling available at https://dashboard.tenderly.co/ but
-for local transactions.
-
-Use the
-[Transaction Overview](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1)
-,
-[Human-Readable Stack-Traces](https://dashboard.tenderly.co/tx/main/0x30bc65375b2e2b56f97706bccba9b21bc8763cc81a0262351b3373ce49f60ea7)
-,
-[Debugger](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/debugger)
-,
-[Gas Profiler](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/gas-usage)
-,
-[Decoded Events](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/logs)
-and [State](https://dashboard.tenderly.co/tx/main/0x70f28ce44bd58034ac18bec9eb1603350d50e020e4c2cf0b071837699ea1cdb1/state-diff)
-to boost your local development productivity.
-
-```
-tenderly export {{transaction_hash}}
-```
-
-#### Command Arguments
-
-| Name | Description |
-| --- | --- |
-| transaction hash | Hash of the local transaction to debug |
-
-#### Command Flags
-
-| Flag | Default | Description |
-| --- | --- | --- |
-| --export-network | / | The name of the exported network in the configuration file |
-| --project | / | The project in which the exported transactions will be stored |
-| --rpc | 127.0.0.1:8545 | The address and port of the local rpc node |
-| --forked-network | / | Optional name of the network which you are forking locally. Can be one of Mainnet, Goerli, Kovan, Ropsten, Rinkeby, xDai |
-| --protocol | / | Specify the protocol used for the rpc node. By default `wss`, `https`, `ws`, `http` are tried in that order |
-| --help | / | Help for export command |
-| --force| false | Export the transaction regardless of gas mismatch|
-
-#### Advanced usage
-
-If your local node has different blocks defined for hardforks or you want to generate the configuration file yourself,
-you can find the example bellow:
-
-```yaml
-exports: # running tenderly export will export local transaction to the provided project
-  my-network:
-    project_slug: my-cool-project
-    rpc_address: 127.0.0.1:8545
-    protocol: http
-    forked_network: mainnet
-    chain_config:
-      homestead_block: 0 # (default 0)
-      eip150_block: 0 # (default 0)
-      eip150_hash: 0x0 # (default 0x0)
-      eip155_block: 0 # (default 0)
-      eip158_block: 0 # (default 0)
-      byzantium_block: 0 # (default 0)
-      constantinople_block: 0 # (default 0)
-      petersburg_block: 0 # (default 0)
-      istanbul_block: 0 # (default 0)
-      berlin_block: 0 # (default 0)
-      london_block: 0 # (default 0)
-
-  my-company-network:
-    project_slug: company-account/my-other-project
-    rpc_address: rpc.ethereum.company:8545
-    # if you want to export to a shared project provide the full project identifier
-    # the identifier can be found in your Tenderly dashboard under the projects name
 ```
 
 ### Verify
@@ -343,10 +250,6 @@ The `logout` command disconnects your local Tenderly CLI from your [Tenderly Das
 ```
 tenderly logout
 ```
-
-### Proxy Debugging
-
-The proxy command is deprecated in favor of the [export](#export) command.
 
 ### Global Flags
 
