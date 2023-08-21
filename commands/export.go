@@ -16,7 +16,7 @@ var exportCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		logrus.Info(Colorizer.Sprintf(
 			"The export feature has been deprecated in favor of the %s.\n\n"+
-				"The %s can be used as a development node infrastructure in order to access all of the tooling at %s. "+
+				"The %s can be used as a development node infrastructure that allows you to access tooling at %s. "+
 				"You can read more about it here: %s.",
 			Colorizer.Bold(Colorizer.Green("DevNets")),
 			Colorizer.Bold(Colorizer.Green("DevNets")),
@@ -32,7 +32,7 @@ var exportInitCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		logrus.Info(Colorizer.Sprintf(
 			"The export feature has been deprecated in favor of the %s.\n\n"+
-				"The %s can be used as a development node infrastructure in order to access all of the tooling at %s. "+
+				"The %s can be used as a development node infrastructure that allows you to access tooling at %s. "+
 				"You can read more about it here: %s.",
 			Colorizer.Bold(Colorizer.Green("DevNets")),
 			Colorizer.Bold(Colorizer.Green("DevNets")),
