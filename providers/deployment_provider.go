@@ -1,14 +1,10 @@
 package providers
 
 import (
-	"encoding/hex"
-	"fmt"
 	"path/filepath"
 	"time"
 
-	"github.com/tenderly/tenderly-cli/ethereum"
 	"github.com/tenderly/tenderly-cli/model"
-	"github.com/tenderly/tenderly-cli/stacktrace"
 )
 
 type DeploymentProvider interface {
@@ -230,46 +226,4 @@ type ApiContract struct {
 type ApiDeploymentInformation struct {
 	NetworkID string `json:"network_id"`
 	Address   string `json:"address"`
-}
-
-type ContractSource struct {
-	Contracts map[string]*stacktrace.ContractDetails
-	Client    ethereum.Client
-}
-
-func (cs *ContractSource) Get(id string) (*stacktrace.ContractDetails, error) {
-	contract, ok := cs.Contracts[id]
-	if ok {
-		return contract, nil
-	}
-
-	code, err := cs.Client.GetCode(id, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed fetching code on address %s\n", id)
-	}
-
-	for _, c := range cs.Contracts {
-		if c.DeployedByteCode == code {
-			return c, nil
-		}
-	}
-
-	bytecode, err := ParseBytecode(code)
-	if err != nil {
-		return nil, fmt.Errorf("failed parsing bytecode %s", err)
-	}
-
-	return &stacktrace.ContractDetails{
-		Bytecode:         bytecode,
-		DeployedByteCode: code,
-	}, nil
-}
-
-func ParseBytecode(raw string) ([]byte, error) {
-	bin, err := hex.DecodeString(raw[2:])
-	if err != nil {
-		return nil, fmt.Errorf("failed decoding runtime binary: %s", err)
-	}
-
-	return bin, nil
 }

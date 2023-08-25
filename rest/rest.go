@@ -30,10 +30,6 @@ type ContractRoutes interface {
 	RenameContract(request payloads.RenameContractRequest, projectSlug, networkID, address string) (*payloads.RenameContractResponse, error)
 }
 
-type ExportRoutes interface {
-	ExportTransaction(request payloads.ExportTransactionRequest, projectSlug string) (*payloads.ExportTransactionResponse, error)
-}
-
 type NetworkRoutes interface {
 	GetPublicNetworks() (*payloads.NetworksResponse, error)
 }
@@ -62,7 +58,6 @@ type Rest struct {
 	User       UserRoutes
 	Project    ProjectRoutes
 	Contract   ContractRoutes
-	Export     ExportRoutes
 	Networks   NetworkRoutes
 	Actions    ActionRoutes
 	DevNet     DevNetRoutes
@@ -75,7 +70,6 @@ func NewRest(
 	user UserRoutes,
 	project ProjectRoutes,
 	contract ContractRoutes,
-	export ExportRoutes,
 	networks NetworkRoutes,
 	actions ActionRoutes,
 	devnet DevNetRoutes,
@@ -87,7 +81,6 @@ func NewRest(
 		User:       user,
 		Project:    project,
 		Contract:   contract,
-		Export:     export,
 		Networks:   networks,
 		Actions:    actions,
 		DevNet:     devnet,
