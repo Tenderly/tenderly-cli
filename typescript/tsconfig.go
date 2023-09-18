@@ -21,6 +21,7 @@ type CompilerOptions struct {
 	Target            *string `json:"target,omitempty"`
 	Module            *string `json:"module,omitempty"`
 	OutDir            *string `json:"outDir,omitempty"`
+	RootDir           *string `json:"rootDir,omitempty"`
 	SourceMap         *bool   `json:"sourceMap,omitempty"`
 	Strict            *bool   `json:"strict,omitempty"`
 	NoImplicitReturns *bool   `json:"noImplicitReturns,omitempty"`
@@ -41,6 +42,7 @@ func DefaultTsConfig() *TsConfig {
 			Target:            stringPointer("es2020"),
 			Module:            stringPointer("commonjs"),
 			OutDir:            stringPointer("out"),
+			RootDir:           stringPointer("src"),
 			SourceMap:         boolPointer(true),
 			Strict:            boolPointer(true),
 			NoImplicitReturns: boolPointer(true),
@@ -84,6 +86,7 @@ func LoadTsConfig(directory string) (*TsConfig, error) {
 	delete(compilerOptions, "target")
 	delete(compilerOptions, "module")
 	delete(compilerOptions, "outDir")
+	delete(compilerOptions, "rootDir")
 	delete(compilerOptions, "sourceMap")
 	delete(compilerOptions, "strict")
 	delete(compilerOptions, "noImplicitReturns")
@@ -121,6 +124,9 @@ func SaveTsConfig(directory string, config *TsConfig) error {
 	}
 	if config.CompilerOptions.OutDir != nil {
 		compilerOptions["outDir"] = config.CompilerOptions.OutDir
+	}
+	if config.CompilerOptions.RootDir != nil {
+		compilerOptions["rootDir"] = config.CompilerOptions.RootDir
 	}
 	if config.CompilerOptions.SourceMap != nil {
 		compilerOptions["sourceMap"] = config.CompilerOptions.SourceMap

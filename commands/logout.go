@@ -22,9 +22,9 @@ var logoutCmd = &cobra.Command{
 		}
 
 		if config.GetAccessKeyId() != "" {
-		    // If logged in via token, don't revoke provided token.
-		    rest := NewRest()
-	            emailLogout(rest)
+			// If logged in via token, don't revoke provided token.
+			rest := NewRest()
+			emailLogout(rest)
 		}
 
 		config.SetGlobalConfig(config.Token, "")
