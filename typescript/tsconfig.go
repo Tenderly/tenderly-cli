@@ -42,7 +42,7 @@ func DefaultTsConfig() *TsConfig {
 			Target:            stringPointer("es2020"),
 			Module:            stringPointer("commonjs"),
 			OutDir:            stringPointer("out"),
-			RootDir:           stringPointer("src"),
+			RootDir:           stringPointer(""),
 			SourceMap:         boolPointer(true),
 			Strict:            boolPointer(true),
 			NoImplicitReturns: boolPointer(true),
