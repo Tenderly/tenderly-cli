@@ -38,6 +38,7 @@ var (
 	projectSlug       string
 	actions           *actionsModel.ProjectActions
 	outDir            string
+	sourcesDir        string
 	sources           map[string]string
 	logicExist        bool
 	dependenciesExist bool
@@ -141,6 +142,7 @@ func buildFunc(cmd *cobra.Command, args []string) {
 	}
 
 	outDir = actions.Sources
+	sourcesDir = actions.Sources
 
 	exists := util.PackageJSONExists(actions.Sources)
 	if exists {
@@ -165,13 +167,16 @@ func buildFunc(cmd *cobra.Command, args []string) {
 	}
 
 	if tsconfig != nil {
-		outDir = filepath.Join(outDir, *tsconfig.CompilerOptions.OutDir)
+		outDir = filepath.Join(actions.Sources, *tsconfig.CompilerOptions.OutDir)
+		if *tsconfig.CompilerOptions.RootDir != "" {
+			sourcesDir = filepath.Join(actions.Sources, *tsconfig.CompilerOptions.RootDir)
+		}
 		mustInstallDependencies(actions.Sources)
 		mustBuildProject(actions.Sources, tsconfig)
 		mustExistCompiledFiles(outDir, actions)
 	}
 
-	sources = mustValidateAndGetSources(r, actions, projectSlug, actions.Sources)
+	sources = mustValidateAndGetSources(r, actions, projectSlug, sourcesDir)
 	logrus.Info(commands.Colorizer.Green("\nBuild completed."))
 }
 
