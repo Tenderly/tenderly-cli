@@ -2,6 +2,7 @@ package devnet
 
 import (
 	"os"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -118,5 +119,6 @@ func spawnRPCHandler(cmd *cobra.Command, args []string) {
 		logrus.Error("Failed to spawn RPC", err)
 		return
 	}
-	logrus.Info(response)
+	
+	fmt.Printf("%s\n", response)
 }
