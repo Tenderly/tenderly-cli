@@ -1,6 +1,7 @@
 package devnet
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/pkg/errors"
@@ -16,6 +17,7 @@ var projectSlug string
 var templateSlug string
 var accessKey string
 var token string
+var returnUrl bool
 
 func init() {
 	cmdSpawnRpc.PersistentFlags().StringVar(
@@ -47,6 +49,12 @@ func init() {
 		"token",
 		"",
 		"The Tenderly JWT. If not provided, the system will try to read 'token' from the 'tenderly.yaml' configuration file.",
+	)
+	cmdSpawnRpc.PersistentFlags().BoolVar(
+		&returnUrl,
+		"return-url",
+		false,
+		"Optional flag to return the URL instead of printing it. Default: false.",
 	)
 	CmdDevNet.AddCommand(cmdSpawnRpc)
 }
@@ -118,5 +126,10 @@ func spawnRPCHandler(cmd *cobra.Command, args []string) {
 		logrus.Error("Failed to spawn RPC", err)
 		return
 	}
-	logrus.Info(response)
+
+	if returnUrl {
+		fmt.Printf("%s\n", response)
+	} else {
+		logrus.Info(response)
+	}
 }
