@@ -60,7 +60,7 @@ var initAction = &actionsModel.ActionSpec{
 	Description:   &initDescription,
 	Function:      "example:blockHelloWorldFn",
 	Trigger:       actionsModel.TriggerUnparsed{Type: "block"},
-	ExecutionType: "sequential",
+	ExecutionType: "parallel",
 }
 
 func init() {
