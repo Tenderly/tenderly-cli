@@ -30,11 +30,6 @@ func (a Trigger) Validate(ctx ValidatorContext) (response ValidateResponse) {
 		return response.Error(ctx, MsgTriggerTypeNotSupported, a.Type, TriggerTypes)
 	}
 
-	// This handles just type
-	if a.Periodic == nil && a.Webhook == nil && a.Block == nil && a.Transaction == nil && a.Alert == nil {
-		return response
-	}
-
 	switch a.Type {
 	case PeriodicType:
 		if a.Periodic == nil {
@@ -58,7 +53,7 @@ func (a Trigger) Validate(ctx ValidatorContext) (response ValidateResponse) {
 		return response.Merge(a.Transaction.Validate(ctx.With(a.Type)))
 	case AlertType:
 		if a.Alert == nil {
-			return response.Error(ctx, MsgTriggerTypeMismatch, a.Type)
+			return response
 		}
 		return response.Merge(a.Alert.Validate(ctx.With(a.Type)))
 	}
