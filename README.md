@@ -212,7 +212,7 @@ projects: # running tenderly push will push the smart contracts to all of the pr
 The `verify` command uploads your smart contracts and verifies them on [Tenderly](https://tenderly.co).
 
 ```
-tenderly verify
+tenderly contracts verify
 ```
 
 #### Command Flags
