@@ -3,7 +3,9 @@
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/Tenderly/tenderly-cli.svg?label=Latest%20Version)](https://github.com/Tenderly/tenderly-cli)
 
 Tenderly CLI is a suite of development tools that allows you to debug, monitor and track the execution of your smart
-contracts.
+contracts. 
+
+For smart contract verification in Tenderly, follow the [Foundry verification guide](https://docs.tenderly.co/contract-verification/foundry) and [Hardhat verification guide](https://docs.tenderly.co/contract-verification/hardhat).
 
 ## Table of Contents
 
@@ -176,7 +178,7 @@ The `push` command is used to add your contracts to the [Tenderly Dashboard](htt
 Note that the `push` command is used **only** for adding contracts that are deployed to a public network.
 
 ```
-tenderly push
+tenderly contracts push
 ```
 
 #### Command Flags
@@ -212,7 +214,7 @@ projects: # running tenderly push will push the smart contracts to all of the pr
 The `verify` command uploads your smart contracts and verifies them on [Tenderly](https://tenderly.co).
 
 ```
-tenderly verify
+tenderly contracts verify
 ```
 
 #### Command Flags
