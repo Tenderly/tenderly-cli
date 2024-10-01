@@ -168,7 +168,7 @@ func buildFunc(cmd *cobra.Command, args []string) {
 
 	if tsconfig != nil {
 		outDir = filepath.Join(actions.Sources, *tsconfig.CompilerOptions.OutDir)
-		if *tsconfig.CompilerOptions.RootDir != "" {
+		if tsconfig.CompilerOptions.RootDir != nil && *tsconfig.CompilerOptions.RootDir != "" {
 			sourcesDir = filepath.Join(actions.Sources, *tsconfig.CompilerOptions.RootDir)
 		}
 		mustInstallDependencies(actions.Sources)
