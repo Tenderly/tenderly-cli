@@ -1098,8 +1098,8 @@ func (o *PublishResponse) UnmarshalYAML(unmarshal func(interface{}) error) error
 }
 
 type ResumeRequest struct {
-	// Action ids to resume. IF EMTPY, ALL ACTIONS IN PROJECT WILL BE RESUMED.
-	Actions []string `json:"actions" conjure-docs:"Action ids to resume. IF EMTPY, ALL ACTIONS IN PROJECT WILL BE RESUMED."`
+	// Action ids to resume. IF EMPTY, ALL ACTIONS IN PROJECT WILL BE RESUMED.
+	Actions []string `json:"actions" conjure-docs:"Action ids to resume. IF EMPTY, ALL ACTIONS IN PROJECT WILL BE RESUMED."`
 }
 
 func (o ResumeRequest) MarshalJSON() ([]byte, error) {
@@ -1205,8 +1205,8 @@ func (o *StateChangedFilter) UnmarshalYAML(unmarshal func(interface{}) error) er
 }
 
 type StopRequest struct {
-	// Action ids to stop. IF EMTPY, ALL ACTIONS IN PROJECT WILL BE STOPPED.
-	Actions []string `json:"actions" conjure-docs:"Action ids to stop. IF EMTPY, ALL ACTIONS IN PROJECT WILL BE STOPPED."`
+	// Action ids to stop. IF EMPTY, ALL ACTIONS IN PROJECT WILL BE STOPPED.
+	Actions []string `json:"actions" conjure-docs:"Action ids to stop. IF EMPTY, ALL ACTIONS IN PROJECT WILL BE STOPPED."`
 }
 
 func (o StopRequest) MarshalJSON() ([]byte, error) {
