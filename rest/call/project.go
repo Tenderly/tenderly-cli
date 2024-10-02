@@ -34,7 +34,7 @@ func (rest *ProjectCalls) CreateProject(request payloads.ProjectRequest) (*paylo
 	err = json.NewDecoder(response).Decode(&projectResponse)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed parsing create project respose: %s", err)
+		return nil, fmt.Errorf("failed parsing create project response: %s", err)
 	}
 
 	return &projectResponse, nil
@@ -68,7 +68,7 @@ func (rest *ProjectCalls) GetProjects(accountId string) (*payloads.GetProjectsRe
 	err = json.Unmarshal(data, &getProjectsResponse)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed parsing get projects respose: %s", err)
+		return nil, fmt.Errorf("failed parsing get projects response: %s", err)
 	}
 
 	for _, project := range getProjectsResponse.Projects {
