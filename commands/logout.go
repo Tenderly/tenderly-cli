@@ -17,7 +17,7 @@ var logoutCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if !config.IsLoggedIn() {
 			logrus.Info(Colorizer.Sprintf("It seems that you are not logged in, in order to logout you need to " +
-				"be loged in first."))
+				"be logged in first."))
 			return
 		}
 
