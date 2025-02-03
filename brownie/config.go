@@ -44,7 +44,7 @@ func validateConfigPresence(configPath string) error {
 	// Verify that the config is present
 	if _, err := os.Stat(configPath); err != nil {
 		return fmt.Errorf(
-			"unable to locate configuaration at path: %s, error: %w",
+			"unable to locate configuration at path: %s, error: %w",
 			configPath,
 			err,
 		)
