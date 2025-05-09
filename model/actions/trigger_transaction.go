@@ -325,6 +325,7 @@ func (e *EventEmittedField) ToRequest() (response []actions.EventEmittedFilter) 
 type LogEmittedValue struct {
 	StartsWith []Hex64        `yaml:"startsWith" json:"startsWith"`
 	Contract   *ContractValue `yaml:"contract" json:"contract"`
+	MatchAny   bool           `yaml:"matchAny" json:"matchAny,omitempty"`
 }
 
 func (l *LogEmittedValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
@@ -354,6 +355,9 @@ func (l *LogEmittedValue) ToRequest() actions.LogEmittedFilter {
 			Address: l.Contract.Address.String(),
 		}
 		lef.Contract = &c
+	}
+	if l.MatchAny {
+		lef.MatchAny = true
 	}
 	return lef
 }
