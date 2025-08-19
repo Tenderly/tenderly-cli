@@ -260,7 +260,7 @@ func (o *BlockTrigger) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return safejson.Unmarshal(jsonBytes, *&o)
 }
 
-// Action invokation result.
+// Action invocation result.
 type Call struct {
 	Id              string            `json:"id"`
 	ActionId        string            `json:"actionId"`
@@ -474,7 +474,7 @@ func (o *CallStats) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return safejson.Unmarshal(jsonBytes, *&o)
 }
 
-// Summary of action invokation result since full call can be large. Keep this in sync with call.
+// Summary of action invocation result since full call can be large. Keep this in sync with call.
 type CallSummary struct {
 	Id              string            `json:"id"`
 	ActionId        string            `json:"actionId"`

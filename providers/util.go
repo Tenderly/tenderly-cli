@@ -24,14 +24,14 @@ func (d DeploymentProviderName) String() string {
 const (
 	TruffleDeploymentProvider      DeploymentProviderName = "Truffle"
 	OpenZeppelinDeploymentProvider DeploymentProviderName = "OpenZeppelin"
-	BuidlerDeploymentProvider      DeploymentProviderName = "Buidler"
+	BuilderDeploymentProvider      DeploymentProviderName = "Builder"
 	HardhatDeploymentProvider      DeploymentProviderName = "Hardhat"
 	BrownieDeploymentProvider      DeploymentProviderName = "Brownie"
 
 	HardhatConfigFile   = "hardhat.config.js"
 	HardhatConfigFileTs = "hardhat.config.ts"
 
-	BuidlerConfigFile = "buidler.config.js"
+	BuilderConfigFile = "buidler.config.js"
 
 	NewTruffleConfigFile = "truffle-config.js"
 	OldTruffleConfigFile = "truffle.js"
@@ -45,7 +45,7 @@ const (
 var AllProviders = []DeploymentProviderName{
 	TruffleDeploymentProvider,
 	OpenZeppelinDeploymentProvider,
-	BuidlerDeploymentProvider,
+	BuilderDeploymentProvider,
 	HardhatDeploymentProvider,
 	BrownieConfigFile,
 }
