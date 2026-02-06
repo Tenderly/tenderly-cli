@@ -131,7 +131,7 @@ func Request(method, path string, body []byte) io.Reader {
 	data, err := io.ReadAll(res.Body)
 	logrus.WithField("response_body", string(data)).Debug("Got response with body")
 
-	handleResponseStatus(res, err)
+	handleResponseStatus(res, data, err)
 
 	if err != nil {
 		userError.LogErrorf("failed reading response body: %s", userError.NewUserError(
@@ -145,13 +145,13 @@ func Request(method, path string, body []byte) io.Reader {
 }
 
 // handleResponseStatus handles the response status code.
-func handleResponseStatus(res *http.Response, err error) {
+func handleResponseStatus(res *http.Response, resBodyData []byte, err error) {
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		if res.StatusCode >= 500 {
 			userError.LogErrorf("request failed: %s", userError.NewUserError(
 				err,
 				fmt.Sprintf(
-					"The request failed with a status code of %d and status message of '%s'. Please try again.",
+					"The request failed with a status code of %d and status message '%s'. Please try again.",
 					res.StatusCode,
 					res.Status,
 				),
@@ -160,14 +160,33 @@ func handleResponseStatus(res *http.Response, err error) {
 			userError.LogErrorf("request failed: %s", userError.NewUserError(
 				err,
 				fmt.Sprintf(
-					"The request failed with a status code of %d and status message of '%s'",
+					"The request failed with a status code of %d and message '%s'",
 					res.StatusCode,
-					res.Status,
+					extractErrorMessage(resBodyData, res.Status),
 				),
 			))
 		}
 		os.Exit(1)
 	}
+}
+
+// extractErrorMessage tries to extract an error message from the (JSON) response body.
+// Falls back to the HTTP status if the response is not valid JSON or has no error message.
+func extractErrorMessage(resBodyData []byte, status string) string {
+	var errorResp struct {
+		Error struct {
+			ID      string                 `json:"id"`
+			Slug    string                 `json:"slug"`
+			Message string                 `json:"message"`
+			Data    map[string]interface{} `json:"data"`
+		} `json:"error"`
+	}
+
+	if json.Unmarshal(resBodyData, &errorResp) == nil && errorResp.Error.Message != "" {
+		return errorResp.Error.Message
+	}
+
+	return status
 }
 
 // ensureTLS configures the default http transport to use TLS.
