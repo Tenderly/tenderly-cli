@@ -57,9 +57,12 @@ module.exports = { blockHelloWorldFn };
 var initDescription = "This is just an example, but you can publish this action."
 
 var initAction = &actionsModel.ActionSpec{
-	Description:   &initDescription,
-	Function:      "example:blockHelloWorldFn",
-	Trigger:       actionsModel.TriggerUnparsed{Type: "block"},
+	Description: &initDescription,
+	Function:    "example:blockHelloWorldFn",
+	Trigger: actionsModel.TriggerUnparsed{
+		Type:  "block",
+		Block: map[string]any{"blocks": 10, "network": [1]int{1}},
+	},
 	ExecutionType: "parallel",
 }
 
