@@ -128,9 +128,10 @@ func Request(method, path string, body []byte) io.Reader {
 		_ = res.Body.Close()
 	}()
 
-	handleResponseStatus(res, err)
-
 	data, err := io.ReadAll(res.Body)
+	logrus.WithField("response_body", string(data)).Debug("Got response with body")
+
+	handleResponseStatus(res, err)
 
 	if err != nil {
 		userError.LogErrorf("failed reading response body: %s", userError.NewUserError(
@@ -139,8 +140,6 @@ func Request(method, path string, body []byte) io.Reader {
 		))
 		os.Exit(1)
 	}
-
-	logrus.WithField("response_body", string(data)).Debug("Got response with body")
 
 	return bytes.NewReader(data)
 }
