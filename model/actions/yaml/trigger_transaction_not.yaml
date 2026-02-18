@@ -1,0 +1,30 @@
+type: transaction
+transaction:
+  status:
+    - mined
+  filters:
+    - network: 1
+      from: 0xf63c48626f874bf5604D3Ba9f4A85d5cE58f8019
+      function:
+        contract:
+          address: 0x13253c152f4D724D15D7B064DE106A739551dA5F
+        name: myFunction
+        not: true
+      eventEmitted:
+        contract:
+          address: 0xFc4c08972fa997C447982D634b0B48C554d92CEe
+        name: Transfer
+        not: true
+        parameters:
+          - name: from
+            string: "0x0000000000000000000000000000000000000000"
+          - name: value
+            int:
+              gte: 1000
+      logEmitted:
+        startsWith:
+          - 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+        not: true
+      value:
+        eq: 100
+        not: true
