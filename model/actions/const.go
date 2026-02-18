@@ -63,7 +63,6 @@ var (
 	MsgSignatureAndParameterForbidden      = "'parameter' can not be used with 'signature'"
 	MsgIdOrNameRequired                    = "one of 'id' or 'name' is required"
 	MsgIdAndNameForbidden                  = "both 'id' and 'name' is forbidden"
-	MsgIdAndParameterForbidden             = "'parameter' can not be used with 'id'"
 	MsgKeyOrFieldRequired                  = "one of 'key' or 'field' is required"
 	MsgKeyAndFieldForbidden                = "both 'key' and 'field' is forbidden"
 	MsgKeyAndValueOrPreviousValueForbidden = "'value' or 'previousValue' can not be used with 'key'"

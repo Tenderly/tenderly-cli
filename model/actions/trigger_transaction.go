@@ -155,6 +155,7 @@ type FunctionValue struct {
 	Name      *string         `yaml:"name" json:"name"`
 	// Optional, only with Name
 	Parameter *MapValue `yaml:"parameter" json:"parameter"`
+	Not       bool      `yaml:"not" json:"not,omitempty"`
 }
 
 func (f *FunctionValue) ToRequest() actions.FunctionFilter {
@@ -162,6 +163,7 @@ func (f *FunctionValue) ToRequest() actions.FunctionFilter {
 	return actions.FunctionFilter{
 		Contract: f.Contract.ToRequest(),
 		Name:     f.Name,
+		Not:      f.Not,
 	}
 }
 
@@ -233,22 +235,46 @@ func (f *FunctionField) UnmarshalJSON(bytes []byte) error {
 	return errors.New("Failed to unmarshal 'function' field")
 }
 
+type ParameterCondValue struct {
+	Name   string   `yaml:"name" json:"name"`
+	String *string  `yaml:"string" json:"string,omitempty"`
+	Int    *IntValue `yaml:"int" json:"int,omitempty"`
+}
+
+func (p *ParameterCondValue) ToRequest() actions.ParameterCondition {
+	pc := actions.ParameterCondition{
+		Name: p.Name,
+	}
+	if p.String != nil {
+		pc.StringCmp = &actions.ComparableStr{Exact: p.String}
+	}
+	if p.Int != nil {
+		cmp := p.Int.ToRequest()
+		pc.IntCmp = &cmp
+	}
+	return pc
+}
+
 type EventEmittedValue struct {
 	Contract *ContractValue `yaml:"contract" json:"contract"`
 	// Exactly one of
 	Id   *string `yaml:"id" json:"id"`
 	Name *string `yaml:"name" json:"name"`
-	// Optional, only with Name
-	Parameter *MapValue `yaml:"parameter" json:"parameter"`
+	Parameters []ParameterCondValue `yaml:"parameters" json:"parameters,omitempty"`
+	Not        bool                 `yaml:"not" json:"not,omitempty"`
 }
 
 func (r *EventEmittedValue) ToRequest() actions.EventEmittedFilter {
-	// TODO(marko): Set parameter here when supported
-	return actions.EventEmittedFilter{
+	f := actions.EventEmittedFilter{
 		Contract: r.Contract.ToRequest(),
 		Id:       r.Id,
 		Name:     r.Name,
+		Not:      r.Not,
 	}
+	for _, p := range r.Parameters {
+		f.Parameters = append(f.Parameters, p.ToRequest())
+	}
+	return f
 }
 
 func (r *EventEmittedValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
@@ -270,13 +296,10 @@ func (r *EventEmittedValue) Validate(ctx ValidatorContext) (response ValidateRes
 	if r.Id != nil && r.Name != nil {
 		response.Error(ctx, MsgIdAndNameForbidden)
 	}
-	if r.Id != nil && r.Parameter != nil {
-		response.Error(ctx, MsgIdAndParameterForbidden)
-	}
-
-	// TODO(marko): Support parameter for event emitted
-	if r.Parameter != nil {
-		response.Error(ctx, "Parameter not yet supported in event emitted filter")
+	for i, p := range r.Parameters {
+		if strings.TrimSpace(p.Name) == "" {
+			response.Error(ctx.With("parameters").With(strconv.Itoa(i)), "Parameter condition name is required")
+		}
 	}
 
 	return response
@@ -326,6 +349,7 @@ type LogEmittedValue struct {
 	StartsWith []Hex64        `yaml:"startsWith" json:"startsWith"`
 	Contract   *ContractValue `yaml:"contract" json:"contract"`
 	MatchAny   bool           `yaml:"matchAny" json:"matchAny,omitempty"`
+	Not        bool           `yaml:"not" json:"not,omitempty"`
 }
 
 func (l *LogEmittedValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
@@ -358,6 +382,9 @@ func (l *LogEmittedValue) ToRequest() actions.LogEmittedFilter {
 	}
 	if l.MatchAny {
 		lef.MatchAny = true
+	}
+	if l.Not {
+		lef.Not = true
 	}
 	return lef
 }

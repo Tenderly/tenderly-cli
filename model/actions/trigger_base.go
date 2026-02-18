@@ -52,6 +52,7 @@ type IntValue struct {
 	EQ  *int `yaml:"eq"  json:"eq"`
 	GT  *int `yaml:"gt"  json:"gt"`
 	LT  *int `yaml:"lt"  json:"lt"`
+	Not bool `yaml:"not" json:"not,omitempty"`
 }
 
 func (v IntValue) ToRequest() actions.ComparableInt {
@@ -61,6 +62,7 @@ func (v IntValue) ToRequest() actions.ComparableInt {
 		Eq:  v.EQ,
 		Gt:  v.GT,
 		Lt:  v.LT,
+		Not: v.Not,
 	}
 }
 
