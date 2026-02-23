@@ -1,4 +1,4 @@
-package buidler
+package builder
 
 import (
 	"encoding/json"
@@ -23,27 +23,27 @@ type BuidlerConfig struct {
 }
 
 func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*providers.Config, error) {
-	buidlerPath := filepath.Join(projectDir, configName)
+	builderPath := filepath.Join(projectDir, configName)
 	divider := getDivider()
 
-	logrus.Debugf("Trying buidler config path: %s", buidlerPath)
+	logrus.Debugf("Trying builder config path: %s", builderPath)
 
-	_, err := os.Stat(buidlerPath)
+	_, err := os.Stat(builderPath)
 	if os.IsNotExist(err) {
 		return nil, err
 	}
 	if err != nil {
-		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, buidlerPath, err)
+		return nil, fmt.Errorf("cannot find %s, tried path: %s, error: %s", configName, builderPath, err)
 	}
 
 	if runtime.GOOS == "windows" {
-		buidlerPath = strings.ReplaceAll(buidlerPath, `\`, `\\`)
+		builderPath = strings.ReplaceAll(builderPath, `\`, `\\`)
 	}
 
 	data, err := exec.Command("node", "-e", fmt.Sprintf(`
-		let { BuidlerContext } = require("@nomiclabs/buidler/internal/context");
-		let { loadConfigAndTasks } = require("@nomiclabs/buidler/internal/core/config/config-loading");
-		let { loadTsNodeIfPresent } = require("@nomiclabs/buidler/internal/core/typescript-support");
+		let { BuidlerContext } = require("@nomiclabs/builder/internal/context");
+		let { loadConfigAndTasks } = require("@nomiclabs/builder/internal/core/config/config-loading");
+		let { loadTsNodeIfPresent } = require("@nomiclabs/builder/internal/core/typescript-support");
 		
 		
 		loadTsNodeIfPresent();
@@ -71,11 +71,11 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 
 		console.log("%s" + jsonConfig + "%s");
 		process.exit(0);
-	`, buidlerPath, divider, divider)).CombinedOutput()
+	`, builderPath, divider, divider)).CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf(
 			"cannot evaluate %s, tried path: %s, error: %s, output: %s",
-			configName, buidlerPath, err, string(data))
+			configName, builderPath, err, string(data))
 	}
 
 	configString, err := providers.ExtractConfigWithDivider(string(data), divider)
@@ -84,19 +84,19 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 
-	var buidlerConfig BuidlerConfig
-	err = json.Unmarshal([]byte(configString), &buidlerConfig)
+	var builderConfig BuidlerConfig
+	err = json.Unmarshal([]byte(configString), &builderConfig)
 	if err != nil {
 		logrus.Debugf("failed unmarshaling config: %s", err)
 		return nil, fmt.Errorf("cannot read %s", configName)
 	}
 
-	buidlerConfig.ProjectDirectory = projectDir
-	buidlerConfig.ConfigType = configName
+	builderConfig.ProjectDirectory = projectDir
+	builderConfig.ConfigType = configName
 
 	networks := make(map[string]providers.NetworkConfig)
 
-	for key, network := range buidlerConfig.Networks {
+	for key, network := range builderConfig.Networks {
 		networkId := network.NetworkID
 		if val, ok := dp.NetworkIdMap[key]; ok {
 			networkId = val
@@ -108,13 +108,13 @@ func (dp *DeploymentProvider) GetConfig(configName string, projectDir string) (*
 	}
 
 	return &providers.Config{
-		ProjectDirectory: buidlerConfig.ProjectDirectory,
-		BuildDirectory:   buidlerConfig.BuildDirectory,
+		ProjectDirectory: builderConfig.ProjectDirectory,
+		BuildDirectory:   builderConfig.BuildDirectory,
 		Networks:         networks,
 		Compilers: map[string]providers.Compiler{
-			"solc": buidlerConfig.Solc,
+			"solc": builderConfig.Solc,
 		},
-		ConfigType: buidlerConfig.ConfigType,
+		ConfigType: builderConfig.ConfigType,
 	}, nil
 }
 
@@ -124,7 +124,7 @@ func getDivider() string {
 
 func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 	projectDir, err := filepath.Abs(config.ProjectDirectory)
-	buidlerConfigFile := providers.BuidlerConfigFile
+	builderConfigFile := providers.BuidlerConfigFile
 
 	if err != nil {
 		return nil, userError.NewUserError(
@@ -133,7 +133,7 @@ func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 		)
 	}
 
-	buidlerConfig, err := dp.GetConfig(buidlerConfigFile, projectDir)
+	builderConfig, err := dp.GetConfig(builderConfigFile, projectDir)
 	if err != nil {
 		return nil, userError.NewUserError(
 			fmt.Errorf("unable to fetch config: %s", err),
@@ -141,5 +141,5 @@ func (dp *DeploymentProvider) MustGetConfig() (*providers.Config, error) {
 		)
 	}
 
-	return buidlerConfig, nil
+	return builderConfig, nil
 }
