@@ -535,6 +535,7 @@ type ComparableInt struct {
 	Eq  *int `json:"eq"`
 	Gt  *int `json:"gt"`
 	Lt  *int `json:"lt"`
+	Not bool `json:"not,omitempty"`
 }
 
 func (o ComparableInt) MarshalYAML() (interface{}, error) {
@@ -576,6 +577,7 @@ func (o *ComparableMap) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 type ComparableStr struct {
 	Exact *string `json:"exact"`
+	Not   bool    `json:"not,omitempty"`
 }
 
 func (o ComparableStr) MarshalYAML() (interface{}, error) {
@@ -698,9 +700,17 @@ func (o *EthBalanceFilter) UnmarshalYAML(unmarshal func(interface{}) error) erro
 }
 
 type EventEmittedFilter struct {
-	Contract ContractReference `json:"contract"`
-	Id       *string           `json:"id"`
-	Name     *string           `json:"name"`
+	Contract   ContractReference    `json:"contract"`
+	Id         *string              `json:"id"`
+	Name       *string              `json:"name"`
+	Not        bool                 `json:"not,omitempty"`
+	Parameters []ParameterCondition `json:"parameters,omitempty"`
+}
+
+type ParameterCondition struct {
+	Name      string         `json:"name"`
+	StringCmp *ComparableStr `json:"string,omitempty"`
+	IntCmp    *ComparableInt `json:"int,omitempty"`
 }
 
 func (o EventEmittedFilter) MarshalYAML() (interface{}, error) {
@@ -856,6 +866,7 @@ func (o *Filter) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type FunctionFilter struct {
 	Contract ContractReference `json:"contract"`
 	Name     *string           `json:"name"`
+	Not      bool              `json:"not,omitempty"`
 }
 
 func (o FunctionFilter) MarshalYAML() (interface{}, error) {
@@ -878,6 +889,7 @@ type LogEmittedFilter struct {
 	TopicsStartsWith []string           `json:"topicsStartsWith"`
 	Contract         *ContractReference `json:"contract"`
 	MatchAny         bool               `json:"matchAny,omitempty"`
+	Not              bool               `json:"not,omitempty"`
 }
 
 func (o LogEmittedFilter) MarshalJSON() ([]byte, error) {
