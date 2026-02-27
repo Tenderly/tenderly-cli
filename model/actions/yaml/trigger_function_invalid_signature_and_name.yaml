@@ -1,0 +1,10 @@
+type: transaction
+transaction:
+  status:
+    - mined
+  filters:
+    - function:
+        contract:
+          address: 0x13253c152f4D724D15D7B064DE106A739551dA5F
+        signature: 0x1D6D560f
+        name: myFunction

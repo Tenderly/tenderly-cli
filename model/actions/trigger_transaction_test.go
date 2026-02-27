@@ -15,12 +15,28 @@ func TestTransactionNot(t *testing.T) {
 	filter := tx.Filters[0]
 	req := filter.ToRequest()
 
-	// Function not
+	// Function not + parameters
 	if len(req.Function) != 1 {
 		t.Fatalf("expected 1 function filter, got %d", len(req.Function))
 	}
-	if !req.Function[0].Not {
+	fn := req.Function[0]
+	if !fn.Not {
 		t.Error("expected function filter Not to be true")
+	}
+	if len(fn.Parameters) != 2 {
+		t.Fatalf("expected 2 function parameters, got %d", len(fn.Parameters))
+	}
+	if fn.Parameters[0].Name != "from" {
+		t.Errorf("expected parameter name 'from', got %q", fn.Parameters[0].Name)
+	}
+	if fn.Parameters[0].StringCmp == nil || *fn.Parameters[0].StringCmp.Exact != "0x0000000000000000000000000000000000000000" {
+		t.Error("expected function parameter 'from' to have string exact match")
+	}
+	if fn.Parameters[1].Name != "value" {
+		t.Errorf("expected parameter name 'value', got %q", fn.Parameters[1].Name)
+	}
+	if fn.Parameters[1].IntCmp == nil || fn.Parameters[1].IntCmp.Gte == nil || *fn.Parameters[1].IntCmp.Gte != 1000 {
+		t.Error("expected function parameter 'value' to have int gte=1000")
 	}
 
 	// EventEmitted not + parameters

@@ -10,6 +10,12 @@ transaction:
           address: 0x13253c152f4D724D15D7B064DE106A739551dA5F
         name: myFunction
         not: true
+        parameters:
+          - name: from
+            string: "0x0000000000000000000000000000000000000000"
+          - name: value
+            int:
+              gte: 1000
       eventEmitted:
         contract:
           address: 0xFc4c08972fa997C447982D634b0B48C554d92CEe
