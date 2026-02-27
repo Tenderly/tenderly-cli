@@ -864,9 +864,10 @@ func (o *Filter) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 type FunctionFilter struct {
-	Contract ContractReference `json:"contract"`
-	Name     *string           `json:"name"`
-	Not      bool              `json:"not,omitempty"`
+	Contract   ContractReference    `json:"contract"`
+	Name       *string              `json:"name"`
+	Not        bool                 `json:"not,omitempty"`
+	Parameters []ParameterCondition `json:"parameters,omitempty"`
 }
 
 func (o FunctionFilter) MarshalYAML() (interface{}, error) {

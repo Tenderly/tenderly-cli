@@ -151,20 +151,22 @@ func (e *EthBalanceField) UnmarshalJSON(bytes []byte) error {
 type FunctionValue struct {
 	Contract *ContractValue `yaml:"contract" json:"contract"`
 	// Exactly one of
-	Signature *SignatureValue `yaml:"signature" json:"signature"`
-	Name      *string         `yaml:"name" json:"name"`
-	// Optional, only with Name
-	Parameter *MapValue `yaml:"parameter" json:"parameter"`
-	Not       bool      `yaml:"not" json:"not,omitempty"`
+	Signature  *SignatureValue       `yaml:"signature" json:"signature"`
+	Name       *string              `yaml:"name" json:"name"`
+	Parameters []ParameterCondValue `yaml:"parameters" json:"parameters,omitempty"`
+	Not        bool                 `yaml:"not" json:"not,omitempty"`
 }
 
 func (f *FunctionValue) ToRequest() actions.FunctionFilter {
-	// TODO(marko): Set parameter and signature here when supported
-	return actions.FunctionFilter{
+	filter := actions.FunctionFilter{
 		Contract: f.Contract.ToRequest(),
 		Name:     f.Name,
 		Not:      f.Not,
 	}
+	for _, p := range f.Parameters {
+		filter.Parameters = append(filter.Parameters, p.ToRequest())
+	}
+	return filter
 }
 
 func (f *FunctionValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
@@ -183,13 +185,13 @@ func (f *FunctionValue) Validate(ctx ValidatorContext) (response ValidateRespons
 	if f.Signature != nil && f.Name != nil {
 		response.Error(ctx, MsgSignatureAndNameForbidden)
 	}
-	if f.Signature != nil && f.Parameter != nil {
+	if f.Signature != nil && len(f.Parameters) > 0 {
 		response.Error(ctx, MsgSignatureAndParameterForbidden)
 	}
-
-	// TODO(marko): Support parameter in function call
-	if f.Parameter != nil {
-		response.Error(ctx, "Parameter not yet supported in function filter")
+	for i, p := range f.Parameters {
+		if strings.TrimSpace(p.Name) == "" {
+			response.Error(ctx.With("parameters").With(strconv.Itoa(i)), "Parameter condition name is required")
+		}
 	}
 
 	return response
