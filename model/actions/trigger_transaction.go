@@ -237,9 +237,55 @@ func (f *FunctionField) UnmarshalJSON(bytes []byte) error {
 	return errors.New("Failed to unmarshal 'function' field")
 }
 
+type StrValue struct {
+	Exact *string `yaml:"exact" json:"exact"`
+	Not   bool    `yaml:"not" json:"not,omitempty"`
+}
+
+func (v *StrValue) UnmarshalJSON(data []byte) error {
+	// Try plain string first: "value"
+	var plain string
+	if err := json.Unmarshal(data, &plain); err == nil {
+		v.Exact = &plain
+		return nil
+	}
+	// Otherwise parse as object: { "exact": "value", "not": true }
+	type strValueAlias StrValue
+	var obj strValueAlias
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return err
+	}
+	*v = StrValue(obj)
+	return nil
+}
+
+func (v *StrValue) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// Try plain string first: string: "value"
+	var plain string
+	if err := unmarshal(&plain); err == nil {
+		v.Exact = &plain
+		return nil
+	}
+	// Otherwise parse as map: string: { exact: "value", not: true }
+	type strValueAlias StrValue
+	var obj strValueAlias
+	if err := unmarshal(&obj); err != nil {
+		return err
+	}
+	*v = StrValue(obj)
+	return nil
+}
+
+func (v StrValue) ToRequest() actions.ComparableStr {
+	return actions.ComparableStr{
+		Exact: v.Exact,
+		Not:   v.Not,
+	}
+}
+
 type ParameterCondValue struct {
-	Name   string   `yaml:"name" json:"name"`
-	String *string  `yaml:"string" json:"string,omitempty"`
+	Name   string    `yaml:"name" json:"name"`
+	String *StrValue `yaml:"string" json:"string,omitempty"`
 	Int    *IntValue `yaml:"int" json:"int,omitempty"`
 }
 
@@ -248,7 +294,8 @@ func (p *ParameterCondValue) ToRequest() actions.ParameterCondition {
 		Name: p.Name,
 	}
 	if p.String != nil {
-		pc.StringCmp = &actions.ComparableStr{Exact: p.String}
+		cmp := p.String.ToRequest()
+		pc.StringCmp = &cmp
 	}
 	if p.Int != nil {
 		cmp := p.Int.ToRequest()

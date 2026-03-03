@@ -1,0 +1,17 @@
+type: transaction
+transaction:
+  status:
+    - mined
+  filters:
+    - function:
+        contract:
+          address: 0x13253c152f4D724D15D7B064DE106A739551dA5F
+        name: transfer
+        parameters:
+          - name: recipient
+            string:
+              exact: "0x0000000000000000000000000000000000000000"
+              not: true
+          - name: amount
+            int:
+              gte: 500
