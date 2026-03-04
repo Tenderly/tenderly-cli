@@ -151,20 +151,22 @@ func (e *EthBalanceField) UnmarshalJSON(bytes []byte) error {
 type FunctionValue struct {
 	Contract *ContractValue `yaml:"contract" json:"contract"`
 	// Exactly one of
-	Signature *SignatureValue `yaml:"signature" json:"signature"`
-	Name      *string         `yaml:"name" json:"name"`
-	// Optional, only with Name
-	Parameter *MapValue `yaml:"parameter" json:"parameter"`
-	Not       bool      `yaml:"not" json:"not,omitempty"`
+	Signature  *SignatureValue       `yaml:"signature" json:"signature"`
+	Name       *string              `yaml:"name" json:"name"`
+	Parameters []ParameterCondValue `yaml:"parameters" json:"parameters,omitempty"`
+	Not        bool                 `yaml:"not" json:"not,omitempty"`
 }
 
 func (f *FunctionValue) ToRequest() actions.FunctionFilter {
-	// TODO(marko): Set parameter and signature here when supported
-	return actions.FunctionFilter{
+	filter := actions.FunctionFilter{
 		Contract: f.Contract.ToRequest(),
 		Name:     f.Name,
 		Not:      f.Not,
 	}
+	for _, p := range f.Parameters {
+		filter.Parameters = append(filter.Parameters, p.ToRequest())
+	}
+	return filter
 }
 
 func (f *FunctionValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
@@ -183,13 +185,13 @@ func (f *FunctionValue) Validate(ctx ValidatorContext) (response ValidateRespons
 	if f.Signature != nil && f.Name != nil {
 		response.Error(ctx, MsgSignatureAndNameForbidden)
 	}
-	if f.Signature != nil && f.Parameter != nil {
+	if f.Signature != nil && len(f.Parameters) > 0 {
 		response.Error(ctx, MsgSignatureAndParameterForbidden)
 	}
-
-	// TODO(marko): Support parameter in function call
-	if f.Parameter != nil {
-		response.Error(ctx, "Parameter not yet supported in function filter")
+	for i, p := range f.Parameters {
+		if strings.TrimSpace(p.Name) == "" {
+			response.Error(ctx.With("parameters").With(strconv.Itoa(i)), "Parameter condition name is required")
+		}
 	}
 
 	return response
@@ -235,9 +237,55 @@ func (f *FunctionField) UnmarshalJSON(bytes []byte) error {
 	return errors.New("Failed to unmarshal 'function' field")
 }
 
+type StrValue struct {
+	Exact *string `yaml:"exact" json:"exact"`
+	Not   bool    `yaml:"not" json:"not,omitempty"`
+}
+
+func (v *StrValue) UnmarshalJSON(data []byte) error {
+	// Try plain string first: "value"
+	var plain string
+	if err := json.Unmarshal(data, &plain); err == nil {
+		v.Exact = &plain
+		return nil
+	}
+	// Otherwise parse as object: { "exact": "value", "not": true }
+	type strValueAlias StrValue
+	var obj strValueAlias
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return err
+	}
+	*v = StrValue(obj)
+	return nil
+}
+
+func (v *StrValue) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// Try plain string first: string: "value"
+	var plain string
+	if err := unmarshal(&plain); err == nil {
+		v.Exact = &plain
+		return nil
+	}
+	// Otherwise parse as map: string: { exact: "value", not: true }
+	type strValueAlias StrValue
+	var obj strValueAlias
+	if err := unmarshal(&obj); err != nil {
+		return err
+	}
+	*v = StrValue(obj)
+	return nil
+}
+
+func (v StrValue) ToRequest() actions.ComparableStr {
+	return actions.ComparableStr{
+		Exact: v.Exact,
+		Not:   v.Not,
+	}
+}
+
 type ParameterCondValue struct {
-	Name   string   `yaml:"name" json:"name"`
-	String *string  `yaml:"string" json:"string,omitempty"`
+	Name   string    `yaml:"name" json:"name"`
+	String *StrValue `yaml:"string" json:"string,omitempty"`
 	Int    *IntValue `yaml:"int" json:"int,omitempty"`
 }
 
@@ -246,7 +294,8 @@ func (p *ParameterCondValue) ToRequest() actions.ParameterCondition {
 		Name: p.Name,
 	}
 	if p.String != nil {
-		pc.StringCmp = &actions.ComparableStr{Exact: p.String}
+		cmp := p.String.ToRequest()
+		pc.StringCmp = &cmp
 	}
 	if p.Int != nil {
 		cmp := p.Int.ToRequest()
