@@ -12,7 +12,7 @@ func init() {
 
 var exportCmd = &cobra.Command{
 	Use:   "export",
-	Short: "The export feature has been deprecated in favor of the DevNets",
+	Short: "Deprecated: use DevNets instead",
 	Run: func(cmd *cobra.Command, args []string) {
 		logrus.Info(Colorizer.Sprintf(
 			"The export feature has been deprecated in favor of the %s.\n\n"+
@@ -28,7 +28,8 @@ var exportCmd = &cobra.Command{
 
 var exportInitCmd = &cobra.Command{
 	Use:   "export init",
-	Short: "The export feature has been deprecated in favor of the DevNets",
+	Short: "Deprecated: use DevNets instead",
+	Hidden: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		logrus.Info(Colorizer.Sprintf(
 			"The export feature has been deprecated in favor of the %s.\n\n"+
