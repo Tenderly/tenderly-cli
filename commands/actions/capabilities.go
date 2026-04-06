@@ -19,17 +19,18 @@ func init() {
 }
 
 type capabilitiesOutput struct {
-	Version                 string      `json:"version"`
+	Version                 string        `json:"version"`
 	Commands                []commandInfo `json:"commands"`
-	TriggerTypes            []string    `json:"trigger_types"`
-	Runtimes                []string    `json:"runtimes"`
-	ExecutionTypes          []string    `json:"execution_types"`
-	Intervals               []string    `json:"intervals"`
-	Invocations             []string    `json:"invocations"`
-	StatusValues            []string    `json:"status_values"`
-	TransactionStatusValues []string    `json:"transaction_status_values"`
-	SchemaCommand           string      `json:"schema_command"`
-	Schema                  interface{} `json:"schema,omitempty"`
+	TriggerTypes            []string      `json:"trigger_types"`
+	TransactionFilterTypes  []string      `json:"transaction_filter_types"`
+	Runtimes                []string      `json:"runtimes"`
+	ExecutionTypes          []string      `json:"execution_types"`
+	Intervals               []string      `json:"intervals"`
+	Invocations             []string      `json:"invocations"`
+	StatusValues            []string      `json:"status_values"`
+	TransactionStatusValues []string      `json:"transaction_status_values"`
+	SchemaCommand           string        `json:"schema_command"`
+	Schema                  interface{}   `json:"schema,omitempty"`
 }
 
 type commandInfo struct {
@@ -53,6 +54,7 @@ var capabilitiesCmd = &cobra.Command{
 			Version:                 commands.CurrentCLIVersion,
 			Commands:                cmds,
 			TriggerTypes:            actionsModel.TriggerTypes,
+			TransactionFilterTypes:  actionsModel.TransactionFilterTypes,
 			Runtimes:                actionsModel.SupportedRuntimes,
 			ExecutionTypes:          []string{actionsModel.SequentialExecutionType, actionsModel.ParallelExecutionType},
 			Intervals:               actionsModel.Intervals,

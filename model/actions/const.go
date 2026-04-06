@@ -16,7 +16,8 @@ var (
 	BlockType          = "block"
 	TransactionType    = "transaction"
 	AlertType          = "alert"
-	Invocations        = []string{"any", "direct", "internal"}
+	TransactionFilterTypes = []string{"from", "to", "function", "eventEmitted", "logEmitted", "ethBalance", "stateChanged"}
+	Invocations           = []string{"any", "direct", "internal"}
 	InvocationAny      = "any"
 	InvocationDirect   = "direct"
 	InvocationInternal = "internal"

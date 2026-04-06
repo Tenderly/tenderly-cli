@@ -14,6 +14,7 @@ func TestCapabilitiesOutput_JSONShape(t *testing.T) {
 		Version:                 "v0.0.0-test",
 		Commands:                []commandInfo{{Name: "test", Description: "test cmd"}},
 		TriggerTypes:            actionsModel.TriggerTypes,
+		TransactionFilterTypes:  actionsModel.TransactionFilterTypes,
 		Runtimes:                actionsModel.SupportedRuntimes,
 		ExecutionTypes:          []string{actionsModel.SequentialExecutionType, actionsModel.ParallelExecutionType},
 		Intervals:               actionsModel.Intervals,
@@ -35,6 +36,7 @@ func TestCapabilitiesOutput_JSONShape(t *testing.T) {
 	assert.Equal(t, "tenderly actions schema", parsed["schema_command"])
 	assert.NotNil(t, parsed["commands"])
 	assert.NotNil(t, parsed["trigger_types"])
+	assert.NotNil(t, parsed["transaction_filter_types"])
 	assert.NotNil(t, parsed["runtimes"])
 	assert.NotNil(t, parsed["execution_types"])
 	assert.NotNil(t, parsed["intervals"])
@@ -70,13 +72,15 @@ func TestCapabilitiesOutput_WithSchema(t *testing.T) {
 
 func TestCapabilitiesOutput_EnumsInSyncWithConstants(t *testing.T) {
 	out := capabilitiesOutput{
-		TriggerTypes:            actionsModel.TriggerTypes,
-		Runtimes:                actionsModel.SupportedRuntimes,
-		Intervals:               actionsModel.Intervals,
-		Invocations:             actionsModel.Invocations,
+		TriggerTypes:           actionsModel.TriggerTypes,
+		TransactionFilterTypes: actionsModel.TransactionFilterTypes,
+		Runtimes:               actionsModel.SupportedRuntimes,
+		Intervals:              actionsModel.Intervals,
+		Invocations:            actionsModel.Invocations,
 	}
 
 	assert.Equal(t, actionsModel.TriggerTypes, out.TriggerTypes)
+	assert.Equal(t, actionsModel.TransactionFilterTypes, out.TransactionFilterTypes)
 	assert.Equal(t, actionsModel.SupportedRuntimes, out.Runtimes)
 	assert.Equal(t, actionsModel.Intervals, out.Intervals)
 	assert.Equal(t, actionsModel.Invocations, out.Invocations)
