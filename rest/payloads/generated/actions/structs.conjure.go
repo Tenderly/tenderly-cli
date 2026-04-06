@@ -8,26 +8,6 @@ import (
 	"github.com/palantir/pkg/safeyaml"
 )
 
-type AccountReference struct {
-	Address string `json:"address"`
-}
-
-func (o AccountReference) MarshalYAML() (interface{}, error) {
-	jsonBytes, err := safejson.Marshal(o)
-	if err != nil {
-		return nil, err
-	}
-	return safeyaml.JSONtoYAMLMapSlice(jsonBytes)
-}
-
-func (o *AccountReference) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	jsonBytes, err := safeyaml.UnmarshalerToJSONBytes(unmarshal)
-	if err != nil {
-		return err
-	}
-	return safejson.Unmarshal(jsonBytes, *&o)
-}
-
 type Action struct {
 	Id          string       `json:"id"`
 	ProjectId   string       `json:"projectId"`
@@ -678,9 +658,27 @@ func (o *DeployResponse) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	return safejson.Unmarshal(jsonBytes, *&o)
 }
 
+type ComparableBigInt struct {
+	Gte *string `json:"gte,omitempty"`
+	Lte *string `json:"lte,omitempty"`
+	Eq  *string `json:"eq,omitempty"`
+	Gt  *string `json:"gt,omitempty"`
+	Lt  *string `json:"lt,omitempty"`
+	Not bool    `json:"not,omitempty"`
+}
+
+type StateChangedParamCondition struct {
+	Name           string            `json:"name"`
+	Change         bool              `json:"change,omitempty"`
+	ValueCmp       *ComparableBigInt `json:"valueCmp,omitempty"`
+	PercentageCmp  *ComparableBigInt `json:"percentageCmp,omitempty"`
+	StorageSlotKey *string           `json:"storageSlotKey,omitempty"`
+}
+
 type EthBalanceFilter struct {
-	Account AccountReference `json:"account"`
-	Value   ComparableInt    `json:"value"`
+	Address    string           `json:"address"`
+	BalanceCmp ComparableBigInt `json:"balanceCmp"`
+	Not        bool             `json:"not,omitempty"`
 }
 
 func (o EthBalanceFilter) MarshalYAML() (interface{}, error) {
@@ -764,6 +762,8 @@ type Filter struct {
 	Function     []FunctionFilter     `json:"function"`
 	EventEmitted []EventEmittedFilter `json:"eventEmitted"`
 	LogEmmitted  []LogEmittedFilter   `json:"logEmmitted"`
+	EthBalance   []EthBalanceFilter   `json:"ethBalance"`
+	StateChanged []StateChangedFilter `json:"stateChanged"`
 }
 
 func (o Filter) MarshalJSON() ([]byte, error) {
@@ -799,6 +799,12 @@ func (o Filter) MarshalJSON() ([]byte, error) {
 	}
 	if o.LogEmmitted == nil {
 		o.LogEmmitted = make([]LogEmittedFilter, 0)
+	}
+	if o.EthBalance == nil {
+		o.EthBalance = make([]EthBalanceFilter, 0)
+	}
+	if o.StateChanged == nil {
+		o.StateChanged = make([]StateChangedFilter, 0)
 	}
 	type FilterAlias Filter
 	return safejson.Marshal(FilterAlias(o))
@@ -842,6 +848,12 @@ func (o *Filter) UnmarshalJSON(data []byte) error {
 	}
 	if rawFilter.LogEmmitted == nil {
 		rawFilter.LogEmmitted = make([]LogEmittedFilter, 0)
+	}
+	if rawFilter.EthBalance == nil {
+		rawFilter.EthBalance = make([]EthBalanceFilter, 0)
+	}
+	if rawFilter.StateChanged == nil {
+		rawFilter.StateChanged = make([]StateChangedFilter, 0)
 	}
 	*o = Filter(rawFilter)
 	return nil
@@ -1195,11 +1207,10 @@ func (o *SecretsPayload) UnmarshalYAML(unmarshal func(interface{}) error) error 
 }
 
 type StateChangedFilter struct {
-	Contract      ContractReference `json:"contract"`
-	Key           *string           `json:"key"`
-	Field         *string           `json:"field"`
-	Value         *ComparableAny    `json:"value"`
-	PreviousValue *ComparableAny    `json:"previousValue"`
+	Address  string                       `json:"address,omitempty"`
+	MatchAny bool                         `json:"matchAny,omitempty"`
+	Params   []StateChangedParamCondition `json:"params,omitempty"`
+	Not      bool                         `json:"not,omitempty"`
 }
 
 func (o StateChangedFilter) MarshalYAML() (interface{}, error) {

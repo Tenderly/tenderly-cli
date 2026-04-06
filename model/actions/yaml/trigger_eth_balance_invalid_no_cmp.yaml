@@ -1,0 +1,9 @@
+type: transaction
+transaction:
+  status:
+    - mined
+  filters:
+    - network: "1"
+      ethBalance:
+        address: "0x13253c152f4d724d15d7b064de106a739551da5f"
+        balanceCmp: {}

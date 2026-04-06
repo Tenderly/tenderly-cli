@@ -2,20 +2,14 @@ package actions
 
 import (
 	"encoding/json"
+	"math/big"
 	"strconv"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/tenderly/tenderly-cli/rest/payloads/generated/actions"
 )
-
-type AccountValue struct {
-	Address AddressValue `yaml:"address" json:"address"`
-}
-
-func (a *AccountValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
-	return response.Merge(a.Address.Validate(ctx.With("address")))
-}
 
 type ContractValue struct {
 	Address    AddressValue `yaml:"address" json:"address"`
@@ -68,41 +62,100 @@ func (c *ContractValue) Validate(ctx ValidatorContext) (response ValidateRespons
 	return response
 }
 
+type BigIntValue struct {
+	GTE *string `yaml:"gte" json:"gte,omitempty"`
+	LTE *string `yaml:"lte" json:"lte,omitempty"`
+	EQ  *string `yaml:"eq" json:"eq,omitempty"`
+	GT  *string `yaml:"gt" json:"gt,omitempty"`
+	LT  *string `yaml:"lt" json:"lt,omitempty"`
+	Not bool    `yaml:"not" json:"not,omitempty"`
+}
+
+func parseBigIntString(s string) (*big.Int, error) {
+	n := new(big.Int)
+	if strings.HasPrefix(s, "0x") || strings.HasPrefix(s, "0X") {
+		_, ok := n.SetString(s[2:], 16)
+		if !ok {
+			return nil, errors.New("invalid hex integer")
+		}
+	} else {
+		_, ok := n.SetString(s, 10)
+		if !ok {
+			return nil, errors.New("invalid decimal integer")
+		}
+	}
+	if n.Sign() < 0 {
+		return nil, errors.New("value must be non-negative")
+	}
+	return n, nil
+}
+
+func (b *BigIntValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
+	if b.GTE == nil && b.LTE == nil && b.EQ == nil && b.GT == nil && b.LT == nil {
+		return response.Error(ctx, MsgBigIntNoConditionSet)
+	}
+	for _, pair := range []struct {
+		field string
+		val   *string
+	}{
+		{"gte", b.GTE},
+		{"lte", b.LTE},
+		{"eq", b.EQ},
+		{"gt", b.GT},
+		{"lt", b.LT},
+	} {
+		if pair.val != nil {
+			if _, err := parseBigIntString(*pair.val); err != nil {
+				response.Error(ctx.With(pair.field), MsgBigIntValueInvalid, *pair.val)
+			}
+		}
+	}
+	return response
+}
+
+func (b *BigIntValue) ToRequest() actions.ComparableBigInt {
+	toHex := func(s *string) *string {
+		if s == nil {
+			return nil
+		}
+		n, err := parseBigIntString(*s)
+		if err != nil {
+			panic("BigIntValue.ToRequest called with unvalidated input: " + *s)
+		}
+		h := hexutil.EncodeBig(n)
+		return &h
+	}
+	return actions.ComparableBigInt{
+		Gte: toHex(b.GTE),
+		Lte: toHex(b.LTE),
+		Eq:  toHex(b.EQ),
+		Gt:  toHex(b.GT),
+		Lt:  toHex(b.LT),
+		Not: b.Not,
+	}
+}
+
 type EthBalanceValue struct {
-	Value IntValue `yaml:"value" json:"value"`
-	// Exactly one of
-	Account  *AccountValue  `yaml:"account" json:"account"`
-	Contract *ContractValue `yaml:"contract" json:"contract"`
+	Address    *AddressValue `yaml:"address" json:"address"`
+	BalanceCmp BigIntValue   `yaml:"balanceCmp" json:"balanceCmp"`
+	Not        bool          `yaml:"not" json:"not,omitempty"`
 }
 
 func (e *EthBalanceValue) ToRequest() actions.EthBalanceFilter {
-	if e.Account != nil {
-		return actions.EthBalanceFilter{
-			Account: actions.AccountReference{Address: e.Account.Address.String()},
-			Value:   e.Value.ToRequest(),
-		}
+	return actions.EthBalanceFilter{
+		Address:    e.Address.String(),
+		BalanceCmp: e.BalanceCmp.ToRequest(),
+		Not:        e.Not,
 	}
-	if e.Contract != nil {
-		return actions.EthBalanceFilter{
-			Account: actions.AccountReference{Address: e.Contract.Address.String()},
-			Value:   e.Value.ToRequest(),
-		}
-	}
-	panic("unhandled case in ethBalance field")
 }
 
 func (e *EthBalanceValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
-	if e.Account == nil && e.Contract == nil {
-		return response.Error(ctx, MsgAccountOrContractRequired)
-	}
-	if e.Account != nil && e.Contract != nil {
-		response.Error(ctx, MsgAccountAndContractForbidden)
-	}
-	if e.Account != nil {
-		response.Merge(e.Account.Validate(ctx.With("account")))
+	if e.Address == nil {
+		response.Error(ctx.With("address"), MsgAddressRequired)
 	} else {
-		response.Merge(e.Contract.Validate(ctx.With("contract")))
+		response.Merge(e.Address.Validate(ctx.With("address")))
 	}
+	response.Merge(e.BalanceCmp.Validate(ctx.With("balanceCmp")))
 	return response
 }
 
@@ -118,16 +171,14 @@ func (e *EthBalanceField) ToRequest() (response []actions.EthBalanceFilter) {
 }
 
 func (e *EthBalanceField) Validate(ctx ValidatorContext) (response ValidateResponse) {
-	return response.Error(ctx, "EthBalance filter not yet supported")
-
-	// for i, value := range e.Values {
-	// 	nextCtx := ctx
-	// 	if len(e.Values) > 1 {
-	// 		nextCtx = ctx.With(strconv.Itoa(i))
-	// 	}
-	// 	response.Merge(value.Validate(nextCtx))
-	// }
-	// return response
+	for i, value := range e.Values {
+		nextCtx := ctx
+		if len(e.Values) > 1 {
+			nextCtx = ctx.With(strconv.Itoa(i))
+		}
+		response.Merge(value.Validate(nextCtx))
+	}
+	return response
 }
 
 func (e *EthBalanceField) UnmarshalJSON(bytes []byte) error {
@@ -478,71 +529,79 @@ func (l *LogEmittedField) ToRequest() (response []actions.LogEmittedFilter) {
 	return response
 }
 
+type StateChangedParamCondValue struct {
+	Name           string       `yaml:"name" json:"name"`
+	Change         bool         `yaml:"change" json:"change,omitempty"`
+	ValueCmp       *BigIntValue `yaml:"valueCmp" json:"valueCmp,omitempty"`
+	PercentageCmp  *BigIntValue `yaml:"percentageCmp" json:"percentageCmp,omitempty"`
+	StorageSlotKey *string      `yaml:"storageSlotKey" json:"storageSlotKey,omitempty"`
+}
+
+func (p *StateChangedParamCondValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
+	if strings.TrimSpace(p.Name) == "" {
+		response.Error(ctx, MsgParamNameRequired)
+	}
+	if !p.Change && p.ValueCmp == nil && p.PercentageCmp == nil && p.StorageSlotKey == nil {
+		response.Error(ctx, MsgStateChangedParamConditionRequired)
+	}
+	if p.ValueCmp != nil {
+		response.Merge(p.ValueCmp.Validate(ctx.With("valueCmp")))
+	}
+	if p.PercentageCmp != nil {
+		response.Merge(p.PercentageCmp.Validate(ctx.With("percentageCmp")))
+	}
+	return response
+}
+
+func (p *StateChangedParamCondValue) ToRequest() actions.StateChangedParamCondition {
+	cond := actions.StateChangedParamCondition{
+		Name:           p.Name,
+		Change:         p.Change,
+		StorageSlotKey: p.StorageSlotKey,
+	}
+	if p.ValueCmp != nil {
+		cmp := p.ValueCmp.ToRequest()
+		cond.ValueCmp = &cmp
+	}
+	if p.PercentageCmp != nil {
+		cmp := p.PercentageCmp.ToRequest()
+		cond.PercentageCmp = &cmp
+	}
+	return cond
+}
+
 type StateChangedValue struct {
-	Contract *ContractValue `yaml:"contract" json:"contract"`
-	// Exactly one of
-	Key   *string `yaml:"key" json:"key"`
-	Field *string `yaml:"field" json:"field"`
-	// At most one of, only with Field
-	// If none, any state changed at given key is considered
-	Value         *AnyValue `yaml:"value" json:"value"`
-	PreviousValue *AnyValue `yaml:"previousValue" json:"previousValue"`
+	Address  *AddressValue                `yaml:"address" json:"address"`
+	MatchAny bool                         `yaml:"matchAny" json:"matchAny,omitempty"`
+	Params   []StateChangedParamCondValue `yaml:"params" json:"params,omitempty"`
+	Not      bool                         `yaml:"not" json:"not,omitempty"`
 }
 
 func (r *StateChangedValue) ToRequest() actions.StateChangedFilter {
-	if r.Key != nil {
-		return actions.StateChangedFilter{
-			Contract: r.Contract.ToRequest(),
-			Key:      r.Key,
-		}
+	filter := actions.StateChangedFilter{
+		MatchAny: r.MatchAny,
+		Not:      r.Not,
 	}
-	if r.Field != nil {
-		var value *actions.ComparableAny
-		if r.Value != nil {
-			val := r.Value.ToRequest()
-			value = &val
-		}
-		var previousValue *actions.ComparableAny
-		if r.PreviousValue != nil {
-			val := r.PreviousValue.ToRequest()
-			previousValue = &val
-		}
-		return actions.StateChangedFilter{
-			Contract:      r.Contract.ToRequest(),
-			Field:         r.Field,
-			Value:         value,
-			PreviousValue: previousValue,
-		}
+	if r.Address != nil {
+		filter.Address = r.Address.String()
 	}
-	panic("unhandled case in function field")
+	for _, p := range r.Params {
+		filter.Params = append(filter.Params, p.ToRequest())
+	}
+	return filter
 }
 
 func (r *StateChangedValue) Validate(ctx ValidatorContext) (response ValidateResponse) {
-	// Modify
-	if r.Key != nil {
-		key := strings.ToLower(strings.TrimSpace(*r.Key))
-		r.Key = &key
+	if !r.MatchAny {
+		if r.Address == nil {
+			response.Error(ctx.With("address"), MsgAddressRequired)
+		} else {
+			response.Merge(r.Address.Validate(ctx.With("address")))
+		}
 	}
-
-	if r.Contract == nil {
-		response.Error(ctx, MsgContractRequired)
-	} else {
-		response.Merge(r.Contract.Validate(ctx.With("contract")))
+	for i, p := range r.Params {
+		response.Merge(p.Validate(ctx.With("params").With(strconv.Itoa(i))))
 	}
-
-	if r.Key == nil && r.Field == nil {
-		response.Error(ctx, MsgKeyOrFieldRequired)
-	}
-	if r.Key != nil && r.Field != nil {
-		response.Error(ctx, MsgKeyAndFieldForbidden)
-	}
-	if r.Key != nil && (r.Value != nil || r.PreviousValue != nil) {
-		response.Error(ctx, MsgKeyAndValueOrPreviousValueForbidden)
-	}
-	if r.Value != nil && r.PreviousValue != nil {
-		response.Error(ctx, MsgValueAndPreviousValueForbidden)
-	}
-
 	return response
 }
 
@@ -551,16 +610,14 @@ type StateChangedField struct {
 }
 
 func (s *StateChangedField) Validate(ctx ValidatorContext) (response ValidateResponse) {
-	return response.Error(ctx, "StateChanged filter not yet supported")
-
-	// for i, value := range s.Values {
-	// 	nextCtx := ctx
-	// 	if len(s.Values) > 1 {
-	// 		nextCtx = ctx.With(strconv.Itoa(i))
-	// 	}
-	// 	response.Merge(value.Validate(nextCtx))
-	// }
-	// return response
+	for i, value := range s.Values {
+		nextCtx := ctx
+		if len(s.Values) > 1 {
+			nextCtx = ctx.With(strconv.Itoa(i))
+		}
+		response.Merge(value.Validate(nextCtx))
+	}
+	return response
 }
 
 func (s *StateChangedField) UnmarshalJSON(bytes []byte) error {
@@ -647,14 +704,12 @@ func (t *TransactionFilter) ToRequest() (response actions.Filter) {
 	if t.LogEmitted != nil {
 		response.LogEmmitted = t.LogEmitted.ToRequest()
 	}
-
-	// TODO(marko): Support eth balance and state changed
-	// if t.EthBalance != nil {
-	// 	response.EthBalance = t.EthBalance.ToRequest()
-	// }
-	// if t.StateChanged != nil {
-	// 	response.StateChanged = t.StateChanged.ToRequest()
-	// }
+	if t.EthBalance != nil {
+		response.EthBalance = t.EthBalance.ToRequest()
+	}
+	if t.StateChanged != nil {
+		response.StateChanged = t.StateChanged.ToRequest()
+	}
 
 	return response
 }
@@ -665,13 +720,6 @@ func (t *TransactionFilter) Validate(ctx ValidatorContext) (response ValidateRes
 
 	// Set top level contract on nested fields
 	if t.Contract != nil {
-		if t.EthBalance != nil {
-			for i := 0; i < len(t.EthBalance.Values); i++ {
-				if t.EthBalance.Values[i].Account == nil && t.EthBalance.Values[i].Contract == nil {
-					t.EthBalance.Values[i].Contract = t.Contract
-				}
-			}
-		}
 		if t.Function != nil {
 			for i := 0; i < len(t.Function.Values); i++ {
 				if t.Function.Values[i].Contract == nil {
@@ -683,13 +731,6 @@ func (t *TransactionFilter) Validate(ctx ValidatorContext) (response ValidateRes
 			for i := 0; i < len(t.EventEmitted.Values); i++ {
 				if t.EventEmitted.Values[i].Contract == nil {
 					t.EventEmitted.Values[i].Contract = t.Contract
-				}
-			}
-		}
-		if t.StateChanged != nil {
-			for i := 0; i < len(t.StateChanged.Values); i++ {
-				if t.StateChanged.Values[i].Contract == nil {
-					t.StateChanged.Values[i].Contract = t.Contract
 				}
 			}
 		}
@@ -735,7 +776,9 @@ func (t *TransactionFilter) isMinFilterConstraintFulfilled() bool {
 		(t.To != nil && len(t.To.Values) > 0) ||
 		(t.Function != nil && len(t.Function.Values) > 0) ||
 		(t.EventEmitted != nil && len(t.EventEmitted.Values) > 0) ||
-		(t.LogEmitted != nil && len(t.LogEmitted.Values) > 0)
+		(t.LogEmitted != nil && len(t.LogEmitted.Values) > 0) ||
+		(t.EthBalance != nil && len(t.EthBalance.Values) > 0) ||
+		(t.StateChanged != nil && len(t.StateChanged.Values) > 0)
 }
 
 type TransactionTrigger struct {

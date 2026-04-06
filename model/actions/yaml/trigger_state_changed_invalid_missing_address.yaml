@@ -1,0 +1,10 @@
+type: transaction
+transaction:
+  status:
+    - mined
+  filters:
+    - network: "1"
+      stateChanged:
+        params:
+          - name: balance
+            change: true

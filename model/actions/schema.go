@@ -158,17 +158,23 @@ func buildDefs() map[string]interface{} {
 		"Hex64":                 defHex64(),
 
 		// Composite types
-		"ContractValue":           defContractValue(),
+		"ContractValue":            defContractValue(),
 		"AddressOnlyContractValue": defAddressOnlyContractValue(),
-		"StrValue":                defStrValue(),
-		"ParameterCondValue":      defParameterCondValue(),
-		"FunctionValue":           defFunctionValue(),
-		"FunctionField":           defFunctionField(),
-		"EventEmittedValue":       defEventEmittedValue(),
-		"EventEmittedField":       defEventEmittedField(),
-		"LogEmittedValue":         defLogEmittedValue(),
-		"LogEmittedField":         defLogEmittedField(),
-		"TransactionFilter":       defTransactionFilter(),
+		"StrValue":                 defStrValue(),
+		"ParameterCondValue":       defParameterCondValue(),
+		"FunctionValue":            defFunctionValue(),
+		"FunctionField":            defFunctionField(),
+		"EventEmittedValue":        defEventEmittedValue(),
+		"EventEmittedField":        defEventEmittedField(),
+		"LogEmittedValue":          defLogEmittedValue(),
+		"LogEmittedField":          defLogEmittedField(),
+		"BigIntValue":              defBigIntValue(),
+		"EthBalanceValue":          defEthBalanceValue(),
+		"EthBalanceField":          defEthBalanceField(),
+		"StateChangedParamCondValue": defStateChangedParamCondValue(),
+		"StateChangedValue":        defStateChangedValue(),
+		"StateChangedField":        defStateChangedField(),
+		"TransactionFilter":        defTransactionFilter(),
 
 		// Trigger types
 		"PeriodicTrigger":    defPeriodicTrigger(),
@@ -400,6 +406,74 @@ func defLogEmittedField() map[string]interface{} {
 	return singleOrArray(refDef("LogEmittedValue"))
 }
 
+func defBigIntValue() map[string]interface{} {
+	bigIntString := obj("type", "string", "pattern", "^(0x[0-9a-fA-F]+|[0-9]+)$")
+	return obj(
+		"type", "object",
+		"properties", obj(
+			"gte", bigIntString,
+			"lte", bigIntString,
+			"eq", bigIntString,
+			"gt", bigIntString,
+			"lt", bigIntString,
+			"not", obj("type", "boolean"),
+		),
+		"additionalProperties", false,
+	)
+}
+
+func defEthBalanceValue() map[string]interface{} {
+	return obj(
+		"type", "object",
+		"properties", obj(
+			"address", refDef("AddressValue"),
+			"balanceCmp", refDef("BigIntValue"),
+			"not", obj("type", "boolean"),
+		),
+		"required", arr("address", "balanceCmp"),
+		"additionalProperties", false,
+	)
+}
+
+func defEthBalanceField() map[string]interface{} {
+	return singleOrArray(refDef("EthBalanceValue"))
+}
+
+func defStateChangedParamCondValue() map[string]interface{} {
+	return obj(
+		"type", "object",
+		"properties", obj(
+			"name", obj("type", "string"),
+			"change", obj("type", "boolean"),
+			"valueCmp", refDef("BigIntValue"),
+			"percentageCmp", refDef("BigIntValue"),
+			"storageSlotKey", obj("type", "string"),
+		),
+		"required", arr("name"),
+		"additionalProperties", false,
+	)
+}
+
+func defStateChangedValue() map[string]interface{} {
+	return obj(
+		"type", "object",
+		"properties", obj(
+			"address", refDef("AddressValue"),
+			"matchAny", obj("type", "boolean"),
+			"params", obj(
+				"type", "array",
+				"items", refDef("StateChangedParamCondValue"),
+			),
+			"not", obj("type", "boolean"),
+		),
+		"additionalProperties", false,
+	)
+}
+
+func defStateChangedField() map[string]interface{} {
+	return singleOrArray(refDef("StateChangedValue"))
+}
+
 func defTransactionFilter() map[string]interface{} {
 	return obj(
 		"type", "object",
@@ -416,6 +490,8 @@ func defTransactionFilter() map[string]interface{} {
 			"function", refDef("FunctionField"),
 			"eventEmitted", refDef("EventEmittedField"),
 			"logEmitted", refDef("LogEmittedField"),
+			"ethBalance", refDef("EthBalanceField"),
+			"stateChanged", refDef("StateChangedField"),
 		),
 		"required", arr("network"),
 		"anyOf", arr(
@@ -424,6 +500,8 @@ func defTransactionFilter() map[string]interface{} {
 			obj("required", arr("function")),
 			obj("required", arr("eventEmitted")),
 			obj("required", arr("logEmitted")),
+			obj("required", arr("ethBalance")),
+			obj("required", arr("stateChanged")),
 		),
 		"additionalProperties", false,
 	)

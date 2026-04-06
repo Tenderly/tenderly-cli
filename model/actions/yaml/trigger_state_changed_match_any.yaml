@@ -1,0 +1,11 @@
+type: transaction
+transaction:
+  status:
+    - mined
+  filters:
+    - network: "1"
+      stateChanged:
+        matchAny: true
+        params:
+          - name: balance
+            change: true

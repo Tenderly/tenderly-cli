@@ -37,17 +37,17 @@ func TestGenerateJSONSchema_HasAllDefs(t *testing.T) {
 		"FunctionValue", "FunctionField",
 		"EventEmittedValue", "EventEmittedField",
 		"LogEmittedValue", "LogEmittedField",
+		"BigIntValue", "EthBalanceValue", "EthBalanceField",
+		"StateChangedParamCondValue", "StateChangedValue", "StateChangedField",
 		"TransactionFilter",
 		"PeriodicTrigger", "WebhookTrigger", "BlockTrigger",
 		"TransactionTrigger", "AlertTrigger",
 		"TriggerUnparsed", "ActionSpec", "ProjectActions",
 	}
 
-	// Unsupported features should NOT be in schema
+	// These legacy types should NOT be in schema
 	removedDefs := []string{
 		"AnyValue", "MapValue", "AccountValue",
-		"StateChangedValue", "StateChangedField",
-		"EthBalanceValue", "EthBalanceField",
 	}
 	for _, name := range removedDefs {
 		_, exists := defs[name]
@@ -189,15 +189,15 @@ func TestGenerateJSONSchema_TransactionFilterRequiresNetwork(t *testing.T) {
 	assert.Contains(t, required, "network")
 }
 
-func TestGenerateJSONSchema_TransactionFilterNoUnsupportedFields(t *testing.T) {
+func TestGenerateJSONSchema_TransactionFilterHasEthBalanceAndStateChanged(t *testing.T) {
 	schema := GenerateJSONSchema()
 	defs := schema["$defs"].(map[string]interface{})
 	tf := defs["TransactionFilter"].(map[string]interface{})
 	props := tf["properties"].(map[string]interface{})
 	_, hasEthBalance := props["ethBalance"]
 	_, hasStateChanged := props["stateChanged"]
-	assert.False(t, hasEthBalance, "ethBalance should not be in TransactionFilter (not yet supported)")
-	assert.False(t, hasStateChanged, "stateChanged should not be in TransactionFilter (not yet supported)")
+	assert.True(t, hasEthBalance, "ethBalance should be in TransactionFilter")
+	assert.True(t, hasStateChanged, "stateChanged should be in TransactionFilter")
 }
 
 func TestGenerateJSONSchema_LogEmittedContractNoInvocation(t *testing.T) {
@@ -249,9 +249,9 @@ func TestGenerateJSONSchema_TransactionFilterMinConstraint(t *testing.T) {
 	defs := schema["$defs"].(map[string]interface{})
 	tf := defs["TransactionFilter"].(map[string]interface{})
 	anyOf := tf["anyOf"].([]interface{})
-	require.Len(t, anyOf, 5, "anyOf should require at least one of from/to/function/eventEmitted/logEmitted")
+	require.Len(t, anyOf, 7, "anyOf should require at least one of from/to/function/eventEmitted/logEmitted/ethBalance/stateChanged")
 
-	expectedFields := []string{"from", "to", "function", "eventEmitted", "logEmitted"}
+	expectedFields := []string{"from", "to", "function", "eventEmitted", "logEmitted", "ethBalance", "stateChanged"}
 	for i, entry := range anyOf {
 		branch := entry.(map[string]interface{})
 		required := branch["required"].([]interface{})
@@ -297,6 +297,38 @@ func TestGenerateJSONSchema_SignaturePatternCaseInsensitive(t *testing.T) {
 	oneOf := sig["oneOf"].([]interface{})
 	strBranch := oneOf[0].(map[string]interface{})
 	assert.Equal(t, SigRegexCI, strBranch["pattern"], "schema should use case-insensitive sig regex")
+}
+
+func TestGenerateJSONSchema_BigIntValuePattern(t *testing.T) {
+	schema := GenerateJSONSchema()
+	defs := schema["$defs"].(map[string]interface{})
+	bigInt := defs["BigIntValue"].(map[string]interface{})
+	props := bigInt["properties"].(map[string]interface{})
+
+	expectedFields := []string{"gte", "lte", "eq", "gt", "lt", "not"}
+	for _, field := range expectedFields {
+		_, exists := props[field]
+		assert.True(t, exists, "BigIntValue should have field %q", field)
+	}
+	assert.Equal(t, false, bigInt["additionalProperties"], "BigIntValue should not allow additional properties")
+}
+
+func TestGenerateJSONSchema_EthBalanceValueRequiresAddressAndBalanceCmp(t *testing.T) {
+	schema := GenerateJSONSchema()
+	defs := schema["$defs"].(map[string]interface{})
+	ebv := defs["EthBalanceValue"].(map[string]interface{})
+	required := ebv["required"].([]interface{})
+	assert.Contains(t, required, "address")
+	assert.Contains(t, required, "balanceCmp")
+}
+
+func TestGenerateJSONSchema_StateChangedParamCondRequiresName(t *testing.T) {
+	schema := GenerateJSONSchema()
+	defs := schema["$defs"].(map[string]interface{})
+	param := defs["StateChangedParamCondValue"].(map[string]interface{})
+	required := param["required"].([]interface{})
+	assert.Contains(t, required, "name")
+	assert.Equal(t, false, param["additionalProperties"], "StateChangedParamCondValue should not allow additional properties")
 }
 
 // --- ValidateConfig integration tests ---

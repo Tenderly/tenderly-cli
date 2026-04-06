@@ -80,5 +80,10 @@ var (
 	MsgStartsWithInvalid                   = "'startsWith' element must be hex encoded and start with 0x"
 	MsgHexValueEmpty                       = "expected non-empty hex value"
 	MsgHexValueInvalid                     = "hex value must start with 0x, got %s"
-	MsgMinFilterConstraint                 = "constraint for minimum transaction filters must be fulfilled"
+	MsgMinFilterConstraint                = "constraint for minimum transaction filters must be fulfilled"
+	MsgAddressRequired                    = "'address' is required"
+	MsgBigIntNoConditionSet               = "must have at least one condition set (gte, lte, eq, gt, lt)"
+	MsgBigIntValueInvalid                 = "value '%s' must be a valid non-negative integer (decimal or 0x-prefixed hex)"
+	MsgStateChangedParamConditionRequired = "at least one of 'change', 'valueCmp', 'percentageCmp', 'storageSlotKey' is required"
+	MsgParamNameRequired                  = "'name' is required for parameter condition"
 )
