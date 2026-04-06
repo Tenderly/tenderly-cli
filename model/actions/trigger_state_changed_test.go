@@ -123,15 +123,7 @@ func TestStateChangedMissingAddress(t *testing.T) {
 	if ok {
 		t.Fatal("expected validation to fail when address is missing and matchAny is not set")
 	}
-	found := false
-	for _, e := range response.Errors {
-		if e == "test.transaction.filters.0.stateChanged.address: 'address' is required" {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("expected address required error, got: %v", response.Errors)
-	}
+	requireValidationError(t, response, "test.transaction.filters.0.stateChanged.address: 'address' is required")
 }
 
 func TestStateChangedParamMissingName(t *testing.T) {
@@ -139,15 +131,7 @@ func TestStateChangedParamMissingName(t *testing.T) {
 	if ok {
 		t.Fatal("expected validation to fail when param name is missing")
 	}
-	found := false
-	for _, e := range response.Errors {
-		if e == "test.transaction.filters.0.stateChanged.params.0: 'name' is required for parameter condition" {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("expected param name required error, got: %v", response.Errors)
-	}
+	requireValidationError(t, response, "test.transaction.filters.0.stateChanged.params.0: 'name' is required for parameter condition")
 }
 
 func TestStateChangedParamNoCondition(t *testing.T) {
@@ -155,15 +139,7 @@ func TestStateChangedParamNoCondition(t *testing.T) {
 	if ok {
 		t.Fatal("expected validation to fail when param has no condition")
 	}
-	found := false
-	for _, e := range response.Errors {
-		if e == "test.transaction.filters.0.stateChanged.params.0: at least one of 'change', 'valueCmp', 'percentageCmp', 'storageSlotKey' is required" {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("expected param condition required error, got: %v", response.Errors)
-	}
+	requireValidationError(t, response, "test.transaction.filters.0.stateChanged.params.0: at least one of 'change', 'valueCmp', 'percentageCmp', 'storageSlotKey' is required")
 }
 
 func TestStateChangedMultiParams(t *testing.T) {

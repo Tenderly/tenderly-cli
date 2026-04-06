@@ -5,6 +5,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"testing"
 
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
@@ -53,4 +54,14 @@ func MustReadTriggerAndFailValidate(filename string) actions.Trigger {
 		panic("trigger validation did not fail but expected")
 	}
 	return trigger
+}
+
+func requireValidationError(t *testing.T, response actions.ValidateResponse, expected string) {
+	t.Helper()
+	for _, e := range response.Errors {
+		if e == expected {
+			return
+		}
+	}
+	t.Errorf("expected error %q, got: %v", expected, response.Errors)
 }

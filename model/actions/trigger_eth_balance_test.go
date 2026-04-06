@@ -19,7 +19,7 @@ func TestEthBalanceGte(t *testing.T) {
 		t.Fatal("expected BalanceCmp.Gte to be set")
 	}
 	if *eb.BalanceCmp.Gte != "1000000000000000000" {
-		t.Errorf("expected BalanceCmp.Gte '0xde0b6b3a7640000', got %q", *eb.BalanceCmp.Gte)
+		t.Errorf("expected BalanceCmp.Gte '1000000000000000000', got %q", *eb.BalanceCmp.Gte)
 	}
 	if eb.Not {
 		t.Error("expected Not to be false")
@@ -54,7 +54,7 @@ func TestEthBalanceHexInput(t *testing.T) {
 		t.Fatal("expected BalanceCmp.Gte to be set")
 	}
 	if *eb.BalanceCmp.Gte != "1000000000000000000" {
-		t.Errorf("expected BalanceCmp.Gte '0xde0b6b3a7640000', got %q", *eb.BalanceCmp.Gte)
+		t.Errorf("expected BalanceCmp.Gte '1000000000000000000', got %q", *eb.BalanceCmp.Gte)
 	}
 }
 
@@ -63,15 +63,7 @@ func TestEthBalanceMissingAddress(t *testing.T) {
 	if ok {
 		t.Fatal("expected validation to fail when address is missing")
 	}
-	found := false
-	for _, e := range response.Errors {
-		if e == "test.transaction.filters.0.ethBalance.address: 'address' is required" {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("expected address required error, got: %v", response.Errors)
-	}
+	requireValidationError(t, response, "test.transaction.filters.0.ethBalance.address: 'address' is required")
 }
 
 func TestEthBalanceNoCmp(t *testing.T) {
@@ -79,15 +71,7 @@ func TestEthBalanceNoCmp(t *testing.T) {
 	if ok {
 		t.Fatal("expected validation to fail when balanceCmp has no conditions")
 	}
-	found := false
-	for _, e := range response.Errors {
-		if e == "test.transaction.filters.0.ethBalance.balanceCmp: must have at least one condition set (gte, lte, eq, gt, lt)" {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("expected balanceCmp no-condition error, got: %v", response.Errors)
-	}
+	requireValidationError(t, response, "test.transaction.filters.0.ethBalance.balanceCmp: must have at least one condition set (gte, lte, eq, gt, lt)")
 }
 
 func TestEthBalanceEq(t *testing.T) {
@@ -102,7 +86,7 @@ func TestEthBalanceEq(t *testing.T) {
 		t.Fatal("expected BalanceCmp.Eq to be set")
 	}
 	if *eb.BalanceCmp.Eq != "1000000000000000000" {
-		t.Errorf("expected BalanceCmp.Eq '0xde0b6b3a7640000', got %q", *eb.BalanceCmp.Eq)
+		t.Errorf("expected BalanceCmp.Eq '1000000000000000000', got %q", *eb.BalanceCmp.Eq)
 	}
 	if eb.BalanceCmp.Gte != nil || eb.BalanceCmp.Lte != nil || eb.BalanceCmp.Gt != nil || eb.BalanceCmp.Lt != nil {
 		t.Error("expected only Eq to be set")
@@ -124,10 +108,10 @@ func TestEthBalanceRange(t *testing.T) {
 		t.Fatal("expected BalanceCmp.Lte to be set")
 	}
 	if *eb.BalanceCmp.Gte != "1000000000000000000" {
-		t.Errorf("expected Gte '0xde0b6b3a7640000', got %q", *eb.BalanceCmp.Gte)
+		t.Errorf("expected Gte '1000000000000000000', got %q", *eb.BalanceCmp.Gte)
 	}
 	if *eb.BalanceCmp.Lte != "2000000000000000000" {
-		t.Errorf("expected Lte '0x1bc16d674ec80000', got %q", *eb.BalanceCmp.Lte)
+		t.Errorf("expected Lte '2000000000000000000', got %q", *eb.BalanceCmp.Lte)
 	}
 }
 
@@ -157,15 +141,7 @@ func TestEthBalanceInvalidBadHex(t *testing.T) {
 	if ok {
 		t.Fatal("expected validation to fail for malformed hex value")
 	}
-	found := false
-	for _, e := range response.Errors {
-		if e == "test.transaction.filters.0.ethBalance.balanceCmp.gte: value '0xZZZ' must be a valid non-negative integer (decimal or 0x-prefixed hex)" {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("expected invalid hex error, got: %v", response.Errors)
-	}
+	requireValidationError(t, response, "test.transaction.filters.0.ethBalance.balanceCmp.gte: value '0xZZZ' must be a valid non-negative integer (decimal or 0x-prefixed hex)")
 }
 
 func TestEthBalanceInvalidNegative(t *testing.T) {
@@ -173,13 +149,5 @@ func TestEthBalanceInvalidNegative(t *testing.T) {
 	if ok {
 		t.Fatal("expected validation to fail for negative value")
 	}
-	found := false
-	for _, e := range response.Errors {
-		if e == "test.transaction.filters.0.ethBalance.balanceCmp.gte: value '-1' must be a valid non-negative integer (decimal or 0x-prefixed hex)" {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("expected negative value error, got: %v", response.Errors)
-	}
+	requireValidationError(t, response, "test.transaction.filters.0.ethBalance.balanceCmp.gte: value '-1' must be a valid non-negative integer (decimal or 0x-prefixed hex)")
 }
