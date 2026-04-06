@@ -1207,7 +1207,7 @@ func (o *SecretsPayload) UnmarshalYAML(unmarshal func(interface{}) error) error 
 }
 
 type StateChangedFilter struct {
-	Address  string                       `json:"address,omitempty"`
+	Address  string                       `json:"address"`
 	MatchAny bool                         `json:"matchAny,omitempty"`
 	Params   []StateChangedParamCondition `json:"params,omitempty"`
 	Not      bool                         `json:"not,omitempty"`
