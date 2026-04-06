@@ -43,8 +43,8 @@ func TestStateChangedValueCmp(t *testing.T) {
 	if sc.Params[0].ValueCmp.Gte == nil {
 		t.Fatal("expected ValueCmp.Gte to be set")
 	}
-	if *sc.Params[0].ValueCmp.Gte != "0xde0b6b3a7640000" {
-		t.Errorf("expected ValueCmp.Gte '0xde0b6b3a7640000', got %q", *sc.Params[0].ValueCmp.Gte)
+	if *sc.Params[0].ValueCmp.Gte != "1000000000000000000" {
+		t.Errorf("expected ValueCmp.Gte '1000000000000000000', got %q", *sc.Params[0].ValueCmp.Gte)
 	}
 }
 
@@ -65,8 +65,8 @@ func TestStateChangedPercentageCmp(t *testing.T) {
 	if sc.Params[0].PercentageCmp.Gte == nil {
 		t.Fatal("expected PercentageCmp.Gte to be set")
 	}
-	if *sc.Params[0].PercentageCmp.Gte != "0x32" {
-		t.Errorf("expected PercentageCmp.Gte '0x32', got %q", *sc.Params[0].PercentageCmp.Gte)
+	if *sc.Params[0].PercentageCmp.Gte != "50" {
+		t.Errorf("expected PercentageCmp.Gte '50', got %q", *sc.Params[0].PercentageCmp.Gte)
 	}
 }
 
@@ -192,7 +192,7 @@ func TestStateChangedMultiParams(t *testing.T) {
 	if sc.Params[1].ValueCmp.Gte == nil {
 		t.Fatal("expected second param ValueCmp.Gte to be set")
 	}
-	if *sc.Params[1].ValueCmp.Gte != "0x3e8" {
-		t.Errorf("expected ValueCmp.Gte '0x3e8', got %q", *sc.Params[1].ValueCmp.Gte)
+	if *sc.Params[1].ValueCmp.Gte != "1000" {
+		t.Errorf("expected ValueCmp.Gte '1000', got %q", *sc.Params[1].ValueCmp.Gte)
 	}
 }

@@ -18,7 +18,7 @@ func TestEthBalanceGte(t *testing.T) {
 	if eb.BalanceCmp.Gte == nil {
 		t.Fatal("expected BalanceCmp.Gte to be set")
 	}
-	if *eb.BalanceCmp.Gte != "0xde0b6b3a7640000" {
+	if *eb.BalanceCmp.Gte != "1000000000000000000" {
 		t.Errorf("expected BalanceCmp.Gte '0xde0b6b3a7640000', got %q", *eb.BalanceCmp.Gte)
 	}
 	if eb.Not {
@@ -53,7 +53,7 @@ func TestEthBalanceHexInput(t *testing.T) {
 	if eb.BalanceCmp.Gte == nil {
 		t.Fatal("expected BalanceCmp.Gte to be set")
 	}
-	if *eb.BalanceCmp.Gte != "0xde0b6b3a7640000" {
+	if *eb.BalanceCmp.Gte != "1000000000000000000" {
 		t.Errorf("expected BalanceCmp.Gte '0xde0b6b3a7640000', got %q", *eb.BalanceCmp.Gte)
 	}
 }
@@ -101,7 +101,7 @@ func TestEthBalanceEq(t *testing.T) {
 	if eb.BalanceCmp.Eq == nil {
 		t.Fatal("expected BalanceCmp.Eq to be set")
 	}
-	if *eb.BalanceCmp.Eq != "0xde0b6b3a7640000" {
+	if *eb.BalanceCmp.Eq != "1000000000000000000" {
 		t.Errorf("expected BalanceCmp.Eq '0xde0b6b3a7640000', got %q", *eb.BalanceCmp.Eq)
 	}
 	if eb.BalanceCmp.Gte != nil || eb.BalanceCmp.Lte != nil || eb.BalanceCmp.Gt != nil || eb.BalanceCmp.Lt != nil {
@@ -123,10 +123,10 @@ func TestEthBalanceRange(t *testing.T) {
 	if eb.BalanceCmp.Lte == nil {
 		t.Fatal("expected BalanceCmp.Lte to be set")
 	}
-	if *eb.BalanceCmp.Gte != "0xde0b6b3a7640000" {
+	if *eb.BalanceCmp.Gte != "1000000000000000000" {
 		t.Errorf("expected Gte '0xde0b6b3a7640000', got %q", *eb.BalanceCmp.Gte)
 	}
-	if *eb.BalanceCmp.Lte != "0x1bc16d674ec80000" {
+	if *eb.BalanceCmp.Lte != "2000000000000000000" {
 		t.Errorf("expected Lte '0x1bc16d674ec80000', got %q", *eb.BalanceCmp.Lte)
 	}
 }

@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/tenderly/tenderly-cli/rest/payloads/generated/actions"
 )
@@ -114,7 +113,7 @@ func (b *BigIntValue) Validate(ctx ValidatorContext) (response ValidateResponse)
 }
 
 func (b *BigIntValue) ToRequest() actions.ComparableBigInt {
-	toHex := func(s *string) *string {
+	toDec := func(s *string) *string {
 		if s == nil {
 			return nil
 		}
@@ -122,15 +121,15 @@ func (b *BigIntValue) ToRequest() actions.ComparableBigInt {
 		if err != nil {
 			panic("BigIntValue.ToRequest called with unvalidated input: " + *s)
 		}
-		h := hexutil.EncodeBig(n)
-		return &h
+		d := n.String()
+		return &d
 	}
 	return actions.ComparableBigInt{
-		Gte: toHex(b.GTE),
-		Lte: toHex(b.LTE),
-		Eq:  toHex(b.EQ),
-		Gt:  toHex(b.GT),
-		Lt:  toHex(b.LT),
+		Gte: toDec(b.GTE),
+		Lte: toDec(b.LTE),
+		Eq:  toDec(b.EQ),
+		Gt:  toDec(b.GT),
+		Lt:  toDec(b.LT),
 		Not: b.Not,
 	}
 }
