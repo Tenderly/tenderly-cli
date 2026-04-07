@@ -83,9 +83,6 @@ func parseBigIntString(s string) (*big.Int, error) {
 			return nil, errors.New("invalid decimal integer")
 		}
 	}
-	if n.Sign() < 0 {
-		return nil, errors.New("value must be non-negative")
-	}
 	return n, nil
 }
 

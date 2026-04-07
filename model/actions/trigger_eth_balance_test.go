@@ -141,13 +141,20 @@ func TestEthBalanceInvalidBadHex(t *testing.T) {
 	if ok {
 		t.Fatal("expected validation to fail for malformed hex value")
 	}
-	requireValidationError(t, response, "test.transaction.filters.0.ethBalance.balanceCmp.gte: value '0xZZZ' must be a valid non-negative integer (decimal or 0x-prefixed hex)")
+	requireValidationError(t, response, "test.transaction.filters.0.ethBalance.balanceCmp.gte: value '0xZZZ' must be a valid integer (decimal or 0x-prefixed hex)")
 }
 
-func TestEthBalanceInvalidNegative(t *testing.T) {
-	_, response, ok := MustReadTrigger("trigger_eth_balance_invalid_negative")
-	if ok {
-		t.Fatal("expected validation to fail for negative value")
+func TestEthBalanceNegativeValue(t *testing.T) {
+	trigger := MustReadTriggerAndValidate("trigger_eth_balance_invalid_negative")
+	req := trigger.Transaction.Filters[0].ToRequest()
+
+	if len(req.EthBalance) != 1 {
+		t.Fatalf("expected 1 ethBalance filter, got %d", len(req.EthBalance))
 	}
-	requireValidationError(t, response, "test.transaction.filters.0.ethBalance.balanceCmp.gte: value '-1' must be a valid non-negative integer (decimal or 0x-prefixed hex)")
+	if req.EthBalance[0].BalanceCmp.Gte == nil {
+		t.Fatal("expected BalanceCmp.Gte to be set")
+	}
+	if *req.EthBalance[0].BalanceCmp.Gte != "-1" {
+		t.Errorf("expected BalanceCmp.Gte '-1', got %q", *req.EthBalance[0].BalanceCmp.Gte)
+	}
 }

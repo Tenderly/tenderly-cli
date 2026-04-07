@@ -407,7 +407,7 @@ func defLogEmittedField() map[string]interface{} {
 }
 
 func defBigIntValue() map[string]interface{} {
-	bigIntString := obj("type", "string", "pattern", "^(0x[0-9a-fA-F]+|[0-9]+)$")
+	bigIntString := obj("type", "string", "pattern", "^(-?0x[0-9a-fA-F]+|-?[0-9]+)$")
 	return obj(
 		"type", "object",
 		"properties", obj(
