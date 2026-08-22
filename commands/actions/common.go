@@ -81,7 +81,7 @@ func chooseProject(rest *rest.Rest, accountID string, createNewOption bool, only
 
 				include := false
 				for _, slug := range onlySlugs {
-					if strings.ToLower(projectSlug) == strings.ToLower(slug) {
+					if strings.EqualFold(projectSlug, slug) {
 						include = true
 						break
 					}
