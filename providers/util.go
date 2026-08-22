@@ -31,7 +31,7 @@ const (
 	HardhatConfigFile   = "hardhat.config.js"
 	HardhatConfigFileTs = "hardhat.config.ts"
 
-	BuidlerConfigFile = "buidler.config.js"
+	BuidlerConfigFile = "builder.config.js"
 
 	NewTruffleConfigFile = "truffle-config.js"
 	OldTruffleConfigFile = "truffle.js"

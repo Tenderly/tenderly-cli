@@ -284,7 +284,7 @@ func publish(
 	request := conjureactions.PublishRequest{
 		Actions:             actions.ToRequest(sources),
 		Deploy:              deploy,
-		Commitish:           util.GetCommitish(),
+		Committish:           util.GetCommittish(),
 		LogicZip:            &logicZip,
 		LogicVersion:        &logicHash,
 		DependenciesZip:     &dependenciesZip,
