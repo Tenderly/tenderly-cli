@@ -123,5 +123,5 @@ For the example above, the output will be `nodejs/node_modules/x/y.js`.
 */
 func getDestPath(filePath string, dirPath string, destBasePath string) string {
 	relativePath := strings.TrimPrefix(filePath, dirPath)
-	return filepath.Join(destBasePath, relativePath)
+	return filepath.ToSlash(filepath.Join(destBasePath, relativePath))
 }
